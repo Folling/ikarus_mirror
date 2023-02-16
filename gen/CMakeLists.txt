@@ -1,0 +1,14 @@
+file(
+    GLOB_RECURSE
+    JSON_FILES
+    "*.json"
+)
+
+foreach (JSON_FILE ${JSON_FILES})
+    STRING(REGEX REPLACE "[.]json$" ".h" HEADER_FILE ${JSON_FILE})
+    STRING(REGEX REPLACE "gen/sources" "include" HEADER_FILE ${HEADER_FILE})
+    set(HEADER_FILES ${HEADER_FILES} ${HEADER_FILE})
+endforeach ()
+
+set(GEN_FILES ${JSON_FILES} PARENT_SCOPE)
+set(GEN_TARGET_FILES ${HEADER_FILES} PARENT_SCOPE)

@@ -1,0 +1,98 @@
+{
+    "name": "entity",
+    "depends_on": [
+        "../project",
+        "../error",
+        "../id"
+    ],
+    "functions": [
+        {
+            "name": "get_parent",
+            "versions": [
+                {
+                    "return_type": "Id",
+                    "parameters": [
+                        {
+                            "name": "project",
+                            "type": "Project *"
+                        },
+                        {
+                            "name": "entity",
+                            "type": "Id"
+                        }
+                    ],
+                    "flags": []
+                }
+            ]
+        },
+        {
+            "name": "set_parent",
+            "versions": [
+                {
+                    "return_type": "bool",
+                    "parameters": [
+                        {
+                            "name": "project",
+                            "type": "Project *"
+                        },
+                        {
+                            "name": "entity",
+                            "type": "Id"
+                        },
+                        {
+                            "name": "new_parent",
+                            "type": "Id"
+                        },
+                        {
+                            "name": "new_idx",
+                            "type": "size_t"
+                        }
+                    ],
+                    "flags": []
+                }
+            ]
+        },
+        {
+            "name": "get_idx",
+            "versions": [
+                {
+                    "return_type": "size_t",
+                    "parameters": [
+                        {
+                            "name": "project",
+                            "type": "Project *"
+                        },
+                        {
+                            "name": "entity",
+                            "type": "Id"
+                        }
+                    ],
+                    "flags": []
+                }
+            ]
+        },
+        {
+            "name": "set_idx",
+            "versions": [
+                {
+                    "return_type": "bool",
+                    "parameters": [
+                        {
+                            "name": "project",
+                            "type": "Project *"
+                        },
+                        {
+                            "name": "entity",
+                            "type": "Id"
+                        },
+                        {
+                            "name": "new_idx",
+                            "type": "size_t"
+                        }
+                    ],
+                    "flags": []
+                }
+            ]
+        }
+    ]
+}

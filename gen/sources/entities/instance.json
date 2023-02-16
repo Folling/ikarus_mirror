@@ -1,0 +1,75 @@
+{
+    "name": "instance",
+    "depends_on": [
+        "../project",
+        "../error",
+        "../id"
+    ],
+    "functions": [
+        {
+            "name": "create",
+            "versions": [
+                {
+                    "return_type": "Id",
+                    "parameters": [
+                        {
+                            "name": "project",
+                            "type": "Project *"
+                        },
+                        {
+                            "name": "blueprint",
+                            "type": "Id"
+                        },
+                        {
+                            "name": "parent_folder",
+                            "type": "Id"
+                        },
+                        {
+                            "name": "name",
+                            "type": "char const *"
+                        }
+                    ],
+                    "flags": []
+                }
+            ]
+        },
+        {
+            "name": "delete",
+            "versions": [
+                {
+                    "return_type": "bool",
+                    "parameters": [
+                        {
+                            "name": "project",
+                            "type": "Project *"
+                        },
+                        {
+                            "name": "instance",
+                            "type": "Id"
+                        }
+                    ],
+                    "flags": []
+                }
+            ]
+        },
+        {
+            "name": "get_blueprint",
+            "versions": [
+                {
+                    "return_type": "Id",
+                    "parameters": [
+                        {
+                            "name": "project",
+                            "type": "Project*"
+                        },
+                        {
+                            "name": "instance",
+                            "type": "Id"
+                        }
+                    ],
+                    "flags": []
+                }
+            ]
+        }
+    ]
+}
