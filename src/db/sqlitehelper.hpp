@@ -1,5 +1,7 @@
 #pragma once
 
+#include "util/status.hpp"
+
 #include <sqlite3.h>
 
 #include <optional>
@@ -9,10 +11,18 @@
 
 #include <fmt/format.h>
 
-#include <error.hpp>
 #include <util/logger.hpp>
 #include <util/structs/result.hpp>
 #include <util/templates.hpp>
+
+namespace db {
+
+struct RawString {
+    uint64_t size;
+    char const * data;
+};
+
+}
 
 namespace db::detail {
 
@@ -62,6 +72,23 @@ struct SQLiteHelper<F> {
         } else {
             static_assert(delayed_false<F>{}, "cannot fit floating point type as bound parameter to SQLite");
         }
+    }
+};
+
+template<>
+struct SQLiteHelper<RawString> {
+    static RawString convert(sqlite3_stmt * stmt, std::size_t idx) {
+        RawString ret{};
+        // order is important, text must be called first
+        ret.data = reinterpret_cast<char const *>(sqlite3_column_text(stmt, static_cast<int>(idx)));
+        ret.size = sqlite3_column_bytes(stmt, static_cast<int>(idx));
+
+        return ret;
+    }
+
+    static int bind(sqlite3_stmt * stmt, std::size_t idx, RawString const& value) {
+        // TODO, remove SQLITE_TRANSIENT for better performance
+        return sqlite3_bind_text(stmt, static_cast<int>(idx), value.data, value.size, SQLITE_TRANSIENT);
     }
 };
 
@@ -127,19 +154,14 @@ int bind(sqlite3_stmt * stmt, Args&&... args) {
     return bind_impl<Args...>(stmt, std::forward<Args>(args)..., std::make_index_sequence<sizeof...(Args)>());
 }
 
-template<typename T>
-T convert(sqlite3_stmt * stmt) {
-    return std::forward<T>(SQLiteHelper<T>::convert(stmt, 0));
-}
-
 template<typename... Ret, std::size_t... Is>
 std::tuple<Ret...> convert_many_impl(sqlite3_stmt * stmt, std::index_sequence<Is...>) {
     return std::make_tuple(std::forward<Ret>(SQLiteHelper<Ret>::convert(stmt, Is))...);
 }
 
 template<typename... Ret>
-std::tuple<Ret...> convert_many(sqlite3_stmt * stmt) {
-    return convert_many_impl<Ret...>(stmt, std::make_index_sequence<sizeof...(Ret)>());
+maybe_tuple<Ret...> convert(sqlite3_stmt * stmt) {
+    return maybe_singularise(convert_many_impl<Ret...>(stmt, std::make_index_sequence<sizeof...(Ret)>()));
 }
 
 struct Statement {
@@ -171,16 +193,17 @@ struct Statement {
 };
 
 template<typename... Args>
-Result<Statement, int> prepare(sqlite3 * db, std::string_view view, Args&&... args) {
+Result<Statement, int> prepare(sqlite3 * db, StatusCode * status_out, std::string_view view, Args&&... args) {
     detail::Statement stmt{};
 
     if (auto rc = sqlite3_prepare_v3(db, view.data(), static_cast<int>(view.size()), 0, &stmt.handle, nullptr); rc != SQLITE_OK) {
-        return err(rc);
+        LOG_SQLITE_ERROR("unable to prepare statement");
+        RETURN_STATUS_OUT(err(rc), StatusCode_InternalError);
     }
 
     if (auto rc = detail::bind(stmt.handle, std::forward<Args>(args)...); rc != SQLITE_OK) {
         LOG_SQLITE_ERROR("unable to bind parameter");
-        return err(rc);
+        RETURN_STATUS_OUT(err(rc), StatusCode_InternalError);
     }
 
     return ok(std::move(stmt));

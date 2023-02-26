@@ -4,6 +4,17 @@
 
 #include <fmt/format.h>
 
+#include <util/maths.hpp>
+#include <util/templates.hpp>
+
+template<typename... Args>
+constexpr std::string_view format_str() {
+    // bit hacky, but it's pretty hard to get this efficient otherwise
+    constexpr std::string_view data = "{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}";
+
+    return data.substr(0, (sizeof...(Args) * 2) + (safe_subtract(sizeof...(Args), 1ul) * 2));
+}
+
 template<typename T>
 struct fmt::formatter<std::optional<T>> {
     template<typename FormatParseContext>

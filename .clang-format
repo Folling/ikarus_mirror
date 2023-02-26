@@ -61,7 +61,7 @@ BreakBeforeConceptDeclarations: Always
 BreakBeforeTernaryOperators: false
 BreakConstructorInitializers: AfterColon
 BreakInheritanceList: AfterColon
-BreakStringLiterals: true
+BreakStringLiterals: false
 
 ColumnLimit: 140
 

@@ -8,57 +8,46 @@
 #include <util/base.hpp>
 #include <util/structs/option.hpp>
 
-#define TRY(...)                   \
-    do {                           \
-        auto result = __VA_ARGS__; \
-        if (result.is_err()) {     \
-            return result;         \
-        }                          \
-    } while (false)
+#define CONCAT(a, b)       CONCAT_INNER(a, b)
+#define CONCAT_INNER(a, b) a##b
 
-#define VTRY(value, ...)               \
-    auto value##_result = __VA_ARGS__; \
-    if (value##_result.is_err()) {     \
-        return value##_result;         \
-    }                                  \
-    auto value = value##_result.unwrap_value()
+#define UNIQUE_NAME(base)  CONCAT(base, __COUNTER__)
 
-#define VTRYN(value, ...)              \
-    auto value##_result = __VA_ARGS__; \
-    if (value##_result.is_err()) {     \
-        return;                        \
-    }                                  \
-    auto value = value##_result.unwrap_value()
+#define TRY_IMPL(var_name, ...)  \
+    auto var_name = __VA_ARGS__; \
+    if (var_name.is_err()) {     \
+        return var_name;         \
+    }                            \
+    [] {}()
 
-#define VTRYRV(value, ret, ...)        \
-    auto value##_result = __VA_ARGS__; \
-    if (value##_result.is_err()) {     \
+#define TRY(...) TRY_IMPL(UNIQUE_NAME(result), __VA_ARGS__)
+
+#define VTRY_IMPL(var_name, value, ...) \
+    auto var_name = __VA_ARGS__;        \
+    if (var_name.is_err()) {            \
+        return var_name;                \
+    }                                   \
+    value = var_name.unwrap_value()
+
+#define VTRY(value, ...) VTRY_IMPL(UNIQUE_NAME(result), value, __VA_ARGS__)
+
+#define TRYRV_IMPL(var_name, ret, ...) \
+    auto var_name = __VA_ARGS__;       \
+    if (var_name.is_err()) {           \
         return ret;                    \
     }                                  \
-    auto value = value##_result.unwrap_value()
+    [] {}()
 
-#define TRYRVE(ret, err, ...)                   \
-    auto value##_result = __VA_ARGS__;          \
-    if (value##_result.is_err()) {              \
-        if (err_out != nullptr) *err_out = err; \
-        return ret;                             \
-    }
+#define TRYRV(ret, ...) TRYRV_IMPL(UNIQUE_NAME(result), ret, __VA_ARGS__)
 
-#define VTRYRVE(value, ret, err, ...)           \
-    auto value##_result = __VA_ARGS__;          \
-    if (value##_result.is_err()) {              \
-        if (err_out != nullptr) *err_out = err; \
-        return ret;                             \
-    }                                           \
-    auto value = value##_result.unwrap_value()
+#define VTRYRV_IMPL(var_name, value, ret, ...) \
+    auto var_name = __VA_ARGS__;               \
+    if (var_name.is_err()) {                   \
+        return ret;                            \
+    }                                          \
+    value = var_name.unwrap_value()
 
-#define EVTRYRVE(value, ret, err, ...)          \
-    auto value##_result = __VA_ARGS__;          \
-    if (value##_result.is_err()) {              \
-        if (err_out != nullptr) *err_out = err; \
-        return ret;                             \
-    }                                           \
-    value = value##_result.unwrap_value()
+#define VTRYRV(value, ret, ...) VTRYRV_IMPL(UNIQUE_NAME(result), value, ret, __VA_ARGS__)
 
 namespace detail {
 
@@ -479,8 +468,8 @@ public:
         return some(unwrap_error());
     }
 
-    template<typename E2, typename F>
-    [[nodiscard]] Result<void, E2> map_err(F transformer) {
+    template<typename F>
+    [[nodiscard]] Result<void, std::result_of_t<F(E)>> map_err(F transformer) {
         if (is_err()) {
             return err(transformer(unwrap_error()));
         }
