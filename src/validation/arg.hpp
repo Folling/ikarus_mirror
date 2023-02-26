@@ -191,12 +191,16 @@ bool validate_entity(Project * project, Id entity, std::string_view ident, Statu
 
             LOG_VERBOSE("validating type");
 
-            if (auto received = id_get_entity_type(entity); received != expected) {
-                LOG_ERROR("type is {}, expected {}", received, expected);
-                RETURN_STATUS_OUT(false, StatusCode_InvalidArgument);
-            }
+            if (id_is_null(entity)) {
+                LOG_VERBOSE("entity is null");
+            } else {
+                if (auto received = id_get_entity_type(entity); received != expected) {
+                    LOG_ERROR("type is {}, expected {}", received, expected);
+                    RETURN_STATUS_OUT(false, StatusCode_InvalidArgument);
+                }
 
-            LOG_VERBOSE("type matches ({})", expected);
+                LOG_VERBOSE("type matches ({})", expected);
+            }
         } else {
             static_assert(delayed_false_v<decltype(type)>, "must set type parameter when validating type");
         }

@@ -2,7 +2,6 @@
     "name": "entity",
     "generate_struct": false,
     "depends_on": [
-        "location",
         "../project",
         "../status",
         "../id"
@@ -14,7 +13,7 @@
                 {
                     "return_type": [
                         {
-                            "type": "char const*",
+                            "type": "char*",
                             "name": "name"
                         }
                     ],
@@ -61,8 +60,8 @@
                 {
                     "return_type": [
                         {
-                            "type": "char const*",
-                            "name": "name"
+                            "type": "char*",
+                            "name": "information"
                         }
                     ],
                     "parameters": [

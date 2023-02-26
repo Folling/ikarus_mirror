@@ -4,7 +4,6 @@
 #include <cstddef>
 #include <cstdint>
 
-#include "location.h"
 #include "../project.h"
 #include "../status.h"
 #include "../id.h"
@@ -14,7 +13,7 @@ enum IkarusEntityGetNameV1Flags {
 };
 
 struct IkarusEntityGetNameResult {
-    char const* name;
+    char* name;
     StatusCode status_code;
 };
 
@@ -35,7 +34,7 @@ enum IkarusEntityGetInformationV1Flags {
 };
 
 struct IkarusEntityGetInformationResult {
-    char const* name;
+    char* information;
     StatusCode status_code;
 };
 
