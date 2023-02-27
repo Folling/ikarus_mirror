@@ -1,11 +1,15 @@
 #pragma once
 
+#include <unicode/uchar.h>
+#include <unicode/uiter.h>
+
 #include <db/db.hpp>
 #include <ikarus/id.h>
 #include <ikarus/project.h>
 #include <ikarus/status.h>
 #include <project.hpp>
 #include <util/status.hpp>
+#include <util/string.hpp>
 #include <util/structs/result.hpp>
 #include <util/templates.hpp>
 
@@ -16,7 +20,7 @@
 
 namespace validation {
 
-enum ValidationFlags { None = 0, Type = 1 << 0, NotNull = 1 << 1, Exists = 1 << 2, DoesntExist = 1 << 3 };
+enum ValidationFlags { None = 0, Type = 1 << 0, NotNull = 1 << 1, NotEmpty = 1 << 2, Exists = 1 << 3, DoesntExist = 1 << 4 };
 
 template<int F>
 bool validate_path(char const * path, std::string_view ident, StatusCode * status_out) {
@@ -97,11 +101,11 @@ bool validate_pointer(T const * pointer, std::string_view ident, StatusCode * st
 
 template<int F>
 bool validate_string(char const * string, std::string_view ident, StatusCode * status_out) {
-    static_assert((F & ~(NotNull)) == 0, "string validation can only use NotNull");
+    static_assert((F & ~(NotNull | NotEmpty)) == 0, "string validation can only use NotNull");
 
     LOG_VERBOSE("validating {}", ident);
 
-    if constexpr (F & NotNull) {
+    if constexpr ((F & NotNull) != 0) {
         LOG_VERBOSE("validating that {} isn't null", ident);
         if (string == nullptr) {
             LOG_ERROR("{} is null", ident);
@@ -115,6 +119,14 @@ bool validate_string(char const * string, std::string_view ident, StatusCode * s
     }
 
     LOG_VERBOSE("{} = {}", ident, string);
+
+    if constexpr ((F & NotEmpty) != 0) {
+        LOG_VERBOSE("validating that {} isn't empty", ident);
+        if (util::str::is_empty_or_blank(string)) {
+            LOG_ERROR("{} was blank/empty", ident);
+            return false;
+        }
+    }
 
     LOG_VERBOSE("successfully validated {}", ident);
 
