@@ -153,7 +153,7 @@ bool validate_project(Project const * project, std::string_view ident, StatusCod
         }
     }
 
-    LOG_VERBOSE("{} = {}", ident, project->path.c_str());
+    LOG_VERBOSE("{} = {}", ident, project->get_path().c_str());
 
     if constexpr (F & Exists || F & DoesntExist) {
         static_assert((F & Exists) + (F & DoesntExist) != (Exists + DoesntExist), "projects aren't in superposition");
@@ -161,7 +161,7 @@ bool validate_project(Project const * project, std::string_view ident, StatusCod
         LOG_VERBOSE("validating project path's existence");
 
         // clang-format off
-        if (!validate_path<F & (Exists | DoesntExist)>(project->path.c_str(), "project path", status_out)) {
+        if (!validate_path<F & (Exists | DoesntExist)>(project->get_path().c_str(), "project path", status_out)) {
             return false;
         }
         // clang-format on
@@ -174,7 +174,7 @@ bool validate_project(Project const * project, std::string_view ident, StatusCod
 
 template<int F, EntityType type>
     requires((F & ~NotNull & ~Type & ~Exists & ~DoesntExist) == 0)
-bool validate_entity(Project * project, Id entity, std::string_view ident, StatusCode * status_out) {
+bool validate_entity(DbHandle const& db_handle, Id entity, std::string_view ident, StatusCode * status_out) {
     static_assert(
         (F & ~(NotNull | Type | Exists | DoesntExist)) == 0, "entity validation can only use NotNull, Type, Exists and DoesntExist"
     );
@@ -253,7 +253,7 @@ bool validate_entity(Project * project, Id entity, std::string_view ident, Statu
 
         LOG_VERBOSE("validating existence");
 
-        VTRYRV(bool exists, false, db::get_one<bool>(project->db, status_out, query, entity));
+        VTRYRV(bool exists, false, db::get_one<bool>(db_handle.get_db(), status_out, query, entity));
 
         if constexpr (should_exist) {
             if (exists) {

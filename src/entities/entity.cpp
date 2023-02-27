@@ -14,7 +14,9 @@ IkarusEntityGetNameResult ikarus_entity_get_name_v1(Project * project, Id entity
 
     IkarusEntityGetNameResult ret{.name = nullptr, .status_code = StatusCode_Ok};
 
-    ret.name = util::fetch_single_string(project, entity, "entity", "name", "id", &ret.status_code);
+    auto db_handle = project->get_db_handle();
+
+    ret.name = util::fetch_single_string(db_handle, entity, "entity", "name", "id", &ret.status_code);
 
     LOG_FUNCTION_SUCCESS("successfully fetched name");
 
@@ -26,7 +28,11 @@ IkarusEntitySetNameResult ikarus_entity_set_name_v1(Project * project, Id entity
 
     IkarusEntitySetNameResult ret{.status_code = StatusCode_Ok};
 
-    util::update_single_string<validation::ValidationFlags::NotEmpty>(project, entity, "entity", "name", "id", new_name, &ret.status_code);
+    auto db_handle = project->get_db_handle();
+
+    util::update_single_string<validation::ValidationFlags::NotEmpty>(
+        db_handle, entity, "entity", "name", "id", new_name, &ret.status_code
+    );
 
     LOG_FUNCTION_SUCCESS("successfully changed name");
 
@@ -38,7 +44,9 @@ IkarusEntityGetInformationResult ikarus_entity_get_information_v1(Project * proj
 
     IkarusEntityGetInformationResult ret{.information = nullptr, .status_code = StatusCode_Ok};
 
-    ret.information = util::fetch_single_string(project, entity, "entity", "information", "id", &ret.status_code);
+    auto db_handle = project->get_db_handle();
+
+    ret.information = util::fetch_single_string(db_handle, entity, "entity", "information", "id", &ret.status_code);
 
     LOG_FUNCTION_SUCCESS("successfully fetched information");
 
@@ -52,8 +60,10 @@ IkarusEntitySetInformationResult ikarus_entity_set_information_v1(
 
     IkarusEntitySetInformationResult ret{.status_code = StatusCode_Ok};
 
+    auto db_handle = project->get_db_handle();
+
     util::update_single_string<validation::ValidationFlags::None>(
-        project, entity, "entity", "information", "id", new_information, &ret.status_code
+        db_handle, entity, "entity", "information", "id", new_information, &ret.status_code
     );
 
     LOG_FUNCTION_SUCCESS("successfully changed information");
@@ -68,16 +78,23 @@ IkarusEntityGetLocationResult ikarus_entity_get_location_v1(Project * project, I
 
     CHECK(ret, validation::validate_project<validation::NotNull | validation::Exists>(project, "project", &ret.status_code));
 
+    auto db_handle = project->get_db_handle();
+
     CHECK(
         ret,
-        validation::validate_entity<validation::NotNull | validation::Exists, EntityType_None>(project, entity, "entity", &ret.status_code)
+        validation::validate_entity<validation::NotNull | validation::Exists, EntityType_None>(
+            db_handle, entity, "entity", &ret.status_code
+        )
     );
 
     VTRYRV(
         auto tuple,
         ret,
         db::get_one<Id, size_t>(
-            project->db, &ret.status_code, "SELECT IFNULL(`parent_id`, 0), `position` FROM `entity_tree` WHERE `entity_id` = ?", entity
+            db_handle.get_db(),
+            &ret.status_code,
+            "SELECT IFNULL(`parent_id`, 0), `position` FROM `entity_tree` WHERE `entity_id` = ?",
+            entity
         )
     );
 
@@ -98,12 +115,18 @@ IkarusEntitySetLocationResult ikarus_entity_set_location_v1(
 
     CHECK(ret, validation::validate_project<validation::NotNull | validation::Exists>(project, "project", &ret.status_code));
 
+    auto db_handle = project->get_db_handle();
+
     CHECK(
         ret,
-        validation::validate_entity<validation::NotNull | validation::Exists, EntityType_None>(project, entity, "entity", &ret.status_code)
+        validation::validate_entity<validation::NotNull | validation::Exists, EntityType_None>(
+            db_handle, entity, "entity", &ret.status_code
+        )
     );
 
-    CHECK(ret, validation::validate_entity<validation::Exists, EntityType_Folder>(project, new_parent, "parent folder", &ret.status_code));
+    CHECK(
+        ret, validation::validate_entity<validation::Exists, EntityType_Folder>(db_handle, new_parent, "parent folder", &ret.status_code)
+    );
 
     LOG_VERBOSE("fetching current location");
 
@@ -119,7 +142,9 @@ IkarusEntitySetLocationResult ikarus_entity_set_location_v1(
     LOG_VERBOSE("fetching scope");
 
     VTRYRV(
-        auto scope, ret, db::get_one<Option<Id>>(project->db, &ret.status_code, "SELECT `scope` FROM `entity_tree` WHERE `id` = ?", entity)
+        auto scope,
+        ret,
+        db::get_one<Option<Id>>(db_handle.get_db(), &ret.status_code, "SELECT `scope` FROM `entity_tree` WHERE `id` = ?", entity)
     );
 
     LOG_VERBOSE("fetching children count");
@@ -128,7 +153,7 @@ IkarusEntitySetLocationResult ikarus_entity_set_location_v1(
         size_t children_count,
         ret,
         db::get_one<size_t>(
-            project->db,
+            db_handle.get_db(),
             &ret.status_code,
             "SELECT COUNT(*) FROM `entity_tree` WHERE "
             "`scope` = ? AND "
@@ -158,7 +183,7 @@ IkarusEntitySetLocationResult ikarus_entity_set_location_v1(
     TRYRV(
         ret,
         db::exec(
-            project->db,
+            db_handle.get_db(),
             &ret.status_code,
             "UPDATE `entity_tree` SET `position` = `position` - 1 WHERE "
             "`scope` = ? AND "
@@ -175,7 +200,7 @@ IkarusEntitySetLocationResult ikarus_entity_set_location_v1(
     TRYRV(
         ret,
         db::exec(
-            project->db,
+            db_handle.get_db(),
             &ret.status_code,
             "UPDATE `entity_tree` SET `position` = `position` + 1 WHERE "
             "`scope` = ? AND "
@@ -192,7 +217,7 @@ IkarusEntitySetLocationResult ikarus_entity_set_location_v1(
     TRYRV(
         ret,
         db::exec(
-            project->db,
+            db_handle.get_db(),
             &ret.status_code,
             "UPDATE `entity_tree` SET `parent_id` = ?, `position` = ? WHERE "
             "`entity_id` = ?",

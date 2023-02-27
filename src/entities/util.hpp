@@ -11,7 +11,7 @@
 
 namespace util {
 
-Option<Id> db_id(Id id) {
+inline Option<Id> db_id(Id id) {
     if (id_is_null(id)) {
         return none();
     } else {
@@ -19,21 +19,24 @@ Option<Id> db_id(Id id) {
     }
 }
 
-char * fetch_single_string(
-    Project * project, Id entity, std::string_view table, std::string_view column, std::string_view id_column, StatusCode * status_out
+inline char * fetch_single_string(
+    DbHandle const& db_handle,
+    Id entity,
+    std::string_view table,
+    std::string_view column,
+    std::string_view id_column,
+    StatusCode * status_out
 ) {
-    CHECK(nullptr, validation::validate_project<validation::NotNull | validation::Exists>(project, "project", status_out));
-
     CHECK(
         nullptr,
-        validation::validate_entity<validation::NotNull | validation::Exists, EntityType_None>(project, entity, "entity", status_out)
+        validation::validate_entity<validation::NotNull | validation::Exists, EntityType_None>(db_handle, entity, "entity", status_out)
     );
 
     VTRYRV(
         auto str,
         nullptr,
         db::get_one<db::RawString>(
-            project->db, status_out, fmt::format("SELECT `{}` FROM `{}` WHERE `{}` = ?", column, table, id_column), entity
+            db_handle.get_db(), status_out, fmt::format("SELECT `{}` FROM `{}` WHERE `{}` = ?", column, table, id_column), entity
         )
     );
 
@@ -50,8 +53,8 @@ char * fetch_single_string(
 }
 
 template<int extraValidationFlags>
-bool update_single_string(
-    Project * project,
+inline bool update_single_string(
+    DbHandle const& db_handle,
     Id entity,
     std::string_view table,
     std::string_view column,
@@ -59,10 +62,9 @@ bool update_single_string(
     char const * new_value,
     StatusCode * status_out
 ) {
-    CHECK(false, validation::validate_project<validation::NotNull | validation::Exists>(project, "project", status_out));
-
     CHECK(
-        false, validation::validate_entity<validation::NotNull | validation::Exists, EntityType_None>(project, entity, "entity", status_out)
+        false,
+        validation::validate_entity<validation::NotNull | validation::Exists, EntityType_None>(db_handle, entity, "entity", status_out)
     );
 
     CHECK(false, validation::validate_string<validation::NotNull | extraValidationFlags>(new_value, "entity", status_out));
@@ -70,7 +72,11 @@ bool update_single_string(
     TRYRV(
         false,
         db::exec(
-            project->db, status_out, fmt::format("UPDATE `{}` SET `{}` = ? WHERE `{}` = ?", table, column, id_column), new_value, entity
+            db_handle.get_db(),
+            status_out,
+            fmt::format("UPDATE `{}` SET `{}` = ? WHERE `{}` = ?", table, column, id_column),
+            new_value,
+            entity
         )
     );
 
@@ -79,7 +85,7 @@ bool update_single_string(
     return true;
 }
 
-Result<void, int> create_entity(
+inline Result<void, int> create_entity(
     sqlite3 * db,
     Id entity,
     Option<Id> scope,

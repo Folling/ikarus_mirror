@@ -8,7 +8,7 @@
 
 namespace util::str {
 
-bool is_empty_or_blank(std::string_view str) {
+inline bool is_empty_or_blank(std::string_view str) {
     for (int32_t i = 0; i < str.size();) {
         UChar32 c;
         U8_NEXT(str, i, str.size(), c);

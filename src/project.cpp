@@ -92,7 +92,7 @@ Project * project_open_impl(char const * path, int additional_flags, StatusCode 
 
     LOG_INFO("project is now up to date");
 
-    return (new Project{.path = std::move(fs_path), .db = db});
+    return (new Project{std::move(fs_path), db});
 }
 
 IkarusProjectCreateResult ikarus_project_create_v1(char const * path, IkarusProjectCreateV1Flags flags) {
@@ -129,8 +129,10 @@ IkarusProjectCloseResult ikarus_project_close_v1(Project * project, IkarusProjec
 
     LOG_VERBOSE("closing database");
 
-    if (auto rc = sqlite3_close_v2(project->db); rc != SQLITE_OK) {
-        LOG_SQLITE_ERROR_DB("unable to close database", project->db);
+    auto db_handle = project->get_db_handle();
+
+    if (auto rc = sqlite3_close_v2(db_handle.get_db()); rc != SQLITE_OK) {
+        LOG_SQLITE_ERROR_DB("unable to close database", db_handle.get_db());
         RETURN_STATUS(ret, StatusCode_InternalError);
     }
 
@@ -150,7 +152,7 @@ IkarusProjectDeleteResult ikarus_project_delete_v1(Project * project, IkarusProj
     CHECK(ret, validation::validate_project<validation::NotNull | validation::Exists>(project, "project", &ret.status_code));
 
     // closing project deletes the pointer
-    std::filesystem::path path = project->path;
+    std::filesystem::path path = project->get_path();
 
     if (IkarusProjectCloseResult close_ret = ikarus_project_close_v1(project, static_cast<IkarusProjectCloseV1Flags>(0));
         close_ret.status_code != StatusCode_Ok) {
@@ -178,10 +180,12 @@ IkarusProjectGetBlueprintsResult ikarus_project_get_blueprints_v1(
 
     CHECK(ret, validation::validate_project<validation::NotNull | validation::Exists>(project, "project", &ret.status_code));
 
+    auto db_handle = project->get_db_handle();
+
     VTRYRV(
         ret.count,
         ret,
-        db::get_many_buffered<Id>(project->db, &ret.status_code, "SELECT `id` FROM `blueprints`", blueprints_out, blueprints_out_size)
+        db::get_many_buffered<Id>(db_handle.get_db(), &ret.status_code, "SELECT `id` FROM `blueprints`", blueprints_out, blueprints_out_size)
     );
 
     LOG_FUNCTION_SUCCESS("successfully fetched blueprints");
@@ -198,7 +202,9 @@ IkarusProjectGetBlueprintsCountResult ikarus_project_get_blueprints_count_v1(
 
     CHECK(ret, validation::validate_project<validation::NotNull | validation::Exists>(project, "project", &ret.status_code));
 
-    VTRYRV(ret.count, ret, db::get_one<size_t>(project->db, &ret.status_code, "SELECT COUNT(*) FROM `blueprints`"));
+    auto db_handle = project->get_db_handle();
+
+    VTRYRV(ret.count, ret, db::get_one<size_t>(db_handle.get_db(), &ret.status_code, "SELECT COUNT(*) FROM `blueprints`"));
 
     LOG_FUNCTION_SUCCESS("successfully fetched blueprints count");
 
