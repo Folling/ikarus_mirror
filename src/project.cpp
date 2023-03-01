@@ -2,97 +2,27 @@
 
 #include "project.hpp"
 
-#include <cstdio>
 #include <iterator>
 
-#include <db/db.hpp>
-#include <db/migrations.hpp>
+#include <db/database.ipp>
 #include <ikarus/status.h>
 #include <util/logger.hpp>
 #include <validation/arg.hpp>
 
 Project * project_open_impl(char const * path, int additional_flags, StatusCode * status_out) {
-    LOG_TRACE("commencing opening project at \"{}\"", path);
+    std::filesystem::path fs_path{path};
 
-    std::filesystem::path fs_path = path;
+    auto db = db::Database::open(fs_path, additional_flags, status_out);
 
-    if (additional_flags & SQLITE_OPEN_CREATE) {
-        if (std::error_code ec{}; std::filesystem::exists(fs_path, ec) && !ec) {
-            LOG_WARN("project already exists, aborting creating project");
-            RETURN_STATUS_OUT(nullptr, StatusCode_Duplicate);
-        } else if (ec) {
-            LOG_STD_ERROR("unable to check filesystem whether or not the project already exists");
-            RETURN_STATUS_OUT(nullptr, StatusCode_InternalError);
-        }
+    if (db == nullptr) {
+        return nullptr;
     }
 
-    LOG_VERBOSE("opening database with the following additional flags: {}", additional_flags);
-
-    sqlite3 * db = nullptr;
-
-    if (auto rc = sqlite3_open_v2(
-            fs_path.c_str(),
-            &db,
-            SQLITE_OPEN_NOMUTEX | SQLITE_OPEN_READWRITE | SQLITE_OPEN_EXRESCODE | SQLITE_OPEN_PRIVATECACHE | additional_flags,
-            nullptr
-        );
-        rc != SQLITE_OK || db == nullptr) {
-        LOG_SQLITE_ERROR("unable to initialise sqlite");
-        RETURN_STATUS_OUT(nullptr, StatusCode_InternalError);
+    if (!db->migrate(status_out)) {
+        return nullptr;
     }
 
-    LOG_INFO("successfully opened project");
-
-    auto migrations = Migration::get_migrations();
-
-    int version;
-
-    if (additional_flags & SQLITE_OPEN_CREATE) {
-        LOG_INFO("no metadata table exists, which is fine for an empty project, commencing genesis migration");
-        version = 0;
-    } else {
-        LOG_INFO("checking current database version");
-
-        VTRYRV(
-            version,
-            nullptr,
-            db::get_one<int>(
-                db,
-                status_out,
-                "SELECT IF("
-                "EXISTS(SELECT 1 FROM `sqlite_schema` WHERE `tbl_name` = 'metadata'), "
-                "(SELECT `value` FROM `metadata` WHERE `key` = 'VERSION')), "
-                "0"
-                ") "
-            )
-        );
-
-        if (version == 0) {
-            LOG_ERROR("no metadata table exists for an existing project");
-            RETURN_STATUS_OUT(nullptr, StatusCode_Corrupted);
-        }
-    }
-
-    LOG_VERBOSE("current database version is {}, newest database version is {}", version, migrations.back()->get_version());
-
-    TRYRV(nullptr, db::transact<true>(db, status_out, [&migrations, version](sqlite3 * db) -> Result<void, int> {
-              for (auto const& migration : migrations) {
-                  if (auto migration_version = migration->get_version(); migration_version > version) {
-                      LOG_INFO("running migration {}", migration_version);
-                      TRY(migration->up(db));
-                      LOG_VERBOSE("successfully ran migration");
-                  } else {
-                      break;
-                  }
-              }
-
-              LOG_INFO("successfully ran all migrations");
-              return ok();
-          }));
-
-    LOG_INFO("project is now up to date");
-
-    return (new Project{std::move(fs_path), db});
+    return (new Project{std::move(fs_path), std::move(db)});
 }
 
 IkarusProjectCreateResult ikarus_project_create_v1(char const * path, IkarusProjectCreateV1Flags flags) {
@@ -127,13 +57,10 @@ IkarusProjectCloseResult ikarus_project_close_v1(Project * project, IkarusProjec
 
     CHECK(ret, validation::validate_project<validation::NotNull | validation::Exists>(project, "project", &ret.status_code));
 
-    LOG_VERBOSE("closing database");
-
     auto db_handle = project->get_db_handle();
 
-    if (auto rc = sqlite3_close_v2(db_handle.get_db()); rc != SQLITE_OK) {
-        LOG_SQLITE_ERROR_DB("unable to close database", db_handle.get_db());
-        RETURN_STATUS(ret, StatusCode_InternalError);
+    if (!db_handle.get_db()->close(&ret.status_code)) {
+        return ret;
     }
 
     LOG_VERBOSE("database successfully closed, deleting project object");
@@ -185,7 +112,7 @@ IkarusProjectGetBlueprintsResult ikarus_project_get_blueprints_v1(
     VTRYRV(
         ret.count,
         ret,
-        db::get_many_buffered<Id>(db_handle.get_db(), &ret.status_code, "SELECT `id` FROM `blueprints`", blueprints_out, blueprints_out_size)
+        db_handle.get_db()->get_many_buffered<Id>(&ret.status_code, "SELECT `id` FROM `blueprints`", blueprints_out, blueprints_out_size)
     );
 
     LOG_FUNCTION_SUCCESS("successfully fetched blueprints");
@@ -204,7 +131,7 @@ IkarusProjectGetBlueprintsCountResult ikarus_project_get_blueprints_count_v1(
 
     auto db_handle = project->get_db_handle();
 
-    VTRYRV(ret.count, ret, db::get_one<size_t>(db_handle.get_db(), &ret.status_code, "SELECT COUNT(*) FROM `blueprints`"));
+    VTRYRV(ret.count, ret, db_handle.get_db()->get_one<size_t>(&ret.status_code, "SELECT COUNT(*) FROM `blueprints`"));
 
     LOG_FUNCTION_SUCCESS("successfully fetched blueprints count");
 

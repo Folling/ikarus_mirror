@@ -5,27 +5,29 @@
 #include <filesystem>
 #include <mutex>
 
+#include <db/database.hpp>
+
 class DbHandle {
 public:
-    DbHandle(sqlite3 * db, std::mutex& mutex):
+    DbHandle(db::Database * db, std::mutex& mutex):
         _db{db},
         _lock{mutex} {}
 
 public:
-    [[nodiscard]] sqlite3 * get_db() const {
+    [[nodiscard]] db::Database * get_db() const {
         return _db;
     }
 
 private:
-    sqlite3 * _db;
+    db::Database * _db;
     std::unique_lock<std::mutex> _lock;
 };
 
 class Project {
 public:
-    Project(std::filesystem::path&& path, sqlite3 * db):
+    Project(std::filesystem::path&& path, std::unique_ptr<db::Database>&& db):
         _path{std::move(path)},
-        _db{db} {}
+        _db{std::move(db)} {}
 
 public:
     [[nodiscard]] std::filesystem::path const& get_path() const {
@@ -33,11 +35,11 @@ public:
     }
 
     [[nodiscard]] inline DbHandle get_db_handle() const {
-        return DbHandle{_db, _db_mutex};
+        return DbHandle{_db.get(), _db_mutex};
     }
 
 private:
     std::filesystem::path _path;
     std::mutex mutable _db_mutex;
-    sqlite3 * _db;
+    std::unique_ptr<db::Database> _db;
 };

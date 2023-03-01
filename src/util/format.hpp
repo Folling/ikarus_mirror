@@ -7,12 +7,16 @@
 #include <util/maths.hpp>
 #include <util/templates.hpp>
 
+namespace format {
+
 template<typename... Args>
 constexpr std::string_view format_str() {
     // bit hacky, but it's pretty hard to get this efficient otherwise
     constexpr std::string_view data = "{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}";
 
-    return data.substr(0, (sizeof...(Args) * 2) + (safe_subtract(sizeof...(Args), 1ul) * 2));
+    return data.substr(0, (sizeof...(Args) * 2) + (maths::safe_subtract(sizeof...(Args), 1ul) * 2));
+}
+
 }
 
 template<typename T>

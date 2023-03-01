@@ -61,13 +61,13 @@ struct ResultHelper<void, B> {};
 
 struct OkResultCreationHelper {
     template<typename T>
-        requires std::copy_constructible<T>
+        requires std::is_copy_constructible_v<T>
     constexpr auto operator()(T const& value) const noexcept -> ResultHelper<T, true> {
         return {value};
     }
 
     template<typename T>
-        requires(std::move_constructible<T> && !std::is_lvalue_reference_v<T>)
+        requires(std::is_move_constructible_v<T> && !std::is_lvalue_reference_v<T>)
     constexpr auto operator()(T&& value) const noexcept -> ResultHelper<T, true> {
         return {std::forward<T>(value)};
     }
@@ -79,13 +79,13 @@ struct OkResultCreationHelper {
 
 struct ErrResultCreationHelper {
     template<typename T>
-        requires std::copy_constructible<T>
+        requires std::is_copy_constructible_v<T>
     constexpr auto operator()(T const& value) const noexcept -> ResultHelper<T, false> {
         return {value};
     }
 
     template<typename T>
-        requires(std::move_constructible<T> && !std::is_lvalue_reference_v<T>)
+        requires(std::is_move_constructible_v<T> && !std::is_lvalue_reference_v<T>)
     constexpr auto operator()(T&& value) const noexcept -> ResultHelper<T, false> {
         return {std::forward<T>(value)};
     }

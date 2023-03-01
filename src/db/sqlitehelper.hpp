@@ -1,7 +1,5 @@
 #pragma once
 
-#include "util/status.hpp"
-
 #include <sqlite3.h>
 
 #include <optional>
@@ -11,6 +9,7 @@
 
 #include <fmt/format.h>
 
+#include <status.hpp>
 #include <util/logger.hpp>
 #include <util/structs/result.hpp>
 #include <util/templates.hpp>
@@ -22,9 +21,7 @@ struct RawString {
     char const * data;
 };
 
-}
-
-namespace db::detail {
+namespace detail {
 
 template<typename T>
 struct SQLiteHelper;
@@ -39,7 +36,7 @@ struct SQLiteHelper<I> {
             // potential problems with 64-bit unsigned integers such as for IDs, but there's no nice way around it
             return static_cast<I>(sqlite3_column_int64(stmt, static_cast<int>(idx)));
         } else {
-            static_assert(delayed_false_v<I>, "cannot fit integer type as bound parameter to SQLite");
+            static_assert(tmpl::delayed_false_v<I>, "cannot fit integer type as bound parameter to SQLite");
         }
     }
 
@@ -50,7 +47,7 @@ struct SQLiteHelper<I> {
             // potential problems with 64-bit unsigned integers such as for IDs, but there's no nice way around it
             return sqlite3_bind_int64(stmt, static_cast<int>(idx), static_cast<sqlite3_int64>(value));
         } else {
-            static_assert(delayed_false_v<I>, "cannot fit integer type as bound parameter to SQLite");
+            static_assert(tmpl::delayed_false_v<I>, "cannot fit integer type as bound parameter to SQLite");
         }
     }
 };
@@ -62,7 +59,7 @@ struct SQLiteHelper<F> {
         if constexpr (sizeof(F) <= sizeof(double)) {
             return sqlite3_column_double(stmt, static_cast<int>(idx));
         } else {
-            static_assert(delayed_false<F>{}, "cannot fit floating point type as bound parameter to SQLite");
+            static_assert(tmpl::delayed_false<F>{}, "cannot fit floating point type as bound parameter to SQLite");
         }
     }
 
@@ -70,7 +67,7 @@ struct SQLiteHelper<F> {
         if constexpr (sizeof(F) <= sizeof(double)) {
             return sqlite3_bind_double(stmt, static_cast<int>(idx), static_cast<double>(value));
         } else {
-            static_assert(delayed_false<F>{}, "cannot fit floating point type as bound parameter to SQLite");
+            static_assert(tmpl::delayed_false<F>{}, "cannot fit floating point type as bound parameter to SQLite");
         }
     }
 };
@@ -141,7 +138,7 @@ int bind_impl(sqlite3_stmt * stmt, Args&&... args, std::index_sequence<Is...>) {
         }
 
         // + 1 because they start at 1
-        res = SQLiteHelper<remove_all<T>>::bind(stmt, idx + 1, arg);
+        res = SQLiteHelper<tmpl::remove_all<T>>::bind(stmt, idx + 1, arg);
     };
 
     (lambda(stmt, args, Is), ...);
@@ -160,52 +157,10 @@ std::tuple<Ret...> convert_many_impl(sqlite3_stmt * stmt, std::index_sequence<Is
 }
 
 template<typename... Ret>
-maybe_tuple<Ret...> convert(sqlite3_stmt * stmt) {
-    return maybe_singularise(convert_many_impl<Ret...>(stmt, std::make_index_sequence<sizeof...(Ret)>()));
+tmpl::maybe_tuple<Ret...> convert(sqlite3_stmt * stmt) {
+    return tmpl::maybe_singularise(convert_many_impl<Ret...>(stmt, std::make_index_sequence<sizeof...(Ret)>()));
 }
 
-struct Statement {
-    Statement():
-        handle{nullptr} {}
-
-    Statement(Statement& other) = delete;
-
-    Statement(Statement&& other) noexcept:
-        handle{other.handle} {
-        other.handle = nullptr;
-    }
-
-    ~Statement() {
-        // save no-op for nulls
-        sqlite3_finalize(handle);
-    }
-
-    Statement& operator=(Statement& other) = delete;
-
-    Statement& operator=(Statement&& other) noexcept {
-        handle = other.handle;
-        other.handle = nullptr;
-
-        return *this;
-    }
-
-    sqlite3_stmt * handle;
-};
-
-template<typename... Args>
-Result<Statement, int> prepare(sqlite3 * db, StatusCode * status_out, std::string_view view, Args&&... args) {
-    detail::Statement stmt{};
-
-    if (auto rc = sqlite3_prepare_v3(db, view.data(), static_cast<int>(view.size()), 0, &stmt.handle, nullptr); rc != SQLITE_OK) {
-        LOG_SQLITE_ERROR("unable to prepare statement");
-        RETURN_STATUS_OUT(err(rc), StatusCode_InternalError);
-    }
-
-    if (auto rc = detail::bind(stmt.handle, std::forward<Args>(args)...); rc != SQLITE_OK) {
-        LOG_SQLITE_ERROR("unable to bind parameter");
-        RETURN_STATUS_OUT(err(rc), StatusCode_InternalError);
-    }
-
-    return ok(std::move(stmt));
 }
+
 }

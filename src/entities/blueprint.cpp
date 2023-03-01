@@ -1,10 +1,10 @@
 #include "ikarus/entities/blueprint.h"
 
-#include <db/db.hpp>
+#include <db/database.ipp>
 #include <entities/util.hpp>
 #include <ikarus/status.h>
 #include <project.hpp>
-#include <util/status.hpp>
+#include <status.hpp>
 #include <validation/arg.hpp>
 
 IkarusBlueprintCreateResult ikarus_blueprint_create_v1(
@@ -27,14 +27,14 @@ IkarusBlueprintCreateResult ikarus_blueprint_create_v1(
 
     LOG_VERBOSE("generated id {}", id);
 
-    TRYRV(ret, db::transact<false>(db_handle.get_db(), &ret.status_code, [&](sqlite3 * db) -> Result<void, int> {
-              TRY(util::create_entity(db, id, none(), parent_folder, position, name, "", &ret.status_code));
+    TRYRV(ret, db_handle.get_db()->transact<false>(&ret.status_code, [&](auto& _) -> Result<void, int> {
+        TRY(util::create_entity(db_handle, id, none(), parent_folder, position, name, "", &ret.status_code));
 
-              LOG_VERBOSE("creating blueprints entry");
-              TRY(db::exec(db, &ret.status_code, "INSERT INTO `blueprints`(`entity_id`) VALUES(?)", id));
+        LOG_VERBOSE("creating blueprints entry");
+        TRY(db_handle.get_db()->exec(&ret.status_code, "INSERT INTO `blueprints`(`entity_id`) VALUES(?)", id));
 
-              return ok();
-          }));
+        return ok();
+    }));
 
     LOG_FUNCTION_SUCCESS("successfully created blueprint");
 
@@ -55,9 +55,9 @@ IkarusBlueprintDeleteResult ikarus_blueprint_delete_v1(Project * project, Id blu
         )
     );
 
-    TRYRV(ret, db::exec(db_handle.get_db(), &ret.status_code, "DELETE FROM `entities` WHERE `id` = ?", blueprint));
+    TRYRV(ret, db_handle.get_db()->exec(&ret.status_code, "DELETE FROM `entities` WHERE `id` = ?", blueprint));
 
-    if (db::changes(db_handle.get_db()) != 1) {
+    if (db_handle.get_db()->get_changes() != 1) {
         LOG_WARN("blueprint doesn't exist");
         RETURN_STATUS(ret, StatusCode_NotFound);
     }
@@ -93,13 +93,8 @@ IkarusBlueprintGetAttributesResult ikarus_blueprint_get_attributes_v1(
     VTRYRV(
         ret.count,
         ret,
-        db::get_many_buffered<Id>(
-            db_handle.get_db(),
-            &ret.status_code,
-            "SELECT `id` FROM `attributes` WHERE `blueprint` = ?",
-            attributes_out,
-            attributes_out_size,
-            blueprint
+        db_handle.get_db()->get_many_buffered<Id>(
+            &ret.status_code, "SELECT `id` FROM `attributes` WHERE `blueprint` = ?", attributes_out, attributes_out_size, blueprint
         )
     );
 
@@ -128,7 +123,7 @@ IkarusBlueprintGetAttributesCountResult ikarus_blueprint_get_attributes_count_v1
     VTRYRV(
         ret.count,
         ret,
-        db::get_one<size_t>(db_handle.get_db(), &ret.status_code, "SELECT COUNT(*) FROM `attributes` WHERE `blueprint_id` = ?", blueprint)
+        db_handle.get_db()->get_one<size_t>(&ret.status_code, "SELECT COUNT(*) FROM `attributes` WHERE `blueprint_id` = ?", blueprint)
     );
 
     LOG_FUNCTION_SUCCESS("successfully fetched attributes count");
@@ -163,13 +158,8 @@ IkarusBlueprintGetInstancesResult ikarus_blueprint_get_instances_v1(
     VTRYRV(
         ret.count,
         ret,
-        db::get_many_buffered<Id>(
-            db_handle.get_db(),
-            &ret.status_code,
-            "SELECT `id` FROM `instances` WHERE `blueprint` = ?",
-            instances_out,
-            instances_out_size,
-            blueprint
+        db_handle.get_db()->get_many_buffered<Id>(
+            &ret.status_code, "SELECT `id` FROM `instances` WHERE `blueprint` = ?", instances_out, instances_out_size, blueprint
         )
     );
 
@@ -198,7 +188,7 @@ IkarusBlueprintGetInstancesCountResult ikarus_blueprint_get_instances_count_v1(
     VTRYRV(
         ret.count,
         ret,
-        db::get_one<size_t>(db_handle.get_db(), &ret.status_code, "SELECT COUNT(*) FROM `instances` WHERE `blueprint_id` = ?", blueprint)
+        db_handle.get_db()->get_one<size_t>(&ret.status_code, "SELECT COUNT(*) FROM `instances` WHERE `blueprint_id` = ?", blueprint)
     );
 
     LOG_FUNCTION_SUCCESS("successfully fetched instances count");

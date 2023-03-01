@@ -1,9 +1,8 @@
 #pragma once
 
-#include <sqlite3.h>
-
 #include <vector>
 
+#include <db/database.hpp>
 #include <util/structs/result.hpp>
 
 class Migration {
@@ -15,6 +14,6 @@ public:
     virtual ~Migration() = default;
 
 public:
-    [[nodiscard]] virtual Result<void, int> up(sqlite3 * db) = 0;
+    [[nodiscard]] virtual Result<void, int> up(db::Database& db) = 0;
     [[nodiscard]] virtual u64 get_version() const = 0;
 };

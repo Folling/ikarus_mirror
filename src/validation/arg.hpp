@@ -3,12 +3,12 @@
 #include <unicode/uchar.h>
 #include <unicode/uiter.h>
 
-#include <db/db.hpp>
+#include <db/database.ipp>
 #include <ikarus/id.h>
 #include <ikarus/project.h>
 #include <ikarus/status.h>
 #include <project.hpp>
-#include <util/status.hpp>
+#include <status.hpp>
 #include <util/string.hpp>
 #include <util/structs/result.hpp>
 #include <util/templates.hpp>
@@ -122,7 +122,7 @@ bool validate_string(char const * string, std::string_view ident, StatusCode * s
 
     if constexpr ((F & NotEmpty) != 0) {
         LOG_VERBOSE("validating that {} isn't empty", ident);
-        if (util::str::is_empty_or_blank(string)) {
+        if (str::is_empty_or_blank(string)) {
             LOG_ERROR("{} was blank/empty", ident);
             return false;
         }
@@ -214,7 +214,7 @@ bool validate_entity(DbHandle const& db_handle, Id entity, std::string_view iden
                 LOG_VERBOSE("type matches ({})", expected);
             }
         } else {
-            static_assert(delayed_false_v<decltype(type)>, "must set type parameter when validating type");
+            static_assert(tmpl::delayed_false_v<decltype(type)>, "must set type parameter when validating type");
         }
     }
 
@@ -241,7 +241,7 @@ bool validate_entity(DbHandle const& db_handle, Id entity, std::string_view iden
                 table = "instances";
                 id_column = "entity_id";
             } else {
-                static_assert(delayed_false_v<decltype(type)>, "unknown entity type");
+                static_assert(tmpl::delayed_false_v<decltype(type)>, "unknown entity type");
             }
         } else {
             table = "entities";
@@ -253,7 +253,7 @@ bool validate_entity(DbHandle const& db_handle, Id entity, std::string_view iden
 
         LOG_VERBOSE("validating existence");
 
-        VTRYRV(bool exists, false, db::get_one<bool>(db_handle.get_db(), status_out, query, entity));
+        VTRYRV(bool exists, false, db_handle.get_db()->get_one<bool>(status_out, query, entity));
 
         if constexpr (should_exist) {
             if (exists) {
