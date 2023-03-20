@@ -34,15 +34,21 @@ int main() {
         project = rt.project;
     }
 
-    Id blueprint;
-    if (IkarusBlueprintCreateResult rt =
-            ikarus_blueprint_create_v1(project, id_null(), 0, "Test Blueprint", IkarusBlueprintCreateV1Flags_None);
-        rt.status_code != StatusCode_Ok) {
-        LOG_ERROR("error: {}", rt.status_code);
-        return 1;
-    } else {
-        blueprint = rt.blueprint;
+    auto start = std::chrono::high_resolution_clock::now();
+
+    for (int i = 0; i < 100'000; ++i) {
+        Id blueprint;
+        if (IkarusBlueprintCreateResult rt =
+                ikarus_blueprint_create_v1(project, id_null(), 0, "Test Blueprint", IkarusBlueprintCreateV1Flags_None);
+            rt.status_code != StatusCode_Ok) {
+            LOG_ERROR("error: {}", rt.status_code);
+            return 1;
+        } else {
+            blueprint = rt.blueprint;
+        }
     }
+
+    LOG_FATAL("{}", (std::chrono::high_resolution_clock::now() - start) / 100'000);
 
     if (IkarusProjectCloseResult rt = ikarus_project_close_v1(project, static_cast<IkarusProjectCloseV1Flags>(0));
         rt.status_code != StatusCode_Ok) {

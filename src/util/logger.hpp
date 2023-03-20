@@ -2,8 +2,9 @@
 
 #include <iostream>
 #include <mutex>
-#include <shared_mutex>
+#include <sstream>
 #include <string_view>
+#include <thread>
 
 #include <fmt/chrono.h>
 #include <fmt/color.h>
@@ -15,26 +16,27 @@
 enum class LogLevel { Debug = 0, Trace = 1, Verbose = 2, Info = 3, Warning = 4, Error = 5, Fatal = 6 };
 
 inline LogLevel threshold{LogLevel::Info};
-inline std::shared_mutex threshold_mutex;
+inline std::mutex threshold_mutex{};
 
 inline void set_log_level(LogLevel level) {
     std::unique_lock lock{threshold_mutex};
     threshold = level;
 }
 
-#define GEN_LOG_LEVEL_FUNC(name, level, out, colour, log_name)                                                         \
-    template<typename... Ts>                                                                                           \
-    void name##_impl(int line, char const * file, char const * function, fmt::format_string<Ts...> msg, Ts&&... ts) {  \
-        {                                                                                                              \
-            std::shared_lock lock{threshold_mutex};                                                                    \
-            if (threshold > level) [[likely]] {                                                                        \
-                return;                                                                                                \
-            }                                                                                                          \
-        }                                                                                                              \
-                                                                                                                       \
-        fmt::print(out, fmt::fg(fmt::color::colour), log_name "({}@{}:{}) ", shorten_file_name(file), function, line); \
-        fmt::print(out, fmt::fg(fmt::color::light_gray), fmt::format(msg, std::forward<Ts>(ts)...));                   \
-        fmt::print(out, "\n");                                                                                         \
+#define GEN_LOG_LEVEL_FUNC(name, level, out, colour, log_name)                                                                      \
+    template<typename... Ts>                                                                                                        \
+    void name##_impl(int line, char const * file, char const * function, fmt::format_string<Ts...> msg, Ts&&... ts) {               \
+        std::unique_lock lock{threshold_mutex};                                                                                     \
+        if (threshold > (level)) [[likely]] {                                                                                       \
+            return;                                                                                                                 \
+        }                                                                                                                           \
+                                                                                                                                    \
+        std::ostringstream ss{};                                                                                                    \
+        ss << std::this_thread::get_id();                                                                                           \
+                                                                                                                                    \
+        fmt::print(out, fmt::fg(fmt::color::colour), log_name "({}|{}@{}:{}) ", ss.str(), shorten_file_name(file), function, line); \
+        fmt::print(out, fmt::fg(fmt::color::light_gray), fmt::format(msg, std::forward<Ts>(ts)...));                                \
+        fmt::print(out, "\n");                                                                                                      \
     }
 
 namespace detail {

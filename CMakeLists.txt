@@ -29,12 +29,14 @@ target_include_directories(
     ${CMAKE_CURRENT_LIST_DIR}/src
 )
 
+find_package(ICU COMPONENTS uc i18n REQUIRED)
+
 target_link_libraries(
     ikarus
     PRIVATE
     sqlite3
     fmt
-    icu
+    ${ICU_LIBRARIES}
 )
 
 set_target_properties(
