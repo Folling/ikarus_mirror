@@ -51,7 +51,7 @@ public:
         TRY(db::exec(
             db,
             nullptr,
-            "CREATE TABLE `tree`(\n"
+            "CREATE TABLE `entity_tree`(\n"
             "    `entity_id` INT PRIMARY KEY,\n"
             // the scope is defined as belonging to a certain tree. For example, all blueprints & instances belong to the project scope
             // (where this will be null), but attributes are scoped to their blueprint. Note that scopes have no foreign key restraint, even
@@ -68,19 +68,19 @@ public:
 
         LOG_VERBOSE("creating tree_parent index");
 
-        TRY(db::exec(db, nullptr, "CREATE INDEX `tree_parent_idx` ON `tree`(`parent_id`);"));
+        TRY(db::exec(db, nullptr, "CREATE INDEX `tree_parent_idx` ON `entity_tree`(`parent_id`);"));
 
         LOG_VERBOSE("creating tree_position index");
 
-        TRY(db::exec(db, nullptr, "CREATE INDEX `tree_position_idx` ON `tree`(`position`);"));
+        TRY(db::exec(db, nullptr, "CREATE INDEX `tree_position_idx` ON `entity_tree`(`position`);"));
 
         LOG_VERBOSE("creating tree_parent_position index");
 
-        TRY(db::exec(db, nullptr, "CREATE UNIQUE INDEX `tree_parent_position_idx` ON `tree`(`parent_id`, `position`);"));
+        TRY(db::exec(db, nullptr, "CREATE UNIQUE INDEX `tree_parent_position_idx` ON `entity_tree`(`parent_id`, `position`);"));
 
         LOG_VERBOSE("creating tree_scope index");
 
-        TRY(db::exec(db, nullptr, "CREATE INDEX `tree_scope_idx` ON `tree`(`scope`)"));
+        TRY(db::exec(db, nullptr, "CREATE INDEX `tree_scope_idx` ON `entity_tree`(`scope`)"));
 
         LOG_VERBOSE("creating blueprints table");
 

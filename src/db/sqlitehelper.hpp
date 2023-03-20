@@ -113,7 +113,7 @@ struct SQLiteHelper<T> {
 
 template<typename T>
 struct SQLiteHelper<std::optional<T>> {
-    static T convert(sqlite3_stmt * stmt, std::size_t idx) {
+    static std::optional<T> convert(sqlite3_stmt * stmt, std::size_t idx) {
         if (sqlite3_column_type(stmt, static_cast<int>(idx)) == SQLITE_NULL) {
             return std::nullopt;
         } else {

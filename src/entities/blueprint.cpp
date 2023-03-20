@@ -33,6 +33,8 @@ IkarusBlueprintCreateResult ikarus_blueprint_create_v1(
               return ok();
           }));
 
+    LOG_FUNCTION_SUCCESS("successfully created blueprint");
+
     return ret;
 }
 
@@ -54,6 +56,8 @@ IkarusBlueprintDeleteResult ikarus_blueprint_delete_v1(Project * project, Id blu
         LOG_WARN("blueprint doesn't exist");
         RETURN_STATUS(ret, StatusCode_NotFound);
     }
+
+    LOG_FUNCTION_SUCCESS("successfully deleted blueprint");
 
     return ret;
 }
@@ -92,6 +96,8 @@ IkarusBlueprintGetAttributesResult ikarus_blueprint_get_attributes_v1(
         )
     );
 
+    LOG_FUNCTION_SUCCESS("successfully fetched attributes");
+
     return ret;
 }
 
@@ -115,6 +121,8 @@ IkarusBlueprintGetAttributesCountResult ikarus_blueprint_get_attributes_count_v1
         ret,
         db::get_one<size_t>(project->db, &ret.status_code, "SELECT COUNT(*) FROM `attributes` WHERE `blueprint_id` = ?", blueprint)
     );
+
+    LOG_FUNCTION_SUCCESS("successfully fetched attributes count");
 
     return ret;
 }
@@ -157,6 +165,8 @@ IkarusBlueprintGetInstancesResult ikarus_blueprint_get_instances_v1(
         )
     );
 
+    LOG_FUNCTION_SUCCESS("successfully fetched instances");
+
     return ret;
 }
 
@@ -180,6 +190,8 @@ IkarusBlueprintGetInstancesCountResult ikarus_blueprint_get_instances_count_v1(
         ret,
         db::get_one<size_t>(project->db, &ret.status_code, "SELECT COUNT(*) FROM `instances` WHERE `blueprint_id` = ?", blueprint)
     );
+
+    LOG_FUNCTION_SUCCESS("successfully fetched instances count");
 
     return ret;
 }

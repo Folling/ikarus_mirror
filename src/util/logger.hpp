@@ -69,3 +69,8 @@ GEN_LOG_LEVEL_FUNC(fatal, LogLevel::Fatal, stderr, red, "FATAL  ")
 #define LOG_FUNCTION_VERBOSE(description) \
     LOG_VERBOSE(description);             \
     LOG_FLAGS()
+
+#define LOG_FUNCTION_SUCCESS(description)   \
+    if (ret.status_code == StatusCode_Ok) { \
+        LOG_VERBOSE(description);           \
+    }
