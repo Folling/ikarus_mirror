@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <string_view>
 
-#include <db/db.hpp>
+#include <db/database.hpp>
 #include <ikarus/id.h>
 #include <util/logger.hpp>
 #include <util/structs/result.hpp>
@@ -35,8 +35,8 @@ inline char * fetch_single_string(
     VTRYRV(
         auto str,
         nullptr,
-        db::get_one<db::RawString>(
-            db_handle.get_db(), status_out, fmt::format("SELECT `{}` FROM `{}` WHERE `{}` = ?", column, table, id_column), entity
+        db_handle.get_db()->get_one<db::RawString>(
+            status_out, fmt::format("SELECT `{}` FROM `{}` WHERE `{}` = ?", column, table, id_column), entity
         )
     );
 
@@ -71,12 +71,8 @@ inline bool update_single_string(
 
     TRYRV(
         false,
-        db::exec(
-            db_handle.get_db(),
-            status_out,
-            fmt::format("UPDATE `{}` SET `{}` = ? WHERE `{}` = ?", table, column, id_column),
-            new_value,
-            entity
+        db_handle.get_db()->exec(
+            status_out, fmt::format("UPDATE `{}` SET `{}` = ? WHERE `{}` = ?", table, column, id_column), new_value, entity
         )
     );
 
@@ -86,7 +82,7 @@ inline bool update_single_string(
 }
 
 inline Result<void, int> create_entity(
-    sqlite3 * db,
+    DbHandle const& db_handle,
     Id entity,
     Option<Id> scope,
     Id parent_folder,
@@ -96,11 +92,12 @@ inline Result<void, int> create_entity(
     StatusCode * status_out
 ) {
     LOG_VERBOSE("creating entities entry");
-    TRY(db::exec(db, status_out, "INSERT INTO `entities`(`id`, `name`, `information`) VALUES(?, ?, ?)", entity, name, information));
+    TRY(db_handle.get_db()->exec(
+        status_out, "INSERT INTO `entities`(`id`, `name`, `information`) VALUES(?, ?, ?)", entity, name, information
+    ));
 
     LOG_VERBOSE("updating siblings' positions");
-    TRY(db::exec(
-        db,
+    TRY(db_handle.get_db()->exec(
         status_out,
         "UPDATE `entity_tree` SET `position` = `position` + 1 WHERE `scope` = ? AND `parent_id` = ? AND `position` >= ?",
         scope,
@@ -109,8 +106,7 @@ inline Result<void, int> create_entity(
     ));
 
     LOG_VERBOSE("creating tree entry");
-    TRY(db::exec(
-        db,
+    TRY(db_handle.get_db()->exec(
         status_out,
         "INSERT INTO `entity_tree`(`entity_id`, `scope`, `parent_id`, `position`) VALUES(?, ?, ?, ?)",
         entity,

@@ -1,13 +1,48 @@
 {
-    "name": "attribute",
+    "name": "page",
     "generate_struct": false,
     "depends_on": [
-        "../../project",
-        "../../status",
-        "../../id",
-        "attributetype"
+        "../project",
+        "../status",
+        "../id"
     ],
     "functions": [
+        {
+            "name": "create",
+            "versions": [
+                {
+                    "return_type": [
+                        {
+                            "type": "Id",
+                            "name": "page"
+                        }
+                    ],
+                    "parameters": [
+                        {
+                            "type": "Project *",
+                            "name": "project"
+                        },
+                        {
+                            "type": "Id",
+                            "name": "template"
+                        },
+                        {
+                            "type": "Id",
+                            "name": "parent_folder"
+                        },
+                        {
+                            "type": "size_t",
+                            "name": "position"
+                        },
+                        {
+                            "type": "char const *",
+                            "name": "name"
+                        }
+                    ],
+                    "flags": []
+                }
+            ]
+        },
         {
             "name": "delete",
             "versions": [
@@ -20,7 +55,7 @@
                         },
                         {
                             "type": "Id",
-                            "name": "attribute"
+                            "name": "page"
                         }
                     ],
                     "flags": []
@@ -28,13 +63,13 @@
             ]
         },
         {
-            "name": "get_blueprint",
+            "name": "get_template",
             "versions": [
                 {
                     "return_type": [
                         {
                             "type": "Id",
-                            "name": "blueprint"
+                            "name": "template"
                         }
                     ],
                     "parameters": [
@@ -44,31 +79,7 @@
                         },
                         {
                             "type": "Id",
-                            "name": "attribute"
-                        }
-                    ],
-                    "flags": []
-                }
-            ]
-        },
-        {
-            "name": "get_type",
-            "versions": [
-                {
-                    "return_type": [
-                        {
-                            "type": "AttributeType",
-                            "name": "type"
-                        }
-                    ],
-                    "parameters": [
-                        {
-                            "type": "Project*",
-                            "name": "project"
-                        },
-                        {
-                            "type": "Id",
-                            "name": "attribute"
+                            "name": "page"
                         }
                     ],
                     "flags": []

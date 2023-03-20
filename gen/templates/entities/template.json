@@ -1,5 +1,6 @@
 {
-    "name": "blueprint",
+    "name": "template",
+    "description": "Represents a template",
     "generate_struct": false,
     "depends_on": [
         "../project",
@@ -14,7 +15,7 @@
                     "return_type": [
                         {
                             "type": "Id",
-                            "name": "blueprint"
+                            "name": "template"
                         }
                     ],
                     "parameters": [
@@ -51,7 +52,7 @@
                         },
                         {
                             "type": "Id",
-                            "name": "blueprint"
+                            "name": "template"
                         }
                     ],
                     "flags": []
@@ -75,7 +76,7 @@
                         },
                         {
                             "type": "Id",
-                            "name": "blueprint"
+                            "name": "template"
                         },
                         {
                             "type": "Id*",
@@ -107,7 +108,7 @@
                         },
                         {
                             "type": "Id",
-                            "name": "blueprint"
+                            "name": "template"
                         }
                     ],
                     "flags": []
@@ -131,7 +132,7 @@
                         },
                         {
                             "type": "Id",
-                            "name": "blueprint"
+                            "name": "template"
                         },
                         {
                             "type": "Id*",
@@ -163,7 +164,7 @@
                         },
                         {
                             "type": "Id",
-                            "name": "blueprint"
+                            "name": "template"
                         }
                     ],
                     "flags": []

@@ -13,12 +13,14 @@
                     "return_type": [
                         {
                             "type": "Project *",
+                            "description": "The created project or null if an error occurs.",
                             "name": "project"
                         }
                     ],
                     "parameters": [
                         {
                             "type": "char const *",
+                            "description": "The path to where the project should be stored. Must not exist.",
                             "name": "path"
                         }
                     ],

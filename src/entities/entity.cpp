@@ -2,11 +2,11 @@
 
 #include "ikarus/entities/attributes/attribute.h"
 
-#include <db/db.hpp>
+#include <db/database.hpp>
 #include <entities/util.hpp>
 #include <project.hpp>
+#include <status.hpp>
 #include <util/logger.hpp>
-#include <util/status.hpp>
 #include <validation/arg.hpp>
 
 IkarusEntityGetNameResult ikarus_entity_get_name_v1(Project * project, Id entity, IkarusEntityGetNameV1Flags flags) {
@@ -90,11 +90,8 @@ IkarusEntityGetLocationResult ikarus_entity_get_location_v1(Project * project, I
     VTRYRV(
         auto tuple,
         ret,
-        db::get_one<Id, size_t>(
-            db_handle.get_db(),
-            &ret.status_code,
-            "SELECT IFNULL(`parent_id`, 0), `position` FROM `entity_tree` WHERE `entity_id` = ?",
-            entity
+        db_handle.get_db()->get_one<Id, size_t>(
+            &ret.status_code, "SELECT IFNULL(`parent_id`, 0), `position` FROM `entity_tree` WHERE `entity_id` = ?", entity
         )
     );
 
@@ -144,7 +141,7 @@ IkarusEntitySetLocationResult ikarus_entity_set_location_v1(
     VTRYRV(
         auto scope,
         ret,
-        db::get_one<Option<Id>>(db_handle.get_db(), &ret.status_code, "SELECT `scope` FROM `entity_tree` WHERE `id` = ?", entity)
+        db_handle.get_db()->get_one<Option<Id>>(&ret.status_code, "SELECT `scope` FROM `entity_tree` WHERE `id` = ?", entity)
     );
 
     LOG_VERBOSE("fetching children count");
@@ -152,8 +149,7 @@ IkarusEntitySetLocationResult ikarus_entity_set_location_v1(
     VTRYRV(
         size_t children_count,
         ret,
-        db::get_one<size_t>(
-            db_handle.get_db(),
+        db_handle.get_db()->get_one<size_t>(
             &ret.status_code,
             "SELECT COUNT(*) FROM `entity_tree` WHERE "
             "`scope` = ? AND "
@@ -182,8 +178,7 @@ IkarusEntitySetLocationResult ikarus_entity_set_location_v1(
 
     TRYRV(
         ret,
-        db::exec(
-            db_handle.get_db(),
+        db_handle.get_db()->exec(
             &ret.status_code,
             "UPDATE `entity_tree` SET `position` = `position` - 1 WHERE "
             "`scope` = ? AND "
@@ -199,8 +194,7 @@ IkarusEntitySetLocationResult ikarus_entity_set_location_v1(
 
     TRYRV(
         ret,
-        db::exec(
-            db_handle.get_db(),
+        db_handle.get_db()->exec(
             &ret.status_code,
             "UPDATE `entity_tree` SET `position` = `position` + 1 WHERE "
             "`scope` = ? AND "
@@ -216,8 +210,7 @@ IkarusEntitySetLocationResult ikarus_entity_set_location_v1(
 
     TRYRV(
         ret,
-        db::exec(
-            db_handle.get_db(),
+        db_handle.get_db()->exec(
             &ret.status_code,
             "UPDATE `entity_tree` SET `parent_id` = ?, `position` = ? WHERE "
             "`entity_id` = ?",

@@ -6,6 +6,8 @@
 
 #include <util/types.hpp>
 
+namespace tmpl {
+
 template<typename... Ts>
 struct overload : Ts... {
     using Ts::operator()...;
@@ -171,4 +173,6 @@ constexpr maybe_tuple<Args...> maybe_singularise(std::tuple<Args...> const& tupl
     } else {
         return std::get<0>(tuple);
     }
+}
+
 }

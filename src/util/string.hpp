@@ -6,7 +6,7 @@
 #include <unicode/uchar.h>
 #include <unicode/uiter.h>
 
-namespace util::str {
+namespace str {
 
 inline bool is_empty_or_blank(std::string_view str) {
     for (int32_t i = 0; i < str.size();) {
