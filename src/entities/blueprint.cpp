@@ -1,17 +1,17 @@
-#include "ikarus/entities/blueprint.h"
+#include "ikarus/entities/template.h"
 
-#include <db/database.ipp>
+#include <db/database.hpp>
 #include <entities/util.hpp>
 #include <ikarus/status.h>
 #include <project.hpp>
 #include <status.hpp>
 #include <validation/arg.hpp>
 
-IkarusBlueprintCreateResult ikarus_blueprint_create_v1(
-    Project * project, Id parent_folder, uint64_t position, char const * name, IkarusBlueprintCreateV1Flags flags
+IkarusTemplateCreateResult ikarus_template_create_v1(
+    Project * project, Id parent_folder, uint64_t position, char const * name, IkarusTemplateCreateV1Flags flags
 ) {
-    LOG_FUNCTION_INFO("creating blueprint");
-    IkarusBlueprintCreateResult ret{.blueprint = id_null(), .status_code = StatusCode_Ok};
+    LOG_FUNCTION_INFO("creating template");
+    IkarusTemplateCreateResult ret{.template = id_null(), .status_code = StatusCode_Ok};
 
     auto db_handle = project->get_db_handle();
 
@@ -21,71 +21,71 @@ IkarusBlueprintCreateResult ikarus_blueprint_create_v1(
     );
     CHECK(ret, validation::validate_string<validation::NotNull | validation::NotEmpty>(name, "name", &ret.status_code));
 
-    LOG_INFO("creating blueprint with name {}", name);
+    LOG_INFO("creating template with name {}", name);
 
-    Id id = id_generate(EntityType_Blueprint);
+    Id id = id_generate(EntityType_Template);
 
     LOG_VERBOSE("generated id {}", id);
 
     TRYRV(ret, db_handle.get_db()->transact<false>(&ret.status_code, [&](auto& _) -> Result<void, int> {
         TRY(util::create_entity(db_handle, id, none(), parent_folder, position, name, "", &ret.status_code));
 
-        LOG_VERBOSE("creating blueprints entry");
-        TRY(db_handle.get_db()->exec(&ret.status_code, "INSERT INTO `blueprints`(`entity_id`) VALUES(?)", id));
+        LOG_VERBOSE("creating templates entry");
+        TRY(db_handle.get_db()->exec(&ret.status_code, "INSERT INTO `templates`(`entity_id`) VALUES(?)", id));
 
         return ok();
     }));
 
-    LOG_FUNCTION_SUCCESS("successfully created blueprint");
+    LOG_FUNCTION_SUCCESS("successfully created template");
 
     return ret;
 }
 
-IkarusBlueprintDeleteResult ikarus_blueprint_delete_v1(Project * project, Id blueprint, IkarusBlueprintDeleteV1Flags flags) {
-    LOG_FUNCTION_INFO("deleting blueprint");
-    IkarusBlueprintDeleteResult ret{.status_code = StatusCode_Ok};
+IkarusTemplateDeleteResult ikarus_template_delete_v1(Project * project, Id template, IkarusTemplateDeleteV1Flags flags) {
+    LOG_FUNCTION_INFO("deleting template");
+    IkarusTemplateDeleteResult ret{.status_code = StatusCode_Ok};
 
     auto db_handle = project->get_db_handle();
 
     CHECK(ret, validation::validate_project<validation::NotNull | validation::Exists>(project, "project", &ret.status_code));
     CHECK(
         ret,
-        validation::validate_entity<validation::NotNull | validation::Exists, EntityType_Blueprint>(
-            db_handle, blueprint, "blueprint", &ret.status_code
+        validation::validate_entity<validation::NotNull | validation::Exists, EntityType_Template>(
+            db_handle, template, "template", &ret.status_code
         )
     );
 
-    TRYRV(ret, db_handle.get_db()->exec(&ret.status_code, "DELETE FROM `entities` WHERE `id` = ?", blueprint));
+    TRYRV(ret, db_handle.get_db()->exec(&ret.status_code, "DELETE FROM `entities` WHERE `id` = ?", template));
 
     if (db_handle.get_db()->get_changes() != 1) {
-        LOG_WARN("blueprint doesn't exist");
+        LOG_WARN("template doesn't exist");
         RETURN_STATUS(ret, StatusCode_NotFound);
     }
 
-    LOG_FUNCTION_SUCCESS("successfully deleted blueprint");
+    LOG_FUNCTION_SUCCESS("successfully deleted template");
 
     return ret;
 }
 
-IkarusBlueprintGetAttributesResult ikarus_blueprint_get_attributes_v1(
-    Project * project, Id blueprint, Id * attributes_out, size_t attributes_out_size, IkarusBlueprintGetAttributesV1Flags flags
+IkarusTemplateGetpropertiesResult ikarus_template_get_properties_v1(
+    Project * project, Id template, Id * properties_out, size_t properties_out_size, IkarusTemplateGetpropertiesV1Flags flags
 ) {
-    LOG_FUNCTION_VERBOSE("fetching blueprint attributes");
+    LOG_FUNCTION_VERBOSE("fetching template properties");
 
-    IkarusBlueprintGetAttributesResult ret{.count = 0, .status_code = StatusCode_Ok};
+    IkarusTemplateGetpropertiesResult ret{.count = 0, .status_code = StatusCode_Ok};
 
     auto db_handle = project->get_db_handle();
 
     CHECK(ret, validation::validate_project<validation::NotNull | validation::Exists>(project, "project", &ret.status_code));
     CHECK(
         ret,
-        validation::validate_entity<validation::NotNull | validation::Exists, EntityType_Blueprint>(
-            db_handle, blueprint, "blueprint", &ret.status_code
+        validation::validate_entity<validation::NotNull | validation::Exists, EntityType_Template>(
+            db_handle, template, "template", &ret.status_code
         )
     );
-    CHECK(ret, validation::validate_pointer<validation::NotNull>(attributes_out, "attributes buffer", &ret.status_code));
+    CHECK(ret, validation::validate_pointer<validation::NotNull>(properties_out, "properties buffer", &ret.status_code));
 
-    if (attributes_out_size == 0) {
+    if (properties_out_size == 0) {
         LOG_WARN("passed buffer size was 0");
         return ret;
     }
@@ -94,63 +94,63 @@ IkarusBlueprintGetAttributesResult ikarus_blueprint_get_attributes_v1(
         ret.count,
         ret,
         db_handle.get_db()->get_many_buffered<Id>(
-            &ret.status_code, "SELECT `id` FROM `attributes` WHERE `blueprint` = ?", attributes_out, attributes_out_size, blueprint
+            &ret.status_code, "SELECT `id` FROM `properties` WHERE `template` = ?", properties_out, properties_out_size, template
         )
     );
 
-    LOG_FUNCTION_SUCCESS("successfully fetched attributes");
+    LOG_FUNCTION_SUCCESS("successfully fetched properties");
 
     return ret;
 }
 
-IkarusBlueprintGetAttributesCountResult ikarus_blueprint_get_attributes_count_v1(
-    Project * project, Id blueprint, IkarusBlueprintGetAttributesCountV1Flags flags
+IkarusTemplateGetpropertiesCountResult ikarus_template_get_properties_count_v1(
+    Project * project, Id template, IkarusTemplateGetpropertiesCountV1Flags flags
 ) {
-    LOG_FUNCTION_VERBOSE("fetching blueprint attributes count");
+    LOG_FUNCTION_VERBOSE("fetching template properties count");
 
-    IkarusBlueprintGetAttributesCountResult ret{.count = 0, .status_code = StatusCode_Ok};
+    IkarusTemplateGetpropertiesCountResult ret{.count = 0, .status_code = StatusCode_Ok};
 
     auto db_handle = project->get_db_handle();
 
     CHECK(ret, validation::validate_project<validation::NotNull | validation::Exists>(project, "project", &ret.status_code));
     CHECK(
         ret,
-        validation::validate_entity<validation::NotNull | validation::Exists, EntityType_Blueprint>(
-            db_handle, blueprint, "blueprint", &ret.status_code
+        validation::validate_entity<validation::NotNull | validation::Exists, EntityType_Template>(
+            db_handle, template, "template", &ret.status_code
         )
     );
 
     VTRYRV(
         ret.count,
         ret,
-        db_handle.get_db()->get_one<size_t>(&ret.status_code, "SELECT COUNT(*) FROM `attributes` WHERE `blueprint_id` = ?", blueprint)
+        db_handle.get_db()->get_one<size_t>(&ret.status_code, "SELECT COUNT(*) FROM `properties` WHERE `template_id` = ?", template)
     );
 
-    LOG_FUNCTION_SUCCESS("successfully fetched attributes count");
+    LOG_FUNCTION_SUCCESS("successfully fetched properties count");
 
     return ret;
 }
 
-IkarusBlueprintGetInstancesResult ikarus_blueprint_get_instances_v1(
-    Project * project, Id blueprint, Id * instances_out, size_t instances_out_size, IkarusBlueprintGetInstancesV1Flags flags
+IkarusTemplateGetpagesResult ikarus_template_get_pages_v1(
+    Project * project, Id template, Id * pages_out, size_t pages_out_size, IkarusTemplateGetpagesV1Flags flags
 ) {
-    LOG_FUNCTION_VERBOSE("fetching blueprint instances");
+    LOG_FUNCTION_VERBOSE("fetching template pages");
 
-    IkarusBlueprintGetInstancesResult ret{.count = 0, .status_code = StatusCode_Ok};
+    IkarusTemplateGetpagesResult ret{.count = 0, .status_code = StatusCode_Ok};
 
     auto db_handle = project->get_db_handle();
 
     CHECK(ret, validation::validate_project<validation::NotNull | validation::Exists>(project, "project", &ret.status_code));
     CHECK(
         ret,
-        validation::validate_entity<validation::NotNull | validation::Exists, EntityType_Blueprint>(
-            db_handle, blueprint, "blueprint", &ret.status_code
+        validation::validate_entity<validation::NotNull | validation::Exists, EntityType_Template>(
+            db_handle, template, "template", &ret.status_code
         )
     );
 
-    CHECK(ret, validation::validate_pointer<validation::NotNull>(instances_out, "instances buffer", &ret.status_code))
+    CHECK(ret, validation::validate_pointer<validation::NotNull>(pages_out, "pages buffer", &ret.status_code))
 
-    if (instances_out_size == 0) {
+    if (pages_out_size == 0) {
         LOG_WARN("passed buffer size was 0");
         return ret;
     }
@@ -159,39 +159,39 @@ IkarusBlueprintGetInstancesResult ikarus_blueprint_get_instances_v1(
         ret.count,
         ret,
         db_handle.get_db()->get_many_buffered<Id>(
-            &ret.status_code, "SELECT `id` FROM `instances` WHERE `blueprint` = ?", instances_out, instances_out_size, blueprint
+            &ret.status_code, "SELECT `id` FROM `pages` WHERE `template` = ?", pages_out, pages_out_size, template
         )
     );
 
-    LOG_FUNCTION_SUCCESS("successfully fetched instances");
+    LOG_FUNCTION_SUCCESS("successfully fetched pages");
 
     return ret;
 }
 
-IkarusBlueprintGetInstancesCountResult ikarus_blueprint_get_instances_count_v1(
-    Project * project, Id blueprint, IkarusBlueprintGetInstancesCountV1Flags flags
+IkarusTemplateGetpagesCountResult ikarus_template_get_pages_count_v1(
+    Project * project, Id template, IkarusTemplateGetpagesCountV1Flags flags
 ) {
-    LOG_FUNCTION_VERBOSE("fetching blueprint instances count");
+    LOG_FUNCTION_VERBOSE("fetching template pages count");
 
-    IkarusBlueprintGetInstancesCountResult ret{.count = 0, .status_code = StatusCode_Ok};
+    IkarusTemplateGetpagesCountResult ret{.count = 0, .status_code = StatusCode_Ok};
 
     auto db_handle = project->get_db_handle();
 
     CHECK(ret, validation::validate_project<validation::NotNull | validation::Exists>(project, "project", &ret.status_code));
     CHECK(
         ret,
-        validation::validate_entity<validation::NotNull | validation::Exists, EntityType_Blueprint>(
-            db_handle, blueprint, "blueprint", &ret.status_code
+        validation::validate_entity<validation::NotNull | validation::Exists, EntityType_Template>(
+            db_handle, template, "template", &ret.status_code
         )
     );
 
     VTRYRV(
         ret.count,
         ret,
-        db_handle.get_db()->get_one<size_t>(&ret.status_code, "SELECT COUNT(*) FROM `instances` WHERE `blueprint_id` = ?", blueprint)
+        db_handle.get_db()->get_one<size_t>(&ret.status_code, "SELECT COUNT(*) FROM `pages` WHERE `template_id` = ?", template)
     );
 
-    LOG_FUNCTION_SUCCESS("successfully fetched instances count");
+    LOG_FUNCTION_SUCCESS("successfully fetched pages count");
 
     return ret;
 }

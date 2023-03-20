@@ -18,7 +18,9 @@ add_library(
 
 add_custom_target(
     libikarus_gen
-    COMMAND ${CMAKE_CURRENT_LIST_DIR}/gen/gen.rb ${CMAKE_CURRENT_LIST_DIR}/gen ${CMAKE_CURRENT_LIST_DIR}/include
+    VERBATIM
+    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/gen/script/
+    COMMAND cargo run -- --input ${CMAKE_CURRENT_LIST_DIR}/gen/templates --output ${CMAKE_CURRENT_LIST_DIR}/include/ikarus
 )
 
 add_dependencies(ikarus libikarus_gen)

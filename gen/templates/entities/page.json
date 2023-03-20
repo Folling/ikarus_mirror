@@ -24,7 +24,7 @@
                         },
                         {
                             "type": "Id",
-                            "name": "template"
+                            "name": "template_"
                         },
                         {
                             "type": "Id",
@@ -69,7 +69,7 @@
                     "return_type": [
                         {
                             "type": "Id",
-                            "name": "template"
+                            "name": "template_"
                         }
                     ],
                     "parameters": [

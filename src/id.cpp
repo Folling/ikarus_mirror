@@ -10,10 +10,6 @@ std::atomic<u32> counter{0};
 std::atomic<u64> last_second;
 std::chrono::duration waiting_period{std::chrono::milliseconds{1}};
 
-Id id_null() {
-    return 0;
-}
-
 Id id_generate(EntityType entity_type) {
     Id ret{0};
     ret |= (static_cast<u64>(entity_type) << 56);
@@ -61,8 +57,4 @@ uint32_t id_get_timestamp(Id id) {
 
 uint32_t id_get_counter(Id id) {
     return static_cast<uint32_t>(id & 0x00FFFFFF);
-}
-
-bool id_is_null(Id id) {
-    return id == 0;
 }

@@ -42,7 +42,7 @@ inline void set_log_level(LogLevel level) {
 namespace detail {
 
 [[nodiscard]] inline constexpr std::string_view shorten_file_name(std::string_view path) {
-    auto idx = path.find("src");
+    auto idx = path.find("script");
 
     if (idx == std::string::npos) {
         return path;

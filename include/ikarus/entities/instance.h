@@ -8,35 +8,39 @@
 #include "../status.h"
 #include "../id.h"
 
-enum IkarusInstanceCreateV1Flags {
-    IkarusInstanceCreateV1Flags_None = 0,
+
+enum IkaruspageCreateV0Flags {
+     IkaruspageCreateV0Flags_None = 0,
 };
 
-struct IkarusInstanceCreateResult {
-    Id instance;
+struct IkaruspageCreateV0Result {
+    Id page;
     StatusCode status_code;
 };
 
-IkarusInstanceCreateResult ikarus_instance_create_v1(Project * project, Id blueprint, Id parent_folder, size_t position, char const * name, IkarusInstanceCreateV1Flags flags);
+IkaruspageCreateV0Result ikarus_page_create_v0(Project * project, Id template, Id parent_folder, size_t position, char const * name, IkaruspageCreateV0Flags flags);
 
-enum IkarusInstanceDeleteV1Flags {
-    IkarusInstanceDeleteV1Flags_None = 0,
+
+enum IkaruspageDeleteV0Flags {
+     IkaruspageDeleteV0Flags_None = 0,
 };
 
-struct IkarusInstanceDeleteResult {
+struct IkaruspageDeleteV0Result {
+
     StatusCode status_code;
 };
 
-IkarusInstanceDeleteResult ikarus_instance_delete_v1(Project * project, Id instance, IkarusInstanceDeleteV1Flags flags);
+IkaruspageDeleteV0Result ikarus_page_delete_v0(Project * project, Id page, IkaruspageDeleteV0Flags flags);
 
-enum IkarusInstanceGetBlueprintV1Flags {
-    IkarusInstanceGetBlueprintV1Flags_None = 0,
+
+enum IkaruspageGetTemplateV0Flags {
+     IkaruspageGetTemplateV0Flags_None = 0,
 };
 
-struct IkarusInstanceGetBlueprintResult {
-    Id blueprint;
+struct IkaruspageGetTemplateV0Result {
+    Id template;
     StatusCode status_code;
 };
 
-IkarusInstanceGetBlueprintResult ikarus_instance_get_blueprint_v1(Project* project, Id instance, IkarusInstanceGetBlueprintV1Flags flags);
+IkaruspageGetTemplateV0Result ikarus_page_get_template_v0(Project* project, Id page, IkaruspageGetTemplateV0Flags flags);
 

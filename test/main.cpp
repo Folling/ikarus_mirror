@@ -1,8 +1,8 @@
 #include <iostream>
 #include <thread>
 
-#include <ikarus/entities/blueprint.h>
-#include <ikarus/entities/instance.h>
+#include <ikarus/entities/template.h>
+#include <ikarus/entities/page.h>
 #include <ikarus/project.h>
 #include <util/logger.hpp>
 #include <util/structs/option.hpp>
@@ -36,14 +36,14 @@ int main() {
 
     auto start = std::chrono::high_resolution_clock::now();
 
-    Id blueprint;
-    if (IkarusBlueprintCreateResult rt =
-            ikarus_blueprint_create_v1(project, id_null(), 0, "Test Blueprint", IkarusBlueprintCreateV1Flags_None);
+    Id template;
+    if (IkarusTemplateCreateResult rt =
+            ikarus_template_create_v1(project, id_null(), 0, "Test Template", IkarusTemplateCreateV1Flags_None);
         rt.status_code != StatusCode_Ok) {
         LOG_ERROR("error: {}", rt.status_code);
         return 1;
     } else {
-        blueprint = rt.blueprint;
+        template = rt.template;
     }
 
     LOG_FATAL("{}", (std::chrono::high_resolution_clock::now() - start) / 100'000);

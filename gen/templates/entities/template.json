@@ -1,6 +1,5 @@
 {
     "name": "template",
-    "description": "Represents a template",
     "generate_struct": false,
     "depends_on": [
         "../project",
@@ -12,10 +11,11 @@
             "name": "create",
             "versions": [
                 {
+                    "description": null,
                     "return_type": [
                         {
                             "type": "Id",
-                            "name": "template"
+                            "name": "template_"
                         }
                     ],
                     "parameters": [
@@ -44,6 +44,7 @@
             "name": "delete",
             "versions": [
                 {
+                    "description": null,
                     "return_type": [],
                     "parameters": [
                         {
@@ -52,7 +53,7 @@
                         },
                         {
                             "type": "Id",
-                            "name": "template"
+                            "name": "template_"
                         }
                     ],
                     "flags": []
@@ -60,9 +61,10 @@
             ]
         },
         {
-            "name": "get_attributes",
+            "name": "get_properties",
             "versions": [
                 {
+                    "description": null,
                     "return_type": [
                         {
                             "type": "size_t",
@@ -76,15 +78,15 @@
                         },
                         {
                             "type": "Id",
-                            "name": "template"
+                            "name": "template_"
                         },
                         {
                             "type": "Id*",
-                            "name": "attributes_out"
+                            "name": "properties_out"
                         },
                         {
                             "type": "size_t",
-                            "name": "attributes_out_size"
+                            "name": "properties_out_size"
                         }
                     ],
                     "flags": []
@@ -92,9 +94,35 @@
             ]
         },
         {
-            "name": "get_attributes_count",
+            "name": "get_properties_count",
             "versions": [
                 {
+                    "description": null,
+                    "return_type": [
+                        {
+                            "type": "size_t",
+                            "name": "count"
+                        }
+                    ],
+                    "parameters": [
+                        {
+                            "type": "Project*",
+                            "name": "project"
+                        },
+                        {
+                            "type": "Id",
+                            "name": "template"
+                        }
+                    ],
+                    "flags": []
+                }
+            ]
+        },
+        {
+            "name": "get_pages",
+            "versions": [
+                {
+                    "description": null,
                     "return_type": [
                         {
                             "type": "size_t",
@@ -108,39 +136,15 @@
                         },
                         {
                             "type": "Id",
-                            "name": "template"
-                        }
-                    ],
-                    "flags": []
-                }
-            ]
-        },
-        {
-            "name": "get_instances",
-            "versions": [
-                {
-                    "return_type": [
-                        {
-                            "type": "size_t",
-                            "name": "count"
-                        }
-                    ],
-                    "parameters": [
-                        {
-                            "type": "Project *",
-                            "name": "project"
-                        },
-                        {
-                            "type": "Id",
-                            "name": "template"
+                            "name": "template_"
                         },
                         {
                             "type": "Id*",
-                            "name": "instances_out"
+                            "name": "pages_out"
                         },
                         {
                             "type": "size_t",
-                            "name": "instances_out_size"
+                            "name": "pages_out_size"
                         }
                     ],
                     "flags": []
@@ -148,9 +152,10 @@
             ]
         },
         {
-            "name": "get_instances_count",
+            "name": "get_pages_count",
             "versions": [
                 {
+                    "description": null,
                     "return_type": [
                         {
                             "type": "size_t",
@@ -164,7 +169,7 @@
                         },
                         {
                             "type": "Id",
-                            "name": "template"
+                            "name": "template_"
                         }
                     ],
                     "flags": []

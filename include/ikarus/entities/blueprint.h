@@ -1,75 +1,84 @@
 #pragma once
 
+#include "../id.h"
+#include "../project.h"
+#include "../status.h"
+
 #include <cstdbool>
 #include <cstddef>
 #include <cstdint>
 
-#include "../project.h"
-#include "../status.h"
-#include "../id.h"
-
-enum IkarusBlueprintCreateV1Flags {
-    IkarusBlueprintCreateV1Flags_None = 0,
+enum IkarusTemplateCreateV0Flags {
+    IkarusTemplateCreateV0Flags_None = 0,
 };
 
-struct IkarusBlueprintCreateResult {
-    Id blueprint;
+struct IkarusTemplateCreateV0Result {
+    Id template;
     StatusCode status_code;
 };
 
-IkarusBlueprintCreateResult ikarus_blueprint_create_v1(Project * project, Id parent_folder, size_t position, char const * name, IkarusBlueprintCreateV1Flags flags);
+IkarusTemplateCreateV0Result ikarus_template_create_v0(
+    Project * project, Id parent_folder, size_t position, char const * name, IkarusTemplateCreateV0Flags flags
+);
 
-enum IkarusBlueprintDeleteV1Flags {
-    IkarusBlueprintDeleteV1Flags_None = 0,
+enum IkarusTemplateDeleteV0Flags {
+    IkarusTemplateDeleteV0Flags_None = 0,
 };
 
-struct IkarusBlueprintDeleteResult {
+struct IkarusTemplateDeleteV0Result {
     StatusCode status_code;
 };
 
-IkarusBlueprintDeleteResult ikarus_blueprint_delete_v1(Project * project, Id blueprint, IkarusBlueprintDeleteV1Flags flags);
+IkarusTemplateDeleteV0Result ikarus_template_delete_v0(Project * project, Id template, IkarusTemplateDeleteV0Flags flags);
 
-enum IkarusBlueprintGetAttributesV1Flags {
-    IkarusBlueprintGetAttributesV1Flags_None = 0,
+enum IkarusTemplateGetpropertiesV0Flags {
+    IkarusTemplateGetpropertiesV0Flags_None = 0,
 };
 
-struct IkarusBlueprintGetAttributesResult {
+struct IkarusTemplateGetpropertiesV0Result {
     size_t count;
     StatusCode status_code;
 };
 
-IkarusBlueprintGetAttributesResult ikarus_blueprint_get_attributes_v1(Project * project, Id blueprint, Id* attributes_out, size_t attributes_out_size, IkarusBlueprintGetAttributesV1Flags flags);
+IkarusTemplateGetpropertiesV0Result ikarus_template_get_properties_v0(
+    Project * project, Id template, Id * properties_out, size_t properties_out_size, IkarusTemplateGetpropertiesV0Flags flags
+);
 
-enum IkarusBlueprintGetAttributesCountV1Flags {
-    IkarusBlueprintGetAttributesCountV1Flags_None = 0,
+enum IkarusTemplateGetpropertiesCountV0Flags {
+    IkarusTemplateGetpropertiesCountV0Flags_None = 0,
 };
 
-struct IkarusBlueprintGetAttributesCountResult {
+struct IkarusTemplateGetpropertiesCountV0Result {
     size_t count;
     StatusCode status_code;
 };
 
-IkarusBlueprintGetAttributesCountResult ikarus_blueprint_get_attributes_count_v1(Project * project, Id blueprint, IkarusBlueprintGetAttributesCountV1Flags flags);
+IkarusTemplateGetpropertiesCountV0Result ikarus_template_get_properties_count_v0(
+    Project * project, Id template, IkarusTemplateGetpropertiesCountV0Flags flags
+);
 
-enum IkarusBlueprintGetInstancesV1Flags {
-    IkarusBlueprintGetInstancesV1Flags_None = 0,
+enum IkarusTemplateGetpagesV0Flags {
+    IkarusTemplateGetpagesV0Flags_None = 0,
 };
 
-struct IkarusBlueprintGetInstancesResult {
+struct IkarusTemplateGetpagesV0Result {
     size_t count;
     StatusCode status_code;
 };
 
-IkarusBlueprintGetInstancesResult ikarus_blueprint_get_instances_v1(Project * project, Id blueprint, Id* instances_out, size_t instances_out_size, IkarusBlueprintGetInstancesV1Flags flags);
+IkarusTemplateGetpagesV0Result ikarus_template_get_pages_v0(
+    Project * project, Id template, Id * pages_out, size_t pages_out_size, IkarusTemplateGetpagesV0Flags flags
+);
 
-enum IkarusBlueprintGetInstancesCountV1Flags {
-    IkarusBlueprintGetInstancesCountV1Flags_None = 0,
+enum IkarusTemplateGetpagesCountV0Flags {
+    IkarusTemplateGetpagesCountV0Flags_None = 0,
 };
 
-struct IkarusBlueprintGetInstancesCountResult {
+struct IkarusTemplateGetpagesCountV0Result {
     size_t count;
     StatusCode status_code;
 };
 
-IkarusBlueprintGetInstancesCountResult ikarus_blueprint_get_instances_count_v1(Project * project, Id blueprint, IkarusBlueprintGetInstancesCountV1Flags flags);
+IkarusTemplateGetpagesCountV0Result ikarus_template_get_pages_count_v0(
+    Project * project, Id template, IkarusTemplateGetpagesCountV0Flags flags);
 

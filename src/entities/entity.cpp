@@ -1,7 +1,5 @@
 #include "ikarus/entities/entity.h"
 
-#include "ikarus/entities/attributes/attribute.h"
-
 #include <db/database.hpp>
 #include <entities/util.hpp>
 #include <project.hpp>

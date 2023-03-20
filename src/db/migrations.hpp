@@ -1,9 +1,13 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
-#include <db/database.hpp>
 #include <util/structs/result.hpp>
+
+namespace db {
+
+class Database;
 
 class Migration {
 public:
@@ -17,3 +21,5 @@ public:
     [[nodiscard]] virtual Result<void, int> up(db::Database& db) = 0;
     [[nodiscard]] virtual u64 get_version() const = 0;
 };
+
+}

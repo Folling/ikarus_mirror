@@ -51,7 +51,9 @@
                         }
                     ],
                     "flags": [
-                        "keep_children"
+                        {
+                            "name": "keep_children"
+                        }
                     ]
                 }
             ]
@@ -82,11 +84,13 @@
                         {
                             "type": "size_t",
                             "name": "children_out_size"
+                        },
+                        {
+                            "type": "size_t",
+                            "name": "maximum_depth"
                         }
                     ],
-                    "flags": [
-                        "recurse"
-                    ]
+                    "flags": []
                 }
             ]
         }

@@ -152,9 +152,7 @@
                             "name": "new_position"
                         }
                     ],
-                    "flags": [
-                        "ignore_parent"
-                    ]
+                    "flags": []
                 }
             ]
         }

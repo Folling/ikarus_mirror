@@ -1,5 +1,9 @@
 #include "M1674836144_genesis.hpp"
 
+#include <db/database.hpp>
+
+namespace db {
+
 Result<void, int> M1674836144_genesis::up(db::Database& db) {
     LOG_VERBOSE("creating metadata table");
 
@@ -17,4 +21,6 @@ Result<void, int> M1674836144_genesis::up(db::Database& db) {
 
 u64 M1674836144_genesis::get_version() const {
     return 1674836144;
+}
+
 }

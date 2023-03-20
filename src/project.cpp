@@ -4,7 +4,7 @@
 
 #include <iterator>
 
-#include <db/database.ipp>
+#include <db/database.hpp>
 #include <ikarus/status.h>
 #include <util/logger.hpp>
 #include <validation/arg.hpp>
@@ -89,7 +89,7 @@ IkarusProjectDeleteResult ikarus_project_delete_v1(Project * project, IkarusProj
     LOG_VERBOSE("deleting project file");
 
     if (std::error_code ec{}; std::filesystem::remove(path, ec), ec) {
-        LOG_STD_ERROR("unable to remove path from filesystem");
+        LOG_STD_ERROR("unable to remove path from filesystem", ec);
         RETURN_STATUS(ret, StatusCode_InternalError);
     }
 
@@ -98,12 +98,12 @@ IkarusProjectDeleteResult ikarus_project_delete_v1(Project * project, IkarusProj
     return ret;
 }
 
-IkarusProjectGetBlueprintsResult ikarus_project_get_blueprints_v1(
-    Project const * project, Id * blueprints_out, size_t blueprints_out_size, IkarusProjectGetBlueprintsV1Flags flags
+IkarusProjectGetTemplatesResult ikarus_project_get_templates_v1(
+    Project const * project, Id * templates_out, size_t templates_out_size, IkarusProjectGetTemplatesV1Flags flags
 ) {
-    LOG_FUNCTION_VERBOSE("fetching project blueprints");
+    LOG_FUNCTION_VERBOSE("fetching project templates");
 
-    IkarusProjectGetBlueprintsResult ret{.count = 0, .status_code = StatusCode_Ok};
+    IkarusProjectGetTemplatesResult ret{.count = 0, .status_code = StatusCode_Ok};
 
     CHECK(ret, validation::validate_project<validation::NotNull | validation::Exists>(project, "project", &ret.status_code));
 
@@ -112,28 +112,28 @@ IkarusProjectGetBlueprintsResult ikarus_project_get_blueprints_v1(
     VTRYRV(
         ret.count,
         ret,
-        db_handle.get_db()->get_many_buffered<Id>(&ret.status_code, "SELECT `id` FROM `blueprints`", blueprints_out, blueprints_out_size)
+        db_handle.get_db()->get_many_buffered<Id>(&ret.status_code, "SELECT `id` FROM `templates`", templates_out, templates_out_size)
     );
 
-    LOG_FUNCTION_SUCCESS("successfully fetched blueprints");
+    LOG_FUNCTION_SUCCESS("successfully fetched templates");
 
     return ret;
 }
 
-IkarusProjectGetBlueprintsCountResult ikarus_project_get_blueprints_count_v1(
-    Project const * project, IkarusProjectGetBlueprintsCountV1Flags flags
+IkarusProjectGetTemplatesCountResult ikarus_project_get_templates_count_v1(
+    Project const * project, IkarusProjectGetTemplatesCountV1Flags flags
 ) {
-    LOG_FUNCTION_VERBOSE("fetching project blueprints count");
+    LOG_FUNCTION_VERBOSE("fetching project templates count");
 
-    IkarusProjectGetBlueprintsCountResult ret{.count = 0, .status_code = StatusCode_Ok};
+    IkarusProjectGetTemplatesCountResult ret{.count = 0, .status_code = StatusCode_Ok};
 
     CHECK(ret, validation::validate_project<validation::NotNull | validation::Exists>(project, "project", &ret.status_code));
 
     auto db_handle = project->get_db_handle();
 
-    VTRYRV(ret.count, ret, db_handle.get_db()->get_one<size_t>(&ret.status_code, "SELECT COUNT(*) FROM `blueprints`"));
+    VTRYRV(ret.count, ret, db_handle.get_db()->get_one<size_t>(&ret.status_code, "SELECT COUNT(*) FROM `templates`"));
 
-    LOG_FUNCTION_SUCCESS("successfully fetched blueprints count");
+    LOG_FUNCTION_SUCCESS("successfully fetched templates count");
 
     return ret;
 }

@@ -1,5 +1,9 @@
 #include "M1674836160_initial_setup.hpp"
 
+#include <db/database.hpp>
+
+namespace db {
+
 Result<void, int> M1674836160_initial_setup::up(db::Database& db) {
     LOG_VERBOSE("creating entities table");
 
@@ -13,7 +17,7 @@ Result<void, int> M1674836160_initial_setup::up(db::Database& db) {
         ") WITHOUT ROWID, STRICT;"
     ));
 
-    LOG_VERBOSE("creating entities FTS index");
+    LOG_VERBOSE("creating entities_fts index");
 
     TRY(db.exec(
         nullptr,
@@ -34,109 +38,161 @@ Result<void, int> M1674836160_initial_setup::up(db::Database& db) {
         ") WITHOUT ROWID, STRICT;"
     ));
 
-    LOG_VERBOSE("creating tree table");
+    LOG_VERBOSE("creating template_tree table");
 
     TRY(db.exec(
         nullptr,
-        "CREATE TABLE `entity_tree`(\n"
-        "    `entity_id` INT PRIMARY KEY,\n"
-        // the scope is defined as belonging to a certain tree. For example, all blueprints & instances belong to the project scope
-        // (where this will be null), but attributes are scoped to their blueprint. Note that scopes have no foreign key restraint, even
-        // though they might exist in different tables
-        "    `scope` INT,\n"
+        "CREATE TABLE `template_tree`(\n"
+        "    `template_id` INT PRIMARY KEY,\n"
         "    `parent_id` INT,\n"
         "    `position` INT NOT NULL,\n"
-        "    FOREIGN KEY (`entity_id`) REFERENCES `entities`(`id`) ON DELETE CASCADE,\n"
+        "    FOREIGN KEY (`templates_id`) REFERENCES `templates`(`id`) ON DELETE CASCADE,\n"
         "    FOREIGN KEY (`parent_id`) REFERENCES `entities`(`id`) ON DELETE CASCADE\n"
         ") WITHOUT ROWID, STRICT;"
     ));
 
     LOG_VERBOSE("creating indices");
 
-    LOG_VERBOSE("creating tree_parent index");
+    LOG_VERBOSE("creating template_tree_parent index");
 
-    TRY(db.exec(nullptr, "CREATE INDEX `tree_parent_idx` ON `entity_tree`(`parent_id`);"));
+    TRY(db.exec(nullptr, "CREATE INDEX `template_tree_parent_idx` ON `template_tree`(`parent_id`);"));
 
-    LOG_VERBOSE("creating tree_position index");
+    LOG_VERBOSE("creating template_tree_position index");
 
-    TRY(db.exec(nullptr, "CREATE INDEX `tree_position_idx` ON `entity_tree`(`position`);"));
+    TRY(db.exec(nullptr, "CREATE INDEX `template_tree_position_idx` ON `template_tree`(`position`);"));
 
-    LOG_VERBOSE("creating tree_parent_position index");
+    LOG_VERBOSE("creating template_tree_parent_position index");
 
-    TRY(db.exec(nullptr, "CREATE UNIQUE INDEX `tree_parent_position_idx` ON `entity_tree`(`parent_id`, `position`);"));
+    TRY(db.exec(nullptr, "CREATE UNIQUE INDEX `template_tree_parent_position_idx` ON `template_tree`(`parent_id`, `position`);"));
 
-    LOG_VERBOSE("creating tree_scope index");
-
-    TRY(db.exec(nullptr, "CREATE INDEX `tree_scope_idx` ON `entity_tree`(`scope`)"));
-
-    LOG_VERBOSE("creating blueprints table");
+    LOG_VERBOSE("creating page_tree table");
 
     TRY(db.exec(
         nullptr,
-        "CREATE TABLE `blueprints`(\n"
+        "CREATE TABLE `page_tree`(\n"
+        "    `page_id` INT PRIMARY KEY,\n"
+        "    `parent_id` INT,\n"
+        "    `position` INT NOT NULL,\n"
+        "    FOREIGN KEY (`pages_id`) REFERENCES `pages`(`id`) ON DELETE CASCADE,\n"
+        "    FOREIGN KEY (`parent_id`) REFERENCES `entities`(`id`) ON DELETE CASCADE\n"
+        ") WITHOUT ROWID, STRICT;"
+    ));
+
+    LOG_VERBOSE("creating indices");
+
+    LOG_VERBOSE("creating page_tree_parent index");
+
+    TRY(db.exec(nullptr, "CREATE INDEX `page_tree_parent_idx` ON `page_tree`(`parent_id`);"));
+
+    LOG_VERBOSE("creating page_tree_position index");
+
+    TRY(db.exec(nullptr, "CREATE INDEX `page_tree_position_idx` ON `page_tree`(`position`);"));
+
+    LOG_VERBOSE("creating page_tree_parent_position index");
+
+    TRY(db.exec(nullptr, "CREATE UNIQUE INDEX `page_tree_parent_position_idx` ON `page_tree`(`parent_id`, `position`);"));
+
+    LOG_VERBOSE("creating property_tree table");
+
+    TRY(db.exec(
+        nullptr,
+        "CREATE TABLE `property_tree`(\n"
+        "    `property_id` INT PRIMARY KEY,\n"
+        "    `template_id` INT NOT NULL,\n"
+        "    `parent_id` INT,\n"
+        "    `position` INT NOT NULL,\n"
+        "    FOREIGN KEY (`template_id`) REFERENCES `templates`(`id`) ON DELETE CASCADE,\n"
+        "    FOREIGN KEY (`properties_id`) REFERENCES `properties`(`id`) ON DELETE CASCADE,\n"
+        "    FOREIGN KEY (`parent_id`) REFERENCES `entities`(`id`) ON DELETE CASCADE\n"
+        ") WITHOUT ROWID, STRICT;"
+    ));
+
+    LOG_VERBOSE("creating indices");
+
+    LOG_VERBOSE("creating property_tree_template index");
+
+    TRY(db.exec(nullptr, "CREATE INDEX `property_tree_template_idx` ON `property_tree`(`template_id`);"));
+
+    LOG_VERBOSE("creating property_tree_parent index");
+
+    TRY(db.exec(nullptr, "CREATE INDEX `property_tree_parent_idx` ON `property_tree`(`parent_id`);"));
+
+    LOG_VERBOSE("creating property_tree_position index");
+
+    TRY(db.exec(nullptr, "CREATE INDEX `property_tree_position_idx` ON `property_tree`(`position`);"));
+
+    LOG_VERBOSE("creating property_tree_parent_position index");
+
+    TRY(db.exec(nullptr, "CREATE UNIQUE INDEX `property_tree_parent_position_idx` ON `property_tree`(`parent_id`, `position`);"));
+
+    LOG_VERBOSE("creating templates table");
+
+    TRY(db.exec(
+        nullptr,
+        "CREATE TABLE `templates`(\n"
         "    `entity_id` INT PRIMARY KEY,\n"
         "    FOREIGN KEY (`entity_id`) REFERENCES `entities`(`id`) ON DELETE CASCADE\n"
         ") WITHOUT ROWID, STRICT;"
     ));
 
-    LOG_VERBOSE("creating attributes table");
+    LOG_VERBOSE("creating properties table");
 
     TRY(db.exec(
         nullptr,
-        "CREATE TABLE `attributes`(\n"
+        "CREATE TABLE `properties`(\n"
         "    `entity_id` INT PRIMARY KEY,\n"
-        "    `blueprint_id` INT NOT NULL,\n"
+        "    `template_id` INT NOT NULL,\n"
         "    `type` INT NOT NULL,\n"
         "    `settings` TEXT NOT NULL,\n"
         "    FOREIGN KEY (`entity_id`) REFERENCES `entities`(`id`) ON DELETE CASCADE,\n"
-        "    FOREIGN KEY (`blueprint_id`) REFERENCES `blueprints`(`id`) ON DELETE CASCADE\n"
+        "    FOREIGN KEY (`template_id`) REFERENCES `templates`(`id`) ON DELETE CASCADE\n"
         ") WITHOUT ROWID, STRICT;"
     ));
 
-    LOG_VERBOSE("creating attribute blueprint index");
+    LOG_VERBOSE("creating property template index");
 
-    TRY(db.exec(nullptr, "CREATE INDEX `attribute_blueprint_id_idx` ON `attributes`(`blueprint_id`);"));
+    TRY(db.exec(nullptr, "CREATE INDEX `property_template_id_idx` ON `properties`(`template_id`);"));
 
-    LOG_VERBOSE("creating attribute attribute_type index");
+    LOG_VERBOSE("creating property property_type index");
 
-    TRY(db.exec(nullptr, "CREATE INDEX `attributes_type_idx` ON `attributes`(`type`);"));
+    TRY(db.exec(nullptr, "CREATE INDEX `properties_type_idx` ON `properties`(`type`);"));
 
-    LOG_VERBOSE("creating attribute FTS index");
+    LOG_VERBOSE("creating property FTS index");
 
     TRY(db.exec(
         nullptr,
-        "CREATE VIRTUAL TABLE `attributes_fts` USING fts5(\n"
-        "    `settings`, content='attributes', content_rowid='entity_id', tokenize=\"unicode61 remove_diacritics 2 tokenchars '-_'\"\n"
+        "CREATE VIRTUAL TABLE `properties_fts` USING fts5(\n"
+        "    `settings`, content='properties', content_rowid='entity_id', tokenize=\"unicode61 remove_diacritics 2 tokenchars '-_'\"\n"
         ");"
     ));
 
-    LOG_VERBOSE("creating instances table");
+    LOG_VERBOSE("creating pages table");
 
     TRY(db.exec(
         nullptr,
-        "CREATE TABLE `instances`(\n"
+        "CREATE TABLE `pages`(\n"
         "    `entity_id` INT PRIMARY KEY,\n"
-        "    `blueprint_id` INT NOT NULL,\n"
+        "    `template_id` INT NOT NULL,\n"
         "    FOREIGN KEY (`entity_id`) REFERENCES `entities`(`id`) ON DELETE CASCADE,\n"
-        "    FOREIGN KEY (`blueprint_id`) REFERENCES `blueprints`(`id`) ON DELETE CASCADE\n"
+        "    FOREIGN KEY (`template_id`) REFERENCES `templates`(`id`) ON DELETE CASCADE\n"
         ") WITHOUT ROWID, STRICT;"
     ));
 
-    LOG_VERBOSE("creating instance blueprint index");
+    LOG_VERBOSE("creating page template index");
 
-    TRY(db.exec(nullptr, "CREATE INDEX `instance_blueprint_id_idx` ON `instances`(`blueprint_id`);"));
+    TRY(db.exec(nullptr, "CREATE INDEX `page_template_id_idx` ON `pages`(`template_id`);"));
 
     LOG_VERBOSE("creating values table");
 
     TRY(db.exec(
         nullptr,
         "CREATE TABLE `values`(\n"
-        "    `attribute_id` INT NOT NULL,\n"
-        "    `instance_id` INT NOT NULL,\n"
+        "    `property_id` INT NOT NULL,\n"
+        "    `page_id` INT NOT NULL,\n"
         "    `value` TEXT NOT NULL,\n"
-        "    PRIMARY KEY (`attribute_id`, `instance_id`)"
-        "    FOREIGN KEY (`attribute_id`) REFERENCES `attributes`(`id`) ON DELETE CASCADE,\n"
-        "    FOREIGN KEY (`instance_id`) REFERENCES `instances`(`id`) ON DELETE CASCADE"
+        "    PRIMARY KEY (`property_id`, `page_id`)"
+        "    FOREIGN KEY (`property_id`) REFERENCES `properties`(`id`) ON DELETE CASCADE,\n"
+        "    FOREIGN KEY (`page_id`) REFERENCES `pages`(`id`) ON DELETE CASCADE"
         ") WITHOUT ROWID, STRICT;"
     ));
 
@@ -154,4 +210,6 @@ Result<void, int> M1674836160_initial_setup::up(db::Database& db) {
 
 u64 M1674836160_initial_setup::get_version() const {
     return 1674836160;
+}
+
 }

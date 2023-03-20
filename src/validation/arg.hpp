@@ -3,7 +3,7 @@
 #include <unicode/uchar.h>
 #include <unicode/uiter.h>
 
-#include <db/database.ipp>
+#include <db/database.hpp>
 #include <ikarus/id.h>
 #include <ikarus/project.h>
 #include <ikarus/status.h>
@@ -49,7 +49,7 @@ bool validate_path(char const * path, std::string_view ident, StatusCode * statu
         bool exists = std::filesystem::exists(path, ec);
 
         if (ec) {
-            LOG_STD_ERROR_F("unable to check whether {} exists", ident);
+            LOG_STD_ERROR_F("unable to check whether {} exists", ec, ident);
             RETURN_STATUS_OUT(false, StatusCode_InternalError);
         }
 
@@ -231,14 +231,14 @@ bool validate_entity(DbHandle const& db_handle, Id entity, std::string_view iden
             if constexpr (type == EntityType_Folder) {
                 table = "folders";
                 id_column = "entity_id";
-            } else if constexpr (type == EntityType_Blueprint) {
-                table = "blueprints";
+            } else if constexpr (type == EntityType_Template) {
+                table = "templates";
                 id_column = "entity_id";
-            } else if constexpr (type == EntityType_Attribute) {
-                table = "attributes";
+            } else if constexpr (type == EntityType_Property) {
+                table = "properties";
                 id_column = "entity_id";
-            } else if constexpr (type == EntityType_Instance) {
-                table = "instances";
+            } else if constexpr (type == EntityType_page) {
+                table = "pages";
                 id_column = "entity_id";
             } else {
                 static_assert(tmpl::delayed_false_v<decltype(type)>, "unknown entity type");

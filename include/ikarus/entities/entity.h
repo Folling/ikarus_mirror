@@ -8,67 +8,76 @@
 #include "../status.h"
 #include "../id.h"
 
-enum IkarusEntityGetNameV1Flags {
-    IkarusEntityGetNameV1Flags_None = 0,
+
+enum IkarusEntityGetNameV0Flags {
+     IkarusEntityGetNameV0Flags_None = 0,
 };
 
-struct IkarusEntityGetNameResult {
+struct IkarusEntityGetNameV0Result {
     char* name;
     StatusCode status_code;
 };
 
-IkarusEntityGetNameResult ikarus_entity_get_name_v1(Project * project, Id entity, IkarusEntityGetNameV1Flags flags);
+IkarusEntityGetNameV0Result ikarus_entity_get_name_v0(Project * project, Id entity, IkarusEntityGetNameV0Flags flags);
 
-enum IkarusEntitySetNameV1Flags {
-    IkarusEntitySetNameV1Flags_None = 0,
+
+enum IkarusEntitySetNameV0Flags {
+     IkarusEntitySetNameV0Flags_None = 0,
 };
 
-struct IkarusEntitySetNameResult {
+struct IkarusEntitySetNameV0Result {
+
     StatusCode status_code;
 };
 
-IkarusEntitySetNameResult ikarus_entity_set_name_v1(Project * project, Id entity, char const* new_name, IkarusEntitySetNameV1Flags flags);
+IkarusEntitySetNameV0Result ikarus_entity_set_name_v0(Project * project, Id entity, char const* new_name, IkarusEntitySetNameV0Flags flags);
 
-enum IkarusEntityGetInformationV1Flags {
-    IkarusEntityGetInformationV1Flags_None = 0,
+
+enum IkarusEntityGetInformationV0Flags {
+     IkarusEntityGetInformationV0Flags_None = 0,
 };
 
-struct IkarusEntityGetInformationResult {
+struct IkarusEntityGetInformationV0Result {
     char* information;
     StatusCode status_code;
 };
 
-IkarusEntityGetInformationResult ikarus_entity_get_information_v1(Project * project, Id entity, IkarusEntityGetInformationV1Flags flags);
+IkarusEntityGetInformationV0Result ikarus_entity_get_information_v0(Project * project, Id entity, IkarusEntityGetInformationV0Flags flags);
 
-enum IkarusEntitySetInformationV1Flags {
-    IkarusEntitySetInformationV1Flags_None = 0,
+
+enum IkarusEntitySetInformationV0Flags {
+     IkarusEntitySetInformationV0Flags_None = 0,
 };
 
-struct IkarusEntitySetInformationResult {
+struct IkarusEntitySetInformationV0Result {
+
     StatusCode status_code;
 };
 
-IkarusEntitySetInformationResult ikarus_entity_set_information_v1(Project * project, Id entity, char const* new_information, IkarusEntitySetInformationV1Flags flags);
+IkarusEntitySetInformationV0Result ikarus_entity_set_information_v0(Project * project, Id entity, char const* new_information, IkarusEntitySetInformationV0Flags flags);
 
-enum IkarusEntityGetLocationV1Flags {
-    IkarusEntityGetLocationV1Flags_None = 0,
+
+enum IkarusEntityGetLocationV0Flags {
+     IkarusEntityGetLocationV0Flags_None = 0,
 };
 
-struct IkarusEntityGetLocationResult {
-    Id parent_folder;
+struct IkarusEntityGetLocationV0Result {
+    Id parent_folder;;
     size_t position;
     StatusCode status_code;
 };
 
-IkarusEntityGetLocationResult ikarus_entity_get_location_v1(Project * project, Id entity, IkarusEntityGetLocationV1Flags flags);
+IkarusEntityGetLocationV0Result ikarus_entity_get_location_v0(Project * project, Id entity, IkarusEntityGetLocationV0Flags flags);
 
-enum IkarusEntitySetLocationV1Flags {
-    IkarusEntitySetLocationV1Flags_None = 0,
-    IkarusEntitySetLocationV1Flags_IgnoreParent = 1 << 0};
 
-struct IkarusEntitySetLocationResult {
+enum IkarusEntitySetLocationV0Flags {
+     IkarusEntitySetLocationV0Flags_None = 0,
+    IkarusEntitySetLocationV0Flags_IgnoreParent = 1 << 0};
+
+struct IkarusEntitySetLocationV0Result {
+
     StatusCode status_code;
 };
 
-IkarusEntitySetLocationResult ikarus_entity_set_location_v1(Project * project, Id entity, Id new_parent, size_t new_position, IkarusEntitySetLocationV1Flags flags);
+IkarusEntitySetLocationV0Result ikarus_entity_set_location_v0(Project * project, Id entity, Id new_parent, size_t new_position, IkarusEntitySetLocationV0Flags flags);
 

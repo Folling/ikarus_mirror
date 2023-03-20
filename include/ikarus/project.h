@@ -9,133 +9,74 @@
 
 struct Project;
 
-enum IkarusProjectCreateV1Flags {
-    IkarusProjectCreateV1Flags_None = 0,
+enum IkarusProjectCreateV0Flags {
+     IkarusProjectCreateV0Flags_None = 0,
 };
 
-struct IkarusProjectCreateResult {
+struct IkarusProjectCreateV0Result {
     Project * project;
     StatusCode status_code;
 };
 
-IkarusProjectCreateResult ikarus_project_create_v1(char const * path, IkarusProjectCreateV1Flags flags);
+IkarusProjectCreateV0Result ikarus_project_create_v0(char const * path, IkarusProjectCreateV0Flags flags);
 
-enum IkarusProjectOpenV1Flags {
-    IkarusProjectOpenV1Flags_None = 0,
+
+enum IkarusProjectOpenV0Flags {
+     IkarusProjectOpenV0Flags_None = 0,
 };
 
-struct IkarusProjectOpenResult {
+struct IkarusProjectOpenV0Result {
     Project * project;
     StatusCode status_code;
 };
 
-IkarusProjectOpenResult ikarus_project_open_v1(char const* path, IkarusProjectOpenV1Flags flags);
+IkarusProjectOpenV0Result ikarus_project_open_v0(char const* path, IkarusProjectOpenV0Flags flags);
 
-enum IkarusProjectCloseV1Flags {
-    IkarusProjectCloseV1Flags_None = 0,
+
+enum IkarusProjectCloseV0Flags {
+     IkarusProjectCloseV0Flags_None = 0,
 };
 
-struct IkarusProjectCloseResult {
+struct IkarusProjectCloseV0Result {
+
     StatusCode status_code;
 };
 
-IkarusProjectCloseResult ikarus_project_close_v1(Project * project, IkarusProjectCloseV1Flags flags);
+IkarusProjectCloseV0Result ikarus_project_close_v0(Project * project, IkarusProjectCloseV0Flags flags);
 
-enum IkarusProjectDeleteV1Flags {
-    IkarusProjectDeleteV1Flags_None = 0,
+
+enum IkarusProjectDeleteV0Flags {
+     IkarusProjectDeleteV0Flags_None = 0,
 };
 
-struct IkarusProjectDeleteResult {
+struct IkarusProjectDeleteV0Result {
+
     StatusCode status_code;
 };
 
-IkarusProjectDeleteResult ikarus_project_delete_v1(Project * project, IkarusProjectDeleteV1Flags flags);
+IkarusProjectDeleteV0Result ikarus_project_delete_v0(Project * project, IkarusProjectDeleteV0Flags flags);
 
-enum IkarusProjectGetRootEntitiesV1Flags {
-    IkarusProjectGetRootEntitiesV1Flags_None = 0,
+
+enum IkarusProjectGetEntitiesV0Flags {
+     IkarusProjectGetEntitiesV0Flags_None = 0,
 };
 
-struct IkarusProjectGetRootEntitiesResult {
+struct IkarusProjectGetEntitiesV0Result {
     size_t count;
     StatusCode status_code;
 };
 
-IkarusProjectGetRootEntitiesResult ikarus_project_get_root_entities_v1(Project const * project, Id* entities_out, size_t entities_out_size, IkarusProjectGetRootEntitiesV1Flags flags);
+IkarusProjectGetEntitiesV0Result ikarus_project_get_entities_v0(Project const * project, Id* entities_out, size_t entities_out_size, size_t entity_types, IkarusProjectGetEntitiesV0Flags flags);
 
-enum IkarusProjectGetRootEntitiesCountV1Flags {
-    IkarusProjectGetRootEntitiesCountV1Flags_None = 0,
+
+enum IkarusProjectGetEntitiesCountV0Flags {
+     IkarusProjectGetEntitiesCountV0Flags_None = 0,
 };
 
-struct IkarusProjectGetRootEntitiesCountResult {
+struct IkarusProjectGetEntitiesCountV0Result {
     size_t count;
     StatusCode status_code;
 };
 
-IkarusProjectGetRootEntitiesCountResult ikarus_project_get_root_entities_count_v1(Project const * project, IkarusProjectGetRootEntitiesCountV1Flags flags);
-
-enum IkarusProjectGetBlueprintsV1Flags {
-    IkarusProjectGetBlueprintsV1Flags_None = 0,
-};
-
-struct IkarusProjectGetBlueprintsResult {
-    size_t count;
-    StatusCode status_code;
-};
-
-IkarusProjectGetBlueprintsResult ikarus_project_get_blueprints_v1(Project const * project, Id* blueprints_out, size_t blueprints_out_size, IkarusProjectGetBlueprintsV1Flags flags);
-
-enum IkarusProjectGetBlueprintsCountV1Flags {
-    IkarusProjectGetBlueprintsCountV1Flags_None = 0,
-};
-
-struct IkarusProjectGetBlueprintsCountResult {
-    size_t count;
-    StatusCode status_code;
-};
-
-IkarusProjectGetBlueprintsCountResult ikarus_project_get_blueprints_count_v1(Project const * project, IkarusProjectGetBlueprintsCountV1Flags flags);
-
-enum IkarusProjectGetAttributesV1Flags {
-    IkarusProjectGetAttributesV1Flags_None = 0,
-};
-
-struct IkarusProjectGetAttributesResult {
-    size_t count;
-    StatusCode status_code;
-};
-
-IkarusProjectGetAttributesResult ikarus_project_get_attributes_v1(Project const * project, Id* attributes_out, size_t attributes_out_out_size, IkarusProjectGetAttributesV1Flags flags);
-
-enum IkarusProjectGetAttributesCountV1Flags {
-    IkarusProjectGetAttributesCountV1Flags_None = 0,
-};
-
-struct IkarusProjectGetAttributesCountResult {
-    size_t count;
-    StatusCode status_code;
-};
-
-IkarusProjectGetAttributesCountResult ikarus_project_get_attributes_count_v1(Project const * project, IkarusProjectGetAttributesCountV1Flags flags);
-
-enum IkarusProjectGetInstancesV1Flags {
-    IkarusProjectGetInstancesV1Flags_None = 0,
-};
-
-struct IkarusProjectGetInstancesResult {
-    size_t count;
-    StatusCode status_code;
-};
-
-IkarusProjectGetInstancesResult ikarus_project_get_instances_v1(Project const * project, Id* instances_out, size_t instances_out_size, IkarusProjectGetInstancesV1Flags flags);
-
-enum IkarusProjectGetInstancesCountV1Flags {
-    IkarusProjectGetInstancesCountV1Flags_None = 0,
-};
-
-struct IkarusProjectGetInstancesCountResult {
-    size_t count;
-    StatusCode status_code;
-};
-
-IkarusProjectGetInstancesCountResult ikarus_project_get_instances_count_v1(Project const * project, IkarusProjectGetInstancesCountV1Flags flags);
+IkarusProjectGetEntitiesCountV0Result ikarus_project_get_entities_count_v0(Project const * project, size_t entity_types, IkarusProjectGetEntitiesCountV0Flags flags);
 

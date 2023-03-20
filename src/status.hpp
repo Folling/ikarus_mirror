@@ -14,5 +14,5 @@
     (ret).status_code = sc;    \
     return ret
 
-#define LOG_STD_ERROR(msg)        LOG_ERROR(msg ". Error({}): {}", ec.value(), ec.message())
-#define LOG_STD_ERROR_F(msg, ...) LOG_ERROR(msg ". Error({}): {}", __VA_ARGS__, ec.value(), ec.message())
+#define LOG_STD_ERROR(msg, ec)        LOG_ERROR(msg ". Error({}): {}", ec.value(), ec.message())
+#define LOG_STD_ERROR_F(msg, ec, ...) LOG_ERROR(msg ". Error({}): {}", __VA_ARGS__, ec.value(), ec.message())

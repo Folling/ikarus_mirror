@@ -1,6 +1,5 @@
 {
     "name": "property",
-    "description": "Represents a typed piece of information that instances should store.",
     "generate_struct": false,
     "depends_on": [
         "../project",
@@ -12,52 +11,43 @@
     "functions": [
         {
             "name": "create",
-            "description": "Creates a new property. Note that values are lazily created.",
             "versions": [
                 {
                     "description": null,
                     "return_type": [
                         {
                             "type": "Id",
-                            "name": "property",
-                            "description": "The id of the created property or id_null() if an error occurred."
+                            "name": "property"
                         }
                     ],
                     "parameters": [
                         {
                             "type": "Project *",
-                            "name": "project",
-                            "description": "The project in which to create the property."
+                            "name": "project"
                         },
                         {
                             "type": "Id",
-                            "name": "parent_folder",
-                            "description": "The template-scoped folder in which the property should be placed."
+                            "name": "template_"
+                        },
+                        {
+                            "type": "Id",
+                            "name": "parent_folder"
                         },
                         {
                             "type": "size_t",
-                            "name": "position",
-                            "description": "The position in the parent folder at which the property should be placed."
-                        },
-                        {
-                            "type": "Id",
-                            "name": "template",
-                            "description": "The template the property should be created for."
+                            "name": "position"
                         },
                         {
                             "type": "char const*",
-                            "name": "name",
-                            "description": "The name the property should have. Doesn't have to be unique."
+                            "name": "name"
                         },
                         {
                             "type": "PropertyType",
-                            "name": "type",
-                            "description": "The type of property that should be created. Can be changed in a lossy fashion later."
+                            "name": "type"
                         },
                         {
                             "type": "char const*",
-                            "name": "default_value",
-                            "description": "JSON value representing the default value. If null a sensible default will be used, see propertytype.h for more information on the default values."
+                            "name": "default_value"
                         }
                     ],
                     "flags": []
@@ -66,7 +56,6 @@
         },
         {
             "name": "delete",
-            "description": "Deletes an property and all associated values from a template.",
             "versions": [
                 {
                     "description": null,
@@ -74,13 +63,11 @@
                     "parameters": [
                         {
                             "type": "Project *",
-                            "name": "project",
-                            "description": "The project in which the property resides."
+                            "name": "project"
                         },
                         {
                             "type": "Id",
-                            "name": "property",
-                            "description": "The property to delete."
+                            "name": "property"
                         }
                     ],
                     "flags": []
@@ -89,27 +76,23 @@
         },
         {
             "name": "get_template",
-            "description": "Fetches the template of an property.",
             "versions": [
                 {
                     "description": null,
                     "return_type": [
                         {
                             "type": "Id",
-                            "name": "template",
-                            "description": "The id of the template the property belongs to."
+                            "name": "template_"
                         }
                     ],
                     "parameters": [
                         {
                             "type": "Project*",
-                            "name": "project",
-                            "description": "The project this property resides in."
+                            "name": "project"
                         },
                         {
                             "type": "Id",
-                            "name": "property",
-                            "description": "The property for which to fetch the template for."
+                            "name": "property"
                         }
                     ],
                     "flags": []
@@ -118,7 +101,6 @@
         },
         {
             "name": "get_type",
-            "description": "Fetches the type of an property.",
             "versions": [
                 {
                     "description": null,
@@ -131,13 +113,11 @@
                     "parameters": [
                         {
                             "type": "Project*",
-                            "name": "project",
-                            "description": "The project this property resides in."
+                            "name": "project"
                         },
                         {
                             "type": "Id",
-                            "name": "property",
-                            "description": "The property for which to fetch the type for."
+                            "name": "property"
                         }
                     ],
                     "flags": []
@@ -146,7 +126,6 @@
         },
         {
             "name": "get_default_value",
-            "description": "Fetches the default value of an property.",
             "versions": [
                 {
                     "description": null,
@@ -159,13 +138,11 @@
                     "parameters": [
                         {
                             "type": "Project*",
-                            "name": "project",
-                            "description": "The project this property resides in."
+                            "name": "project"
                         },
                         {
                             "type": "Id",
-                            "name": "property",
-                            "description": "The property for which to fetch the default value for."
+                            "name": "property"
                         }
                     ],
                     "flags": []
@@ -174,7 +151,6 @@
         },
         {
             "name": "set_default_value",
-            "description": "Changes the default value for an property. Note that this doesn't alter any values as values are stored lazily.",
             "versions": [
                 {
                     "description": null,
@@ -182,18 +158,15 @@
                     "parameters": [
                         {
                             "type": "Project*",
-                            "name": "project",
-                            "description": "The project this property resides in."
+                            "name": "project"
                         },
                         {
                             "type": "Id",
-                            "name": "property",
-                            "description": "The property for which to change the default value"
+                            "name": "property"
                         },
                         {
                             "type": "char const*",
-                            "name": "new_default_value",
-                            "description": "The new default value for the property. If null, a sensible default will be chosen. See propertytype.h for more information on the chosen default values."
+                            "name": "new_default_value"
                         }
                     ],
                     "flags": []
@@ -202,7 +175,6 @@
         },
         {
             "name": "get_value",
-            "description": "Fetches the value of an instance at a specific property",
             "versions": [
                 {
                     "description": null,
@@ -215,18 +187,15 @@
                     "parameters": [
                         {
                             "type": "Project*",
-                            "name": "project",
-                            "description": "The project this property resides in."
+                            "name": "project"
                         },
                         {
                             "type": "Id",
-                            "name": "property",
-                            "description": "The property for which to fetch the value."
+                            "name": "property"
                         },
                         {
                             "type": "Id",
-                            "name": "instance",
-                            "description": "The instance for which to fetch the value."
+                            "name": "page"
                         }
                     ],
                     "flags": []
@@ -235,34 +204,67 @@
         },
         {
             "name": "get_values",
-            "description": "Fetches all values and their related instances for this property.",
             "versions": [
                 {
                     "description": null,
-                    "return_type": [],
+                    "return_type": [
+                        {
+                            "type": "size_t",
+                            "name": "count"
+                        }
+                    ],
                     "parameters": [
                         {
                             "type": "Project*",
-                            "name": "project",
-                            "description": "The project this property resides in."
+                            "name": "project"
                         },
                         {
                             "type": "Id",
-                            "name": "property",
-                            "description": "The property for which to fetch the values."
+                            "name": "property"
                         },
                         {
                             "type": "PropertyValue*",
-                            "name": "values_out",
-                            "description": "A pre-allocated buffer which will be filled with the values."
+                            "name": "values_out"
                         },
                         {
                             "type": "size_t",
-                            "name": "values_out_size",
-                            "description": "The size of the pre-allocated buffer. You can use `get_instance_count` on the associated template to obtain the ideal size of the buffer."
+                            "name": "values_out_size"
                         }
                     ],
-                    "flags": []
+                    "flags": [
+                        {
+                            "name": "include_default_values"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "get_values_count",
+            "versions": [
+                {
+                    "description": null,
+                    "return_type": [
+                        {
+                            "type": "size_t",
+                            "name": "count"
+                        }
+                    ],
+                    "parameters": [
+                        {
+                            "type": "Project const *",
+                            "name": "project"
+                        },
+                        {
+                            "type": "Id",
+                            "name": "property"
+                        }
+                    ],
+                    "flags": [
+                        {
+                            "name": "include_default_values"
+                        }
+                    ]
                 }
             ]
         }
