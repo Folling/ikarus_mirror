@@ -1,0 +1,130 @@
+{
+    "name": "toggle_attribute",
+    "depends_on": [
+        "../../project",
+        "../../error",
+        "../../id",
+        "values/togglevalue"
+    ],
+    "functions": [
+        {
+            "name": "create",
+            "versions": [
+                {
+                    "return_type": "Id",
+                    "parameters": [
+                        {
+                            "name": "project",
+                            "type": "Project *"
+                        },
+                        {
+                            "name": "blueprint",
+                            "type": "Id"
+                        },
+                        {
+                            "name": "default_value",
+                            "type": "ToggleValue"
+                        }
+                    ],
+                    "flags": []
+                }
+            ]
+        },
+        {
+            "name": "set_default_value",
+            "versions": [
+                {
+                    "return_type": "bool",
+                    "parameters": [
+                        {
+                            "name": "project",
+                            "type": "Project *"
+                        },
+                        {
+                            "name": "attribute",
+                            "type": "Id"
+                        },
+                        {
+                            "name": "new_default_value",
+                            "type": "ToggleValue"
+                        }
+                    ],
+                    "flags": []
+                }
+            ]
+        },
+        {
+            "name": "get_value",
+            "versions": [
+                {
+                    "return_type": "ToggleValue",
+                    "parameters": [
+                        {
+                            "name": "project",
+                            "type": "Project *"
+                        },
+                        {
+                            "name": "attribute",
+                            "type": "Id"
+                        },
+                        {
+                            "name": "instance",
+                            "type": "Id"
+                        }
+                    ],
+                    "flags": []
+                }
+            ]
+        },
+        {
+            "name": "set_value",
+            "versions": [
+                {
+                    "return_type": "bool",
+                    "parameters": [
+                        {
+                            "name": "project",
+                            "type": "Project *"
+                        },
+                        {
+                            "name": "attribute",
+                            "type": "Id"
+                        },
+                        {
+                            "name": "instance",
+                            "type": "Id"
+                        },
+                        {
+                            "name": "new_value",
+                            "type": "ToggleValue"
+                        }
+                    ],
+                    "flags": []
+                }
+            ]
+        },
+        {
+            "name": "get_values",
+            "versions": [
+                {
+                    "return_type": "bool",
+                    "parameters": [
+                        {
+                            "name": "project",
+                            "type": "Project *"
+                        },
+                        {
+                            "name": "values_out",
+                            "type": "ToggleValue*"
+                        },
+                        {
+                            "name": "values_out_size",
+                            "type": "size_t"
+                        }
+                    ],
+                    "flags": []
+                }
+            ]
+        }
+    ]
+}

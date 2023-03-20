@@ -1,0 +1,12 @@
+[submodule "vendor/fmt"]
+	path = vendor/fmt
+	url = git@github.com:fmtlib/fmt.git
+[submodule "vendor/range-v3"]
+	path = vendor/range-v3
+	url = git@github.com:ericniebler/range-v3.git
+[submodule "vendor/expected"]
+	path = vendor/expected
+	url = git@github.com:TartanLlama/expected.git
+[submodule "vendor/json"]
+	path = vendor/json
+	url = git@github.com:nlohmann/json.git

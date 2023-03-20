@@ -1,0 +1,68 @@
+{
+    "name": "attribute",
+    "depends_on": [
+        "../../project",
+        "../../error",
+        "../../id",
+        "attributetype"
+    ],
+    "functions": [
+        {
+            "name": "delete",
+            "versions": [
+                {
+                    "return_type": "bool",
+                    "parameters": [
+                        {
+                            "name": "project",
+                            "type": "Project *"
+                        },
+                        {
+                            "name": "attribute",
+                            "type": "Id"
+                        }
+                    ],
+                    "flags": []
+                }
+            ]
+        },
+        {
+            "name": "get_blueprint",
+            "versions": [
+                {
+                    "return_type": "Id",
+                    "parameters": [
+                        {
+                            "name": "project",
+                            "type": "Project*"
+                        },
+                        {
+                            "name": "attribute",
+                            "type": "Id"
+                        }
+                    ],
+                    "flags": []
+                }
+            ]
+        },
+        {
+            "name": "get_type",
+            "versions": [
+                {
+                    "return_type": "AttributeType",
+                    "parameters": [
+                        {
+                            "name": "project",
+                            "type": "Project*"
+                        },
+                        {
+                            "name": "attribute",
+                            "type": "Id"
+                        }
+                    ],
+                    "flags": []
+                }
+            ]
+        }
+    ]
+}

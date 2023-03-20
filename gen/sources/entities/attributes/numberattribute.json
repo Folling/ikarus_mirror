@@ -1,0 +1,129 @@
+{
+    "name": "number_attribute",
+    "depends_on": [
+        "../../project",
+        "../../error",
+        "../../id"
+    ],
+    "functions": [
+        {
+            "name": "create_str",
+            "versions": [
+                {
+                    "return_type": "Id",
+                    "parameters": [
+                        {
+                            "name": "project",
+                            "type": "Project *"
+                        },
+                        {
+                            "name": "blueprint",
+                            "type": "Id"
+                        },
+                        {
+                            "name": "default_value",
+                            "type": "char const*"
+                        }
+                    ],
+                    "flags": []
+                }
+            ]
+        },
+        {
+            "name": "set_default_value_str",
+            "versions": [
+                {
+                    "return_type": "bool",
+                    "parameters": [
+                        {
+                            "name": "project",
+                            "type": "Project *"
+                        },
+                        {
+                            "name": "attribute",
+                            "type": "Id"
+                        },
+                        {
+                            "name": "new_default_value",
+                            "type": "char const*"
+                        }
+                    ],
+                    "flags": []
+                }
+            ]
+        },
+        {
+            "name": "get_value_str",
+            "versions": [
+                {
+                    "return_type": "char const*",
+                    "parameters": [
+                        {
+                            "name": "project",
+                            "type": "Project *"
+                        },
+                        {
+                            "name": "attribute",
+                            "type": "Id"
+                        },
+                        {
+                            "name": "instance",
+                            "type": "Id"
+                        }
+                    ],
+                    "flags": []
+                }
+            ]
+        },
+        {
+            "name": "set_value_str",
+            "versions": [
+                {
+                    "return_type": "bool",
+                    "parameters": [
+                        {
+                            "name": "project",
+                            "type": "Project *"
+                        },
+                        {
+                            "name": "attribute",
+                            "type": "Id"
+                        },
+                        {
+                            "name": "instance",
+                            "type": "Id"
+                        },
+                        {
+                            "name": "new_value",
+                            "type": "char const*"
+                        }
+                    ],
+                    "flags": []
+                }
+            ]
+        },
+        {
+            "name": "get_values_str",
+            "versions": [
+                {
+                    "return_type": "bool",
+                    "parameters": [
+                        {
+                            "name": "project",
+                            "type": "Project *"
+                        },
+                        {
+                            "name": "values_out",
+                            "type": "char const**"
+                        },
+                        {
+                            "name": "values_out_size",
+                            "type": "size_t"
+                        }
+                    ],
+                    "flags": []
+                }
+            ]
+        }
+    ]
+}

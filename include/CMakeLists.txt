@@ -1,0 +1,7 @@
+file(
+    GLOB_RECURSE
+    FILES
+    "*.h"
+)
+
+set(INCLUDE_FILES ${FILES} PARENT_SCOPE)

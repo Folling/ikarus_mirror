@@ -1,0 +1,83 @@
+{
+    "name": "folder",
+    "depends_on": [
+        "../project",
+        "../error",
+        "../id"
+    ],
+    "functions": [
+        {
+            "name": "create",
+            "versions": [
+                {
+                    "return_type": "Id",
+                    "parameters": [
+                        {
+                            "name": "project",
+                            "type": "Project *"
+                        },
+                        {
+                            "name": "parent_folder",
+                            "type": "Id"
+                        },
+                        {
+                            "name": "name",
+                            "type": "char const *"
+                        }
+                    ],
+                    "flags": []
+                }
+            ]
+        },
+        {
+            "name": "delete",
+            "versions": [
+                {
+                    "return_type": "bool",
+                    "parameters": [
+                        {
+                            "name": "project",
+                            "type": "Project *"
+                        },
+                        {
+                            "name": "folder",
+                            "type": "Id"
+                        }
+                    ],
+                    "flags": [
+                        "keep_children"
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "get_children",
+            "versions": [
+                {
+                    "return_type": "bool",
+                    "parameters": [
+                        {
+                            "name": "project",
+                            "type": "Project *"
+                        },
+                        {
+                            "name": "folder",
+                            "type": "Id"
+                        },
+                        {
+                            "name": "attributes_out",
+                            "type": "Id*"
+                        },
+                        {
+                            "name": "attributes_out_size",
+                            "type": "size_t"
+                        }
+                    ],
+                    "flags": [
+                        "recurse"
+                    ]
+                }
+            ]
+        }
+    ]
+}
