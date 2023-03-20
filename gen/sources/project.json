@@ -1,7 +1,8 @@
 {
     "name": "project",
+    "generate_struct": true,
     "depends_on": [
-        "error",
+        "status",
         "id"
     ],
     "functions": [
@@ -9,11 +10,16 @@
             "name": "create",
             "versions": [
                 {
-                    "return_type": "Project *",
+                    "return_type": [
+                        {
+                            "type": "Project *",
+                            "name": "project"
+                        }
+                    ],
                     "parameters": [
                         {
-                            "name": "path",
-                            "type": "char const *"
+                            "type": "char const *",
+                            "name": "path"
                         }
                     ],
                     "flags": []
@@ -24,11 +30,16 @@
             "name": "open",
             "versions": [
                 {
-                    "return_type": "Project *",
+                    "return_type": [
+                        {
+                            "type": "Project *",
+                            "name": "project"
+                        }
+                    ],
                     "parameters": [
                         {
-                            "name": "path",
-                            "type": "char const*"
+                            "type": "char const*",
+                            "name": "path"
                         }
                     ],
                     "flags": []
@@ -39,11 +50,11 @@
             "name": "close",
             "versions": [
                 {
-                    "return_type": "bool",
+                    "return_type": [],
                     "parameters": [
                         {
-                            "name": "project",
-                            "type": "Project *"
+                            "type": "Project *",
+                            "name": "project"
                         }
                     ],
                     "flags": []
@@ -54,11 +65,11 @@
             "name": "delete",
             "versions": [
                 {
-                    "return_type": "bool",
+                    "return_type": [],
                     "parameters": [
                         {
-                            "name": "project",
-                            "type": "Project *"
+                            "type": "Project *",
+                            "name": "project"
                         }
                     ],
                     "flags": []
@@ -69,54 +80,24 @@
             "name": "get_root_entities",
             "versions": [
                 {
-                    "return_type": "bool",
-                    "parameters": [
+                    "return_type": [
                         {
-                            "name": "project",
-                            "type": "Project const *"
-                        },
-                        {
-                            "name": "entities_out",
-                            "type": "Id*"
-                        },
-                        {
-                            "name": "entities_out_size",
-                            "type": "size_t"
+                            "type": "size_t",
+                            "name": "count"
                         }
                     ],
-                    "flags": []
-                }
-            ]
-        },
-        {
-            "name": "get_tree",
-            "versions": [
-                {
-                    "return_type": "bool",
                     "parameters": [
                         {
-                            "name": "project",
-                            "type": "Project const *"
+                            "type": "Project const *",
+                            "name": "project"
                         },
                         {
-                            "name": "entity_ids_out",
-                            "type": "Id*"
+                            "type": "Id*",
+                            "name": "entities_out"
                         },
                         {
-                            "name": "entity_parent_ids_out",
-                            "type": "Id*"
-                        },
-                        {
-                            "name": "entity_positions_out",
-                            "type": "size_t*"
-                        },
-                        {
-                            "name": "entity_names_out",
-                            "type": "char const**"
-                        },
-                        {
-                            "name": "entities_out_size",
-                            "type": "size_t"
+                            "type": "size_t",
+                            "name": "entities_out_size"
                         }
                     ],
                     "flags": []
@@ -127,11 +108,16 @@
             "name": "get_root_entities_count",
             "versions": [
                 {
-                    "return_type": "size_t",
+                    "return_type": [
+                        {
+                            "type": "size_t",
+                            "name": "count"
+                        }
+                    ],
                     "parameters": [
                         {
-                            "name": "project",
-                            "type": "Project const *"
+                            "type": "Project const *",
+                            "name": "project"
                         }
                     ],
                     "flags": []
@@ -142,19 +128,24 @@
             "name": "get_blueprints",
             "versions": [
                 {
-                    "return_type": "bool",
+                    "return_type": [
+                        {
+                            "type": "size_t",
+                            "name": "count"
+                        }
+                    ],
                     "parameters": [
                         {
-                            "name": "project",
-                            "type": "Project const *"
+                            "type": "Project const *",
+                            "name": "project"
                         },
                         {
-                            "name": "blueprints_out",
-                            "type": "Id*"
+                            "type": "Id*",
+                            "name": "blueprints_out"
                         },
                         {
-                            "name": "blueprints_out_size",
-                            "type": "size_t"
+                            "type": "size_t",
+                            "name": "blueprints_out_size"
                         }
                     ],
                     "flags": []
@@ -165,11 +156,16 @@
             "name": "get_blueprints_count",
             "versions": [
                 {
-                    "return_type": "size_t",
+                    "return_type": [
+                        {
+                            "type": "size_t",
+                            "name": "count"
+                        }
+                    ],
                     "parameters": [
                         {
-                            "name": "project",
-                            "type": "Project const *"
+                            "type": "Project const *",
+                            "name": "project"
                         }
                     ],
                     "flags": []
@@ -180,19 +176,24 @@
             "name": "get_attributes",
             "versions": [
                 {
-                    "return_type": "bool",
+                    "return_type": [
+                        {
+                            "type": "size_t",
+                            "name": "count"
+                        }
+                    ],
                     "parameters": [
                         {
-                            "name": "project",
-                            "type": "Project const *"
+                            "type": "Project const *",
+                            "name": "project"
                         },
                         {
-                            "name": "attributes_out",
-                            "type": "Id*"
+                            "type": "Id*",
+                            "name": "attributes_out"
                         },
                         {
-                            "name": "attributes_out_out_size",
-                            "type": "size_t"
+                            "type": "size_t",
+                            "name": "attributes_out_out_size"
                         }
                     ],
                     "flags": []
@@ -203,11 +204,16 @@
             "name": "get_attributes_count",
             "versions": [
                 {
-                    "return_type": "size_t",
+                    "return_type": [
+                        {
+                            "type": "size_t",
+                            "name": "count"
+                        }
+                    ],
                     "parameters": [
                         {
-                            "name": "project",
-                            "type": "Project const *"
+                            "type": "Project const *",
+                            "name": "project"
                         }
                     ],
                     "flags": []
@@ -218,19 +224,24 @@
             "name": "get_instances",
             "versions": [
                 {
-                    "return_type": "bool",
+                    "return_type": [
+                        {
+                            "type": "size_t",
+                            "name": "count"
+                        }
+                    ],
                     "parameters": [
                         {
-                            "name": "project",
-                            "type": "Project const *"
+                            "type": "Project const *",
+                            "name": "project"
                         },
                         {
-                            "name": "instances_out",
-                            "type": "Id*"
+                            "type": "Id*",
+                            "name": "instances_out"
                         },
                         {
-                            "name": "instances_out_size",
-                            "type": "size_t"
+                            "type": "size_t",
+                            "name": "instances_out_size"
                         }
                     ],
                     "flags": []
@@ -241,11 +252,16 @@
             "name": "get_instances_count",
             "versions": [
                 {
-                    "return_type": "size_t",
+                    "return_type": [
+                        {
+                            "type": "size_t",
+                            "name": "count"
+                        }
+                    ],
                     "parameters": [
                         {
-                            "name": "project",
-                            "type": "Project const *"
+                            "type": "Project const *",
+                            "name": "project"
                         }
                     ],
                     "flags": []

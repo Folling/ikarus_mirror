@@ -13,6 +13,7 @@ public:
 
         TRY(db::exec(
             db,
+            nullptr,
             "CREATE TABLE `metadata`(\n"
             // INT is important here - INTEGER would make it an alias for the rowid
             "    `key` TEXT PRIMARY KEY,\n"

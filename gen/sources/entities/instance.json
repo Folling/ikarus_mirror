@@ -1,8 +1,9 @@
 {
     "name": "instance",
+    "generate_struct": false,
     "depends_on": [
         "../project",
-        "../error",
+        "../status",
         "../id"
     ],
     "functions": [
@@ -10,23 +11,32 @@
             "name": "create",
             "versions": [
                 {
-                    "return_type": "Id",
+                    "return_type": [
+                        {
+                            "type": "Id",
+                            "name": "instance"
+                        }
+                    ],
                     "parameters": [
                         {
-                            "name": "project",
-                            "type": "Project *"
+                            "type": "Project *",
+                            "name": "project"
                         },
                         {
-                            "name": "blueprint",
-                            "type": "Id"
+                            "type": "Id",
+                            "name": "blueprint"
                         },
                         {
-                            "name": "parent_folder",
-                            "type": "Id"
+                            "type": "Id",
+                            "name": "parent_folder"
                         },
                         {
-                            "name": "name",
-                            "type": "char const *"
+                            "type": "size_t",
+                            "name": "position"
+                        },
+                        {
+                            "type": "char const *",
+                            "name": "name"
                         }
                     ],
                     "flags": []
@@ -37,15 +47,15 @@
             "name": "delete",
             "versions": [
                 {
-                    "return_type": "bool",
+                    "return_type": [],
                     "parameters": [
                         {
-                            "name": "project",
-                            "type": "Project *"
+                            "type": "Project *",
+                            "name": "project"
                         },
                         {
-                            "name": "instance",
-                            "type": "Id"
+                            "type": "Id",
+                            "name": "instance"
                         }
                     ],
                     "flags": []
@@ -56,15 +66,20 @@
             "name": "get_blueprint",
             "versions": [
                 {
-                    "return_type": "Id",
+                    "return_type": [
+                        {
+                            "type": "Id",
+                            "name": "blueprint"
+                        }
+                    ],
                     "parameters": [
                         {
-                            "name": "project",
-                            "type": "Project*"
+                            "type": "Project*",
+                            "name": "project"
                         },
                         {
-                            "name": "instance",
-                            "type": "Id"
+                            "type": "Id",
+                            "name": "instance"
                         }
                     ],
                     "flags": []

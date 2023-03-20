@@ -1,24 +1,31 @@
 {
     "name": "entity",
+    "generate_struct": false,
     "depends_on": [
+        "location",
         "../project",
-        "../error",
+        "../status",
         "../id"
     ],
     "functions": [
         {
-            "name": "get_parent",
+            "name": "get_name",
             "versions": [
                 {
-                    "return_type": "Id",
+                    "return_type": [
+                        {
+                            "type": "char const*",
+                            "name": "name"
+                        }
+                    ],
                     "parameters": [
                         {
-                            "name": "project",
-                            "type": "Project *"
+                            "type": "Project *",
+                            "name": "project"
                         },
                         {
-                            "name": "entity",
-                            "type": "Id"
+                            "type": "Id",
+                            "name": "entity"
                         }
                     ],
                     "flags": []
@@ -26,26 +33,22 @@
             ]
         },
         {
-            "name": "set_parent",
+            "name": "set_name",
             "versions": [
                 {
-                    "return_type": "bool",
+                    "return_type": [],
                     "parameters": [
                         {
-                            "name": "project",
-                            "type": "Project *"
+                            "type": "Project *",
+                            "name": "project"
                         },
                         {
-                            "name": "entity",
-                            "type": "Id"
+                            "type": "Id",
+                            "name": "entity"
                         },
                         {
-                            "name": "new_parent",
-                            "type": "Id"
-                        },
-                        {
-                            "name": "new_idx",
-                            "type": "size_t"
+                            "type": "char const*",
+                            "name": "new_name"
                         }
                     ],
                     "flags": []
@@ -53,18 +56,23 @@
             ]
         },
         {
-            "name": "get_idx",
+            "name": "get_information",
             "versions": [
                 {
-                    "return_type": "size_t",
+                    "return_type": [
+                        {
+                            "type": "char const*",
+                            "name": "name"
+                        }
+                    ],
                     "parameters": [
                         {
-                            "name": "project",
-                            "type": "Project *"
+                            "type": "Project *",
+                            "name": "project"
                         },
                         {
-                            "name": "entity",
-                            "type": "Id"
+                            "type": "Id",
+                            "name": "entity"
                         }
                     ],
                     "flags": []
@@ -72,25 +80,82 @@
             ]
         },
         {
-            "name": "set_idx",
+            "name": "set_information",
             "versions": [
                 {
-                    "return_type": "bool",
+                    "return_type": [],
                     "parameters": [
                         {
-                            "name": "project",
-                            "type": "Project *"
+                            "type": "Project *",
+                            "name": "project"
                         },
                         {
-                            "name": "entity",
-                            "type": "Id"
+                            "type": "Id",
+                            "name": "entity"
                         },
                         {
-                            "name": "new_idx",
-                            "type": "size_t"
+                            "type": "char const*",
+                            "name": "new_information"
                         }
                     ],
                     "flags": []
+                }
+            ]
+        },
+        {
+            "name": "get_location",
+            "versions": [
+                {
+                    "return_type": [
+                        {
+                            "type": "Id",
+                            "name": "parent_folder"
+                        },
+                        {
+                            "type": "size_t",
+                            "name": "position"
+                        }
+                    ],
+                    "parameters": [
+                        {
+                            "type": "Project *",
+                            "name": "project"
+                        },
+                        {
+                            "type": "Id",
+                            "name": "entity"
+                        }
+                    ],
+                    "flags": []
+                }
+            ]
+        },
+        {
+            "name": "set_location",
+            "versions": [
+                {
+                    "return_type": [],
+                    "parameters": [
+                        {
+                            "type": "Project *",
+                            "name": "project"
+                        },
+                        {
+                            "type": "Id",
+                            "name": "entity"
+                        },
+                        {
+                            "type": "Id",
+                            "name": "new_parent"
+                        },
+                        {
+                            "type": "size_t",
+                            "name": "new_position"
+                        }
+                    ],
+                    "flags": [
+                        "ignore_parent"
+                    ]
                 }
             ]
         }

@@ -10,17 +10,18 @@ add_subdirectory(gen)
 add_subdirectory(include)
 add_subdirectory(src)
 
-add_custom_command(
-    OUTPUT ${GEN_TARGET_FILES}
-    COMMAND ${CMAKE_CURRENT_LIST_DIR}/gen/gen.rb ${CMAKE_CURRENT_LIST_DIR}/gen ${CMAKE_CURRENT_LIST_DIR}/include
-    DEPENDS ${GEN_FILES} gen/gen.rb
-)
-
 add_library(
     ikarus SHARED
     ${INCLUDE_FILES}
     ${SOURCE_FILES}
 )
+
+add_custom_target(
+    libikarus_gen
+    COMMAND ${CMAKE_CURRENT_LIST_DIR}/gen/gen.rb ${CMAKE_CURRENT_LIST_DIR}/gen ${CMAKE_CURRENT_LIST_DIR}/include
+)
+
+add_dependencies(ikarus libikarus_gen)
 
 target_include_directories(
     ikarus PUBLIC

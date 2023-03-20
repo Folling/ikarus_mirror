@@ -8,7 +8,7 @@
 #include <fmt/core.h>
 #include <fmt/ranges.h>
 
-#include <util/formatters.hpp>
+#include <util/format.hpp>
 
 #define GEN_LOG_LEVEL_FUNC(name, _level, out, colour, log_name)                                                        \
     template<typename... Ts>                                                                                           \
@@ -62,18 +62,10 @@ GEN_LOG_LEVEL_FUNC(fatal, LogLevel::Fatal, stderr, red, "FATAL  ")
 
 #define LOG_FLAGS()      LOG_VERBOSE("flags: {}", flags)
 
-#define LOG_FUNCTION(description) \
-    LOG_INFO(description);        \
+#define LOG_FUNCTION_INFO(description) \
+    LOG_INFO(description);             \
     LOG_FLAGS()
 
-#define CHECK_AND_LOG_SUBJECT_IMPL(subject, ident)  \
-    if ((subject) == nullptr) {                     \
-        LOG_ERROR("passed " #subject " was null");  \
-        RETURN_ERROR(false, ErrorCode_NullSubject); \
-    }                                               \
-                                                    \
-    LOG_VERBOSE(#subject " {}", ident)
-
-#define LOG_FUNCTION_CHECK_SUBJECT(description) \
-    LOG_FUNCTION(description);                  \
-    CHECK_AND_LOG_SUBJECT()
+#define LOG_FUNCTION_VERBOSE(description) \
+    LOG_VERBOSE(description);             \
+    LOG_FLAGS()

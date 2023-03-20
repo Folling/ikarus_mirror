@@ -1,8 +1,9 @@
 {
     "name": "blueprint",
+    "generate_struct": false,
     "depends_on": [
         "../project",
-        "../error",
+        "../status",
         "../id"
     ],
     "functions": [
@@ -10,19 +11,28 @@
             "name": "create",
             "versions": [
                 {
-                    "return_type": "Id",
+                    "return_type": [
+                        {
+                            "type": "Id",
+                            "name": "blueprint"
+                        }
+                    ],
                     "parameters": [
                         {
-                            "name": "project",
-                            "type": "Project *"
+                            "type": "Project *",
+                            "name": "project"
                         },
                         {
-                            "name": "parent_folder",
-                            "type": "Id"
+                            "type": "Id",
+                            "name": "parent_folder"
                         },
                         {
-                            "name": "name",
-                            "type": "char const *"
+                            "type": "size_t",
+                            "name": "position"
+                        },
+                        {
+                            "type": "char const *",
+                            "name": "name"
                         }
                     ],
                     "flags": []
@@ -33,15 +43,15 @@
             "name": "delete",
             "versions": [
                 {
-                    "return_type": "bool",
+                    "return_type": [],
                     "parameters": [
                         {
-                            "name": "project",
-                            "type": "Project *"
+                            "type": "Project *",
+                            "name": "project"
                         },
                         {
-                            "name": "blueprint",
-                            "type": "Id"
+                            "type": "Id",
+                            "name": "blueprint"
                         }
                     ],
                     "flags": []
@@ -52,23 +62,28 @@
             "name": "get_attributes",
             "versions": [
                 {
-                    "return_type": "bool",
+                    "return_type": [
+                        {
+                            "type": "size_t",
+                            "name": "count"
+                        }
+                    ],
                     "parameters": [
                         {
-                            "name": "project",
-                            "type": "Project *"
+                            "type": "Project *",
+                            "name": "project"
                         },
                         {
-                            "name": "blueprint",
-                            "type": "Id"
+                            "type": "Id",
+                            "name": "blueprint"
                         },
                         {
-                            "name": "attributes_out",
-                            "type": "Id*"
+                            "type": "Id*",
+                            "name": "attributes_out"
                         },
                         {
-                            "name": "attributes_out_size",
-                            "type": "size_t"
+                            "type": "size_t",
+                            "name": "attributes_out_size"
                         }
                     ],
                     "flags": []
@@ -79,15 +94,20 @@
             "name": "get_attributes_count",
             "versions": [
                 {
-                    "return_type": "size_t",
+                    "return_type": [
+                        {
+                            "type": "size_t",
+                            "name": "count"
+                        }
+                    ],
                     "parameters": [
                         {
-                            "name": "project",
-                            "type": "Project *"
+                            "type": "Project *",
+                            "name": "project"
                         },
                         {
-                            "name": "blueprint",
-                            "type": "Id"
+                            "type": "Id",
+                            "name": "blueprint"
                         }
                     ],
                     "flags": []
@@ -98,23 +118,28 @@
             "name": "get_instances",
             "versions": [
                 {
-                    "return_type": "bool",
+                    "return_type": [
+                        {
+                            "type": "size_t",
+                            "name": "count"
+                        }
+                    ],
                     "parameters": [
                         {
-                            "name": "project",
-                            "type": "Project *"
+                            "type": "Project *",
+                            "name": "project"
                         },
                         {
-                            "name": "blueprint",
-                            "type": "Id"
+                            "type": "Id",
+                            "name": "blueprint"
                         },
                         {
-                            "name": "instances_out",
-                            "type": "Id*"
+                            "type": "Id*",
+                            "name": "instances_out"
                         },
                         {
-                            "name": "instances_out_size",
-                            "type": "size_t"
+                            "type": "size_t",
+                            "name": "instances_out_size"
                         }
                     ],
                     "flags": []
@@ -125,15 +150,20 @@
             "name": "get_instances_count",
             "versions": [
                 {
-                    "return_type": "size_t",
+                    "return_type": [
+                        {
+                            "type": "size_t",
+                            "name": "count"
+                        }
+                    ],
                     "parameters": [
                         {
-                            "name": "project",
-                            "type": "Project *"
+                            "type": "Project *",
+                            "name": "project"
                         },
                         {
-                            "name": "blueprint",
-                            "type": "Id"
+                            "type": "Id",
+                            "name": "blueprint"
                         }
                     ],
                     "flags": []

@@ -1,28 +1,66 @@
 {
     "name": "number_attribute",
+    "generate_struct": false,
     "depends_on": [
         "../../project",
-        "../../error",
+        "../../status",
         "../../id"
     ],
     "functions": [
         {
-            "name": "create_str",
+            "name": "create_number_attribute",
             "versions": [
                 {
-                    "return_type": "Id",
+                    "return_type": [
+                        {
+                            "type": "Id",
+                            "name": "attribute"
+                        }
+                    ],
                     "parameters": [
                         {
-                            "name": "project",
-                            "type": "Project *"
+                            "type": "Project *",
+                            "name": "project"
                         },
                         {
-                            "name": "blueprint",
-                            "type": "Id"
+                            "type": "Id",
+                            "name": "blueprint"
                         },
                         {
-                            "name": "default_value",
-                            "type": "char const*"
+                            "type": "Id",
+                            "name": "parent_folder"
+                        },
+                        {
+                            "type": "size_t",
+                            "name": "position"
+                        },
+                        {
+                            "type": "char const*",
+                            "name": "default_value"
+                        }
+                    ],
+                    "flags": []
+                }
+            ]
+        },
+        {
+            "name": "get_default_value_str",
+            "versions": [
+                {
+                    "return_type": [
+                        {
+                            "type": "char const*",
+                            "name": "default_value"
+                        }
+                    ],
+                    "parameters": [
+                        {
+                            "type": "Project *",
+                            "name": "project"
+                        },
+                        {
+                            "type": "Id",
+                            "name": "attribute"
                         }
                     ],
                     "flags": []
@@ -33,19 +71,19 @@
             "name": "set_default_value_str",
             "versions": [
                 {
-                    "return_type": "bool",
+                    "return_type": [],
                     "parameters": [
                         {
-                            "name": "project",
-                            "type": "Project *"
+                            "type": "Project *",
+                            "name": "project"
                         },
                         {
-                            "name": "attribute",
-                            "type": "Id"
+                            "type": "Id",
+                            "name": "attribute"
                         },
                         {
-                            "name": "new_default_value",
-                            "type": "char const*"
+                            "type": "char const*",
+                            "name": "new_default_value"
                         }
                     ],
                     "flags": []
@@ -56,19 +94,24 @@
             "name": "get_value_str",
             "versions": [
                 {
-                    "return_type": "char const*",
+                    "return_type": [
+                        {
+                            "type": "char const*",
+                            "name": "value"
+                        }
+                    ],
                     "parameters": [
                         {
-                            "name": "project",
-                            "type": "Project *"
+                            "type": "Project *",
+                            "name": "project"
                         },
                         {
-                            "name": "attribute",
-                            "type": "Id"
+                            "type": "Id",
+                            "name": "attribute"
                         },
                         {
-                            "name": "instance",
-                            "type": "Id"
+                            "type": "Id",
+                            "name": "instance"
                         }
                     ],
                     "flags": []
@@ -79,23 +122,23 @@
             "name": "set_value_str",
             "versions": [
                 {
-                    "return_type": "bool",
+                    "return_type": [],
                     "parameters": [
                         {
-                            "name": "project",
-                            "type": "Project *"
+                            "type": "Project *",
+                            "name": "project"
                         },
                         {
-                            "name": "attribute",
-                            "type": "Id"
+                            "type": "Id",
+                            "name": "attribute"
                         },
                         {
-                            "name": "instance",
-                            "type": "Id"
+                            "type": "Id",
+                            "name": "instance"
                         },
                         {
-                            "name": "new_value",
-                            "type": "char const*"
+                            "type": "char const*",
+                            "name": "new_value"
                         }
                     ],
                     "flags": []
@@ -106,19 +149,24 @@
             "name": "get_values_str",
             "versions": [
                 {
-                    "return_type": "bool",
+                    "return_type": [
+                        {
+                            "type": "size_t",
+                            "name": "count"
+                        }
+                    ],
                     "parameters": [
                         {
-                            "name": "project",
-                            "type": "Project *"
+                            "type": "Project *",
+                            "name": "project"
                         },
                         {
-                            "name": "values_out",
-                            "type": "char const**"
+                            "type": "char const**",
+                            "name": "values_out"
                         },
                         {
-                            "name": "values_out_size",
-                            "type": "size_t"
+                            "type": "size_t",
+                            "name": "values_out_size"
                         }
                     ],
                     "flags": []

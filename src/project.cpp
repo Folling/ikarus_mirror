@@ -1,19 +1,17 @@
+#include "ikarus/project.h"
+
 #include "project.hpp"
 
+#include <cstdio>
 #include <iterator>
 
 #include <db/db.hpp>
 #include <db/migrations.hpp>
+#include <ikarus/status.h>
 #include <util/logger.hpp>
+#include <validation/arg.hpp>
 
-#define CHECK_AND_LOG_SUBJECT() CHECK_AND_LOG_SUBJECT_IMPL(project, project->path.c_str())
-
-Project * project_open_impl(char const * path, int additional_flags, ErrorCode * err_out) {
-    if (path == nullptr) {
-        LOG_WARN("passed path was null");
-        RETURN_ERROR(nullptr, ErrorCode_NullArgument);
-    }
-
+Project * project_open_impl(char const * path, int additional_flags, StatusCode * status_out) {
     LOG_TRACE("commencing opening project at \"{}\"", path);
 
     std::filesystem::path fs_path = path;
@@ -21,10 +19,10 @@ Project * project_open_impl(char const * path, int additional_flags, ErrorCode *
     if (additional_flags & SQLITE_OPEN_CREATE) {
         if (std::error_code ec{}; std::filesystem::exists(fs_path, ec) && !ec) {
             LOG_WARN("project already exists, aborting creating project");
-            RETURN_ERROR(nullptr, ErrorCode_AlreadyExists);
+            RETURN_STATUS_OUT(nullptr, StatusCode_Duplicate);
         } else if (ec) {
             LOG_STD_ERROR("unable to check filesystem whether or not the project already exists");
-            RETURN_ERROR(nullptr, ErrorCode_FilesystemError);
+            RETURN_STATUS_OUT(nullptr, StatusCode_InternalError);
         }
     }
 
@@ -40,7 +38,7 @@ Project * project_open_impl(char const * path, int additional_flags, ErrorCode *
         );
         rc != SQLITE_OK || db == nullptr) {
         LOG_SQLITE_ERROR("unable to initialise sqlite");
-        RETURN_ERROR(nullptr, ErrorCode_DatabaseError);
+        RETURN_STATUS_OUT(nullptr, StatusCode_InternalError);
     }
 
     LOG_INFO("successfully opened project");
@@ -55,12 +53,12 @@ Project * project_open_impl(char const * path, int additional_flags, ErrorCode *
     } else {
         LOG_INFO("checking current database version");
 
-        EVTRYRVE(
+        VTRYRV(
             version,
             nullptr,
-            ErrorCode_DatabaseError,
             db::get_one<int>(
                 db,
+                status_out,
                 "SELECT IF("
                 "EXISTS(SELECT 1 FROM `sqlite_schema` WHERE `tbl_name` = 'metadata'), "
                 "(SELECT `value` FROM `metadata` WHERE `key` = 'VERSION')), "
@@ -71,111 +69,123 @@ Project * project_open_impl(char const * path, int additional_flags, ErrorCode *
 
         if (version == 0) {
             LOG_ERROR("no metadata table exists for an existing project");
-            RETURN_ERROR(nullptr, ErrorCode_InvalidDatabaseVersion);
+            RETURN_STATUS_OUT(nullptr, StatusCode_Corrupted);
         }
     }
 
     LOG_VERBOSE("current database version is {}, newest database version is {}", version, migrations.back()->get_version());
 
-    if (auto res = db::transact<true>(
-            db,
-            "unable to run migrations",
-            [&migrations, version](sqlite3 * db) -> Result<void, int> {
-                for (auto const& migration : migrations) {
-                    if (auto migration_version = migration->get_version(); migration_version > version) {
-                        LOG_INFO("running migration {}", migration_version);
-                        TRY(migration->up(db));
-                        LOG_VERBOSE("successfully ran migration");
-                    } else {
-                        break;
-                    }
-                }
+    TRYRV(nullptr, db::transact<true>(db, status_out, [&migrations, version](sqlite3 * db) -> Result<void, int> {
+              for (auto const& migration : migrations) {
+                  if (auto migration_version = migration->get_version(); migration_version > version) {
+                      LOG_INFO("running migration {}", migration_version);
+                      TRY(migration->up(db));
+                      LOG_VERBOSE("successfully ran migration");
+                  } else {
+                      break;
+                  }
+              }
 
-                LOG_INFO("successfully ran all migrations");
-                return ok();
-            }
-        );
-        res.is_err()) {
-        RETURN_ERROR(nullptr, ErrorCode_MigrationFailed);
-    }
+              LOG_INFO("successfully ran all migrations");
+              return ok();
+          }));
 
-    return new Project{.path = std::move(fs_path), .db = db};
+    LOG_INFO("project is now up to date");
+
+    return (new Project{.path = std::move(fs_path), .db = db});
 }
 
-Project * ikarus_project_create_v1(char const * path, IkarusProjectCreateV1Flags flags, ErrorCode * err_out) {
-    LOG_FUNCTION("creating project");
+IkarusProjectCreateResult ikarus_project_create_v1(char const * path, IkarusProjectCreateV1Flags flags) {
+    LOG_FUNCTION_INFO("creating project");
+    IkarusProjectCreateResult ret{.project = nullptr, .status_code = StatusCode_Ok};
 
-    return project_open_impl(path, SQLITE_OPEN_CREATE, err_out);
+    CHECK(ret, validation::validate_path<validation::NotNull | validation::DoesntExist>(path, "project path", &ret.status_code));
+
+    ret.project = project_open_impl(path, SQLITE_OPEN_CREATE, &ret.status_code);
+
+    return ret;
 }
 
-Project * ikarus_project_open_v1(char const * path, IkarusProjectOpenV1Flags flags, ErrorCode * err_out) {
-    LOG_FUNCTION("opening project");
+IkarusProjectOpenResult ikarus_project_open_v1(char const * path, IkarusProjectOpenV1Flags flags) {
+    LOG_FUNCTION_INFO("opening project");
+    IkarusProjectOpenResult ret{.project = nullptr, .status_code = StatusCode_Ok};
 
-    return project_open_impl(path, 0, err_out);
+    CHECK(ret, validation::validate_path<validation::NotNull | validation::Exists>(path, "project path", &ret.status_code));
+
+    ret.project = project_open_impl(path, 0, &ret.status_code);
+
+    return ret;
 }
 
-bool ikarus_project_close_v1(Project * project, IkarusProjectCloseV1Flags flags, ErrorCode * err_out) {
-    LOG_FUNCTION_CHECK_SUBJECT("closing project");
+IkarusProjectCloseResult ikarus_project_close_v1(Project * project, IkarusProjectCloseV1Flags flags) {
+    LOG_FUNCTION_VERBOSE("closing project");
+    IkarusProjectCloseResult ret{.status_code = StatusCode_Ok};
 
-    LOG_TRACE("closing database");
+    CHECK(ret, validation::validate_project<validation::NotNull | validation::Exists>(project, "project", &ret.status_code));
 
-    if (auto rc = sqlite3_close_v2(project->db); rc == SQLITE_OK) {
-        LOG_VERBOSE("database successfully closed, deleting project object");
+    LOG_VERBOSE("closing database");
 
-        delete project;
-    } else {
+    if (auto rc = sqlite3_close_v2(project->db); rc != SQLITE_OK) {
         LOG_SQLITE_ERROR_DB("unable to close database", project->db);
-        RETURN_ERROR(false, ErrorCode_DatabaseError);
+        RETURN_STATUS(ret, StatusCode_InternalError);
     }
 
-    return true;
+    LOG_VERBOSE("database successfully closed, deleting project object");
+
+    delete project;
+    return ret;
 }
 
-bool ikarus_project_delete_v1(Project * project, IkarusProjectDeleteV1Flags flags, ErrorCode * err_out) {
-    LOG_FUNCTION_CHECK_SUBJECT("deleting project");
+IkarusProjectDeleteResult ikarus_project_delete_v1(Project * project, IkarusProjectDeleteV1Flags flags) {
+    LOG_FUNCTION_INFO("deleting project");
+    IkarusProjectDeleteResult ret{.status_code = StatusCode_Ok};
+
+    CHECK(ret, validation::validate_project<validation::NotNull | validation::Exists>(project, "project", &ret.status_code));
 
     // closing project deletes the pointer
     std::filesystem::path path = project->path;
 
-    if (!ikarus_project_close_v1(project, static_cast<IkarusProjectCloseV1Flags>(0), err_out)) {
-        return false;
+    if (IkarusProjectCloseResult close_ret = ikarus_project_close_v1(project, static_cast<IkarusProjectCloseV1Flags>(0));
+        close_ret.status_code != StatusCode_Ok) {
+        RETURN_STATUS(ret, close_ret.status_code);
     }
 
     LOG_VERBOSE("deleting project file");
 
     if (std::error_code ec{}; std::filesystem::remove(path, ec), ec) {
         LOG_STD_ERROR("unable to remove path from filesystem");
-        RETURN_ERROR(false, ErrorCode_FilesystemError);
+        RETURN_STATUS(ret, StatusCode_InternalError);
     }
 
-    return true;
+    return ret;
 }
 
-bool ikarus_project_get_blueprints_v1(
-    Project const * project, Id * blueprints_out, size_t blueprints_out_size, IkarusProjectGetBlueprintsV1Flags flags, ErrorCode * err_out
+IkarusProjectGetBlueprintsResult ikarus_project_get_blueprints_v1(
+    Project const * project, Id * blueprints_out, size_t blueprints_out_size, IkarusProjectGetBlueprintsV1Flags flags
 ) {
-    LOG_FUNCTION_CHECK_SUBJECT("getting project blueprints");
+    IkarusProjectGetBlueprintsResult ret{.count = 0, .status_code = StatusCode_Ok};
+    LOG_FUNCTION_VERBOSE("fetching project blueprints");
 
-    TRYRVE(
-        false,
-        ErrorCode_DatabaseError,
-        db::get_many_buffered_log<Id>(
-            project->db, "unable to fetch all blueprint ids", "SELECT `id` FROM `blueprints`", blueprints_out, blueprints_out_size
-        )
+    CHECK(ret, validation::validate_project<validation::NotNull | validation::Exists>(project, "project", &ret.status_code));
+
+    VTRYRV(
+        ret.count,
+        ret,
+        db::get_many_buffered<Id>(project->db, &ret.status_code, "SELECT `id` FROM `blueprints`", blueprints_out, blueprints_out_size)
     );
 
-    return true;
+    return ret;
 }
 
-size_t ikarus_project_get_blueprints_count_v1(Project const * project, IkarusProjectGetBlueprintsCountV1Flags flags, ErrorCode * err_out) {
-    LOG_FUNCTION_CHECK_SUBJECT("getting project blueprints count");
+IkarusProjectGetBlueprintsCountResult ikarus_project_get_blueprints_count_v1(
+    Project const * project, IkarusProjectGetBlueprintsCountV1Flags flags
+) {
+    IkarusProjectGetBlueprintsCountResult ret{.count = 0, .status_code = StatusCode_Ok};
+    LOG_FUNCTION_VERBOSE("fetching project blueprints count");
 
-    VTRYRVE(
-        ret,
-        0,
-        ErrorCode_DatabaseError,
-        db::get_one_log<size_t>(project->db, "unable to fetch blueprints count", "SELECT COUNT(*) FROM `blueprints`")
-    );
+    CHECK(ret, validation::validate_project<validation::NotNull | validation::Exists>(project, "project", &ret.status_code));
+
+    VTRYRV(ret.count, ret, db::get_one<size_t>(project->db, &ret.status_code, "SELECT COUNT(*) FROM `blueprints`"));
 
     return ret;
 }

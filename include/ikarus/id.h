@@ -1,17 +1,15 @@
 #pragma once
 
-#include "error.h"
-
 #include <stdint.h>
 
 typedef uint64_t Id;
 
-enum EntityType { EntityType_Folder = 0, EntityType_Blueprint = 1, EntityType_Attribute = 2, EntityType_Instance = 3 };
+enum EntityType { EntityType_None = 0, EntityType_Folder = 1, EntityType_Blueprint = 2, EntityType_Attribute = 3, EntityType_Instance = 4 };
 
 // layout:
-// first 8 bits: entity-type
+// first 8 bits: entity-type // 255 possible values, 0 for "nil/unknown"
 // next 32 bits: seconds since the linux epoch (enough to last until 2106)
-// next 24 bits: counter for all entities of the same type created during the same time interval
+// next 24 bits: counter for all entities created during the same time interval
 
 Id id_null();
 

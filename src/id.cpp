@@ -1,4 +1,4 @@
-#include "id.h"
+#include "ikarus/id.h"
 
 #include <atomic>
 #include <chrono>
@@ -15,7 +15,7 @@ Id id_null() {
 }
 
 Id id_generate(EntityType entity_type) {
-    Id ret;
+    Id ret{0};
     ret |= (static_cast<u64>(entity_type) << 56);
 
     auto time = std::chrono::floor<std::chrono::seconds>(std::chrono::high_resolution_clock::now());

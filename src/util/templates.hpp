@@ -160,3 +160,15 @@ constexpr std::size_t type_index_v() {
 
 template<typename T>
 using remove_all = std::remove_cvref_t<T>;
+
+template<typename... Args>
+using maybe_tuple = std::conditional_t<sizeof...(Args) < 2, nth_type_t<0, Args...>, std::tuple<Args...>>;
+
+template<typename... Args>
+constexpr maybe_tuple<Args...> maybe_singularise(std::tuple<Args...> const& tuple) {
+    if constexpr (sizeof...(Args) > 1) {
+        return tuple;
+    } else {
+        return std::get<0>(tuple);
+    }
+}

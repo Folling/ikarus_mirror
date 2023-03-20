@@ -1,8 +1,9 @@
 {
     "name": "attribute",
+    "generate_struct": false,
     "depends_on": [
         "../../project",
-        "../../error",
+        "../../status",
         "../../id",
         "attributetype"
     ],
@@ -11,15 +12,15 @@
             "name": "delete",
             "versions": [
                 {
-                    "return_type": "bool",
+                    "return_type": [],
                     "parameters": [
                         {
-                            "name": "project",
-                            "type": "Project *"
+                            "type": "Project *",
+                            "name": "project"
                         },
                         {
-                            "name": "attribute",
-                            "type": "Id"
+                            "type": "Id",
+                            "name": "attribute"
                         }
                     ],
                     "flags": []
@@ -30,15 +31,20 @@
             "name": "get_blueprint",
             "versions": [
                 {
-                    "return_type": "Id",
+                    "return_type": [
+                        {
+                            "type": "Id",
+                            "name": "blueprint"
+                        }
+                    ],
                     "parameters": [
                         {
-                            "name": "project",
-                            "type": "Project*"
+                            "type": "Project*",
+                            "name": "project"
                         },
                         {
-                            "name": "attribute",
-                            "type": "Id"
+                            "type": "Id",
+                            "name": "attribute"
                         }
                     ],
                     "flags": []
@@ -49,15 +55,20 @@
             "name": "get_type",
             "versions": [
                 {
-                    "return_type": "AttributeType",
+                    "return_type": [
+                        {
+                            "type": "AttributeType",
+                            "name": "type"
+                        }
+                    ],
                     "parameters": [
                         {
-                            "name": "project",
-                            "type": "Project*"
+                            "type": "Project*",
+                            "name": "project"
                         },
                         {
-                            "name": "attribute",
-                            "type": "Id"
+                            "type": "Id",
+                            "name": "attribute"
                         }
                     ],
                     "flags": []

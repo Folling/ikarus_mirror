@@ -313,7 +313,7 @@ public:
         return is_some() && comparate.is_some() && *inspect() < *comparate.inspect();
     }
 
-protected:
+private:
     bool loaded;
     std::array<byte, sizeof(T)> data;
 };
