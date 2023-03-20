@@ -1,6 +1,8 @@
 #pragma once
 
 #include <iostream>
+#include <mutex>
+#include <shared_mutex>
 #include <string_view>
 
 #include <fmt/chrono.h>
@@ -10,25 +12,30 @@
 
 #include <util/format.hpp>
 
-#define GEN_LOG_LEVEL_FUNC(name, _level, out, colour, log_name)                                                        \
+enum class LogLevel { Debug = 0, Trace = 1, Verbose = 2, Info = 3, Warning = 4, Error = 5, Fatal = 6 };
+
+inline LogLevel threshold{LogLevel::Info};
+inline std::shared_mutex threshold_mutex;
+
+inline void set_log_level(LogLevel level) {
+    std::unique_lock lock{threshold_mutex};
+    threshold = level;
+}
+
+#define GEN_LOG_LEVEL_FUNC(name, level, out, colour, log_name)                                                         \
     template<typename... Ts>                                                                                           \
     void name##_impl(int line, char const * file, char const * function, fmt::format_string<Ts...> msg, Ts&&... ts) {  \
-        if (threshold > _level) [[likely]] {                                                                           \
-            return;                                                                                                    \
+        {                                                                                                              \
+            std::shared_lock lock{threshold_mutex};                                                                    \
+            if (threshold > level) [[likely]] {                                                                        \
+                return;                                                                                                \
+            }                                                                                                          \
         }                                                                                                              \
                                                                                                                        \
         fmt::print(out, fmt::fg(fmt::color::colour), log_name "({}@{}:{}) ", shorten_file_name(file), function, line); \
         fmt::print(out, fmt::fg(fmt::color::light_gray), fmt::format(msg, std::forward<Ts>(ts)...));                   \
         fmt::print(out, "\n");                                                                                         \
     }
-
-enum class LogLevel { Debug = 0, Trace = 1, Verbose = 2, Info = 3, Warning = 4, Error = 5, Fatal = 6 };
-
-inline LogLevel threshold{LogLevel::Info};
-
-inline void set_log_level(LogLevel level) {
-    threshold = level;
-}
 
 namespace detail {
 

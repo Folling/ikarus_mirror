@@ -112,18 +112,18 @@ struct SQLiteHelper<T> {
 };
 
 template<typename T>
-struct SQLiteHelper<std::optional<T>> {
-    static std::optional<T> convert(sqlite3_stmt * stmt, std::size_t idx) {
+struct SQLiteHelper<Option<T>> {
+    static Option<T> convert(sqlite3_stmt * stmt, std::size_t idx) {
         if (sqlite3_column_type(stmt, static_cast<int>(idx)) == SQLITE_NULL) {
-            return std::nullopt;
+            return none();
         } else {
-            return {SQLiteHelper<T>::convert(stmt, idx)};
+            return some(SQLiteHelper<T>::convert(stmt, idx));
         }
     }
 
-    static int bind(sqlite3_stmt * stmt, std::size_t idx, std::optional<T> const& value) {
-        if (value.has_value()) {
-            SQLiteHelper<T>::bind(stmt, idx, value.value());
+    static int bind(sqlite3_stmt * stmt, std::size_t idx, Option<T> const& value) {
+        if (value.is_some()) {
+            return SQLiteHelper<T>::bind(stmt, idx, value.unwrap());
         } else {
             return sqlite3_bind_null(stmt, static_cast<int>(idx));
         }

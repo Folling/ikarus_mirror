@@ -95,25 +95,30 @@ IncludeCategories:
   - Regex: '^<[a-z0-9_]+>$'
     Priority: 3
 
+  # ICU
+  # <unicode/ranges.hpp>
+  - Regex: '^<unicode/.*>$'
+    Priority: 4
+
   # expected
   # <expected/ranges.hpp>
   - Regex: '^<expected/.*>$'
-    Priority: 4
+    Priority: 5
 
   # libfmt
   # <fmt/core.hpp>
   - Regex: '^<fmt/.*>$'
-    Priority: 5
+    Priority: 6
 
   # nlohmann::json
   # <nlohmann/json.hpp>
   - Regex: '^<nlohmann/.*>$'
-    Priority: 6
+    Priority: 7
 
   # ranges
   # <range-v3/ranges.hpp>
   - Regex: '^<range-v3/.*>$'
-    Priority: 7
+    Priority: 8
 
 IndentAccessModifiers: false
 IndentCaseBlocks: false

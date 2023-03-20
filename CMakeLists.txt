@@ -34,6 +34,7 @@ target_link_libraries(
     PRIVATE
     sqlite3
     fmt
+    icu
 )
 
 set_target_properties(

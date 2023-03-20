@@ -25,7 +25,7 @@ IkarusBlueprintCreateResult ikarus_blueprint_create_v1(
     LOG_VERBOSE("generated id {}", id);
 
     TRYRV(ret, db::transact<true>(project->db, &ret.status_code, [&](sqlite3 * db) -> Result<void, int> {
-              TRY(util::create_entity(db, id, parent_folder, position, name, "", &ret.status_code));
+              TRY(util::create_entity(db, id, none(), parent_folder, position, name, "", &ret.status_code));
 
               LOG_VERBOSE("creating blueprints entry");
               TRY(db::exec(db, &ret.status_code, "INSERT INTO `blueprints`(`entity_id`) VALUES(?)", id));

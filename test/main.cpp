@@ -11,7 +11,7 @@
 int main() {
     setvbuf(stdout, nullptr, _IONBF, 0);
     setvbuf(stderr, nullptr, _IONBF, 0);
-    set_log_level(LogLevel::Trace);
+    set_log_level(LogLevel::Fatal);
 
     Project * project;
 

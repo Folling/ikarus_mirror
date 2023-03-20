@@ -11,11 +11,11 @@
 
 namespace util {
 
-std::optional<Id> db_id(Id id) {
+Option<Id> db_id(Id id) {
     if (id_is_null(id)) {
-        return std::nullopt;
+        return none();
     } else {
-        return std::make_optional(id);
+        return some(id);
     }
 }
 
@@ -49,6 +49,7 @@ char * fetch_single_string(
     return ret;
 }
 
+template<int extraValidationFlags>
 bool update_single_string(
     Project * project,
     Id entity,
@@ -64,7 +65,7 @@ bool update_single_string(
         false, validation::validate_entity<validation::NotNull | validation::Exists, EntityType_None>(project, entity, "entity", status_out)
     );
 
-    CHECK(false, validation::validate_string<validation::NotNull>(new_value, "entity", status_out));
+    CHECK(false, validation::validate_string<validation::NotNull | extraValidationFlags>(new_value, "entity", status_out));
 
     TRYRV(
         false,
@@ -81,6 +82,7 @@ bool update_single_string(
 Result<void, int> create_entity(
     sqlite3 * db,
     Id entity,
+    Option<Id> scope,
     Id parent_folder,
     std::size_t position,
     std::string_view name,
@@ -90,9 +92,25 @@ Result<void, int> create_entity(
     LOG_VERBOSE("creating entities entry");
     TRY(db::exec(db, status_out, "INSERT INTO `entities`(`id`, `name`, `information`) VALUES(?, ?, ?)", entity, name, information));
 
+    LOG_VERBOSE("updating siblings' positions");
+    TRY(db::exec(
+        db,
+        status_out,
+        "UPDATE `entity_tree` SET `position` = `position` + 1 WHERE `scope` = ? AND `parent_id` = ? AND `position` >= ?",
+        scope,
+        util::db_id(parent_folder),
+        position
+    ));
+
     LOG_VERBOSE("creating tree entry");
     TRY(db::exec(
-        db, status_out, "INSERT INTO `entity_tree`(`entity_id`, `parent_id`, `position`) VALUES(?, ?, ?)", entity, parent_folder, position
+        db,
+        status_out,
+        "INSERT INTO `entity_tree`(`entity_id`, `scope`, `parent_id`, `position`) VALUES(?, ?, ?, ?)",
+        entity,
+        scope,
+        util::db_id(parent_folder),
+        position
     ));
 
     return ok();
