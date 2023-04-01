@@ -35,7 +35,7 @@ std::unique_ptr<Database> Database::open(std::filesystem::path const& path, int 
     if (additional_flags & SQLITE_OPEN_CREATE) {
         if (std::error_code ec{}; std::filesystem::exists(path, ec) && !ec) {
             LOG_WARN("project already exists, aborting creating project");
-            RETURN_STATUS_OUT(nullptr, StatusCode_InternalError);
+            RETURN_STATUS_OUT(nullptr, StatusCode_InvalidArgument);
         } else if (ec) {
             LOG_STD_ERROR("unable to check filesystem whether or not the project already exists", ec);
             RETURN_STATUS_OUT(nullptr, StatusCode_InternalError);
@@ -164,6 +164,7 @@ bool Database::backup(int * rc_out) {
 bool Database::close(StatusCode * status_out) {
     LOG_VERBOSE("closing database");
 
+    // TODO retry mechanism if busy
     if (auto rc = sqlite3_close_v2(_db); rc != SQLITE_OK) {
         LOG_SQLITE_ERROR("unable to close database", _db, rc);
         RETURN_STATUS_OUT(false, StatusCode_InternalError);
