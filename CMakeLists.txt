@@ -6,7 +6,6 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 
 add_subdirectory(vendor)
-add_subdirectory(gen)
 add_subdirectory(include)
 add_subdirectory(src)
 
@@ -20,7 +19,7 @@ add_custom_target(
     libikarus_gen
     VERBATIM
     WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/gen/script/
-    COMMAND cargo run -- --input ${CMAKE_CURRENT_LIST_DIR}/gen/templates --output ${CMAKE_CURRENT_LIST_DIR}/include/ikarus
+    COMMAND cargo run -- --input ${CMAKE_CURRENT_LIST_DIR}/vendor/ikarusdef/templates --output ${CMAKE_CURRENT_LIST_DIR}/include/ikarus
 )
 
 add_dependencies(ikarus libikarus_gen)

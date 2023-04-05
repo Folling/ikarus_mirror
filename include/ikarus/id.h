@@ -1,5 +1,7 @@
 #pragma once
 
+#include "entity_type.h"
+
 #include <stdint.h>
 
 typedef uint64_t Id;
@@ -14,8 +16,6 @@ typedef uint64_t Id;
 // colloquially these are known as "null IDs"
 const Id ID_NONE = 0;
 const Id ID_UNSPECIFIED = 1;
-
-enum EntityType { EntityType_None = 0, EntityType_Folder = 1, EntityType_Template = 2, EntityType_Property = 3, EntityType_Page = 4 };
 
 class Project;
 
