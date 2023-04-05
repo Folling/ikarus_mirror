@@ -8,7 +8,7 @@ use glob::glob;
 
 fn pascalise(str: &String) -> String {
     str.split("_").map(|str|
-        format!("{}{}", str.chars().next().map(|c| c.to_uppercase().collect::<String>()).unwrap_or(String::new()), str.chars().skip(1).collect::<String>())
+        format!("{}{}", str.chars().next().map(|c| c.to_uppercase().into()).unwrap_or(std::iter::empty()), str.chars().skip(1).into())
     ).collect::<String>()
 }
 
