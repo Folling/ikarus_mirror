@@ -34,4 +34,5 @@
 
 build
 gen/script/target
-include/ikarus
+include/ikarus/entities
+include/ikarus/project.h
