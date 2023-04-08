@@ -1,9 +1,9 @@
 #pragma once
 
+#include "util/structs/result.hpp"
+
 #include <memory>
 #include <vector>
-
-#include <util/structs/result.hpp>
 
 namespace db {
 

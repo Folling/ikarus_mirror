@@ -1,18 +1,18 @@
 #pragma once
 
+#include "coded/db/database.hpp"
+#include "ikarus/id.h"
+#include "util/logger.hpp"
+#include "util/structs/result.hpp"
+#include "validation/arg.hpp"
+
 #include <cstdint>
 #include <string_view>
-
-#include <db/database.hpp>
-#include <ikarus/id.h>
-#include <util/logger.hpp>
-#include <util/structs/result.hpp>
-#include <validation/arg.hpp>
 
 namespace util {
 
 inline Option<Id> db_id(Id id) {
-    if (id_is_null(id)) {
+    if (id == ID_NULL) {
         return none();
     } else {
         return some(id);

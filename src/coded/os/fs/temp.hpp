@@ -6,11 +6,11 @@
 #include <util/macros.hpp>
 #include <util/structs/result.hpp>
 
-#ifdef IKA_OS_UNIX
+#if defined(IKA_OS_UNIX)
 #include <fcntl.h>
 
 #include <cstdio>
-#elifdef IKA_OS_WIN
+#elif defined(IKA_OS_WIN)
 #include <windows.h>
 #endif
 
@@ -31,7 +31,7 @@ namespace fs = std::filesystem;
 [[nodiscard]] Result<fs::path, int> get_temp_file(std::string_view filename) {
     VTRY(auto temp_dir, get_temp_directory());
 
-#ifdef IKA_OS_UNIX
+#if defined(IKA_OS_UNIX)
     auto template_path = fmt::format("{}/{}XXXXXX", temp_dir.c_str(), filename);
     char const * ret = mktemp(template_path.data());
     if (ret == nullptr) {
@@ -40,7 +40,7 @@ namespace fs = std::filesystem;
         return err(rc);
     }
     return ok(ret);
-#elifdef IKA_OS_WIN
+#elif defined(IKA_OS_WIN)
     std::string path;
     path.resize(MAX_PATH);
     int rc = GetTempFileName(temp_dir.c_str(), TEXT(filename.data()), 0, path.data());

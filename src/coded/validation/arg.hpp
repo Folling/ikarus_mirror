@@ -184,12 +184,12 @@ bool validate_entity(DbHandle const& db_handle, Id entity, std::string_view iden
     if constexpr ((F & NotNull) != 0) {
         LOG_VERBOSE("validating that {} isn't null", ident);
 
-        if (id_is_null(entity)) {
+        if (entity == ID_NULL) {
             LOG_ERROR("{} is null", ident);
             RETURN_STATUS_OUT(false, StatusCode_InvalidArgument);
         }
     } else {
-        if (id_is_null(entity)) {
+        if (entity == ID_NULL) {
             LOG_VERBOSE("{} is null, but that's fine. Skipping further validation", ident);
             return true;
         }
@@ -203,7 +203,7 @@ bool validate_entity(DbHandle const& db_handle, Id entity, std::string_view iden
 
             LOG_VERBOSE("validating type");
 
-            if (id_is_null(entity)) {
+            if (entity == ID_NULL) {
                 LOG_VERBOSE("entity is null");
             } else {
                 if (auto received = id_get_entity_type(entity); received != expected) {

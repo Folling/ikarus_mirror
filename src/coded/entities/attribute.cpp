@@ -1,7 +1,6 @@
 #include "ikarus/entities/property.h"
-
-#include <util/logger.hpp>
-#include <validation/arg.hpp>
+#include "util/logger.hpp"
+#include "validation/arg.hpp"
 
 IkarusPropertyCreateResult ikarus_property_create_v1(
     Project * project,
