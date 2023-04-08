@@ -1,6 +1,7 @@
-use crate::util::split_maybe_once;
 use serde::de::Error;
 use serde::{Deserialize, Deserializer};
+
+use crate::util::split_maybe_once;
 
 use super::parameter_validation_type::ParameterValidationType;
 

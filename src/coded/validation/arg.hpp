@@ -1,17 +1,18 @@
 #pragma once
 
+#include "coded/util/string.hpp"
+#include "coded/util/structs/result.hpp"
+#include "coded/util/templates.hpp"
+#include "ikarus/id.h"
+#include "ikarus/project.h"
+#include "ikarus/status.h"
+#include "project.hpp"
+#include "status.hpp"
+
 #include <unicode/uchar.h>
 #include <unicode/uiter.h>
 
 #include <db/database.hpp>
-#include <ikarus/id.h>
-#include <ikarus/project.h>
-#include <ikarus/status.h>
-#include <project.hpp>
-#include <status.hpp>
-#include <util/string.hpp>
-#include <util/structs/result.hpp>
-#include <util/templates.hpp>
 
 #define CHECK(ret, ...)   \
     if (!(__VA_ARGS__)) { \

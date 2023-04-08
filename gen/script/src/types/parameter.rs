@@ -1,6 +1,6 @@
-use super::parameter_validation::ParameterValidation;
-
 use serde_derive::Deserialize;
+
+use super::parameter_validation::ParameterValidation;
 
 #[derive(Debug, Deserialize)]
 pub struct Parameter {

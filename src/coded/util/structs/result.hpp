@@ -1,12 +1,12 @@
 #pragma once
 
+#include "coded/util/base.hpp"
+#include "option.hpp"
+
 #include <concepts>
 #include <functional>
 #include <type_traits>
 #include <variant>
-
-#include <util/base.hpp>
-#include <util/structs/option.hpp>
 
 #define CONCAT(a, b)       CONCAT_INNER(a, b)
 #define CONCAT_INNER(a, b) a##b

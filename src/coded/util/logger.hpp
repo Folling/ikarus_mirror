@@ -1,5 +1,7 @@
 #pragma once
 
+#include "format.hpp"
+
 #include <iostream>
 #include <mutex>
 #include <sstream>
@@ -10,8 +12,6 @@
 #include <fmt/color.h>
 #include <fmt/core.h>
 #include <fmt/ranges.h>
-
-#include <util/format.hpp>
 
 enum class LogLevel { Debug = 0, Trace = 1, Verbose = 2, Info = 3, Warning = 4, Error = 5, Fatal = 6 };
 

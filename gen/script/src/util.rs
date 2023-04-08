@@ -1,4 +1,3 @@
-use std::fs::File;
 use std::io::Write;
 
 // pattern isn't stable yet
@@ -22,19 +21,23 @@ pub fn make_pascal_case(str: &String) -> String {
     ).collect::<String>()
 }
 
-pub fn write_commented<S: AsRef<str>>(file: &mut File, content: S) -> std::io::Result<()> {
+pub fn write_commented<W: Write, S: AsRef<str>>(
+    writer: &mut W,
+    content: S,
+    indent: usize,
+) -> std::io::Result<()> {
     if content.as_ref().chars().all(|c| c.is_whitespace()) {
         return Ok(());
     }
 
-    const MAX_LENGTH: usize = 60;
+    const MAX_LENGTH: usize = 80;
     let mut curr_length = 0;
 
-    write!(file, "//")?;
+    write!(writer, "{}//", " ".repeat(indent))?;
 
     for line in content.as_ref().lines() {
         if line.chars().all(|c| c.is_whitespace()) {
-            write!(file, "\n//\n//")?;
+            write!(writer, "\n{}//\n//", " ".repeat(indent))?;
             curr_length = 0;
             continue;
         }
@@ -42,15 +45,17 @@ pub fn write_commented<S: AsRef<str>>(file: &mut File, content: S) -> std::io::R
         // not perfect, since unicode word boundaries aren't just whitespace, but good enough for us
         for word in line.trim().split_whitespace() {
             if curr_length + word.len() > MAX_LENGTH {
-                write!(file, "\n//")?;
+                write!(writer, "\n{}//", " ".repeat(indent))?;
 
                 curr_length = 0;
             }
 
-            write!(file, " {}", word)?;
+            write!(writer, " {}", word)?;
             curr_length += word.len() + 1;
         }
     }
+
+    writeln!(writer, "")?;
 
     Ok(())
 }

@@ -1,14 +1,16 @@
 #![feature(iter_intersperse)]
 
-mod types;
-mod util;
-
-use crate::types::Type;
-use glob::glob;
 use std::env;
 use std::error::Error;
 use std::fs::{DirBuilder, File};
 use std::path::PathBuf;
+
+use glob::glob;
+
+use crate::types::Type;
+
+mod types;
+mod util;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<_> = env::args().collect();

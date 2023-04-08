@@ -1,11 +1,11 @@
 #pragma once
 
+#include "maths.hpp"
+#include "templates.hpp"
+
 #include <optional>
 
 #include <fmt/format.h>
-
-#include <util/maths.hpp>
-#include <util/templates.hpp>
 
 namespace format {
 

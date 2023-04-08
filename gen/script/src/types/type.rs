@@ -1,9 +1,11 @@
-use crate::util::{make_pascal_case, write_commented};
-use serde_derive::Deserialize;
 use std::fs::File;
+use std::io::Write;
+
+use serde_derive::Deserialize;
+
+use crate::util::{make_pascal_case, write_commented};
 
 use super::function::Function;
-use std::io::Write;
 
 #[derive(Debug, Deserialize)]
 pub struct Type {
@@ -21,9 +23,25 @@ impl Type {
 
         writeln!(file, "#pragma once\n")?;
 
-        for header in ["stdbool.h", "stddef.h", "stdint.h"] {
-            writeln!(file, "#include <{header}>")?;
+        writeln!(file, "#if defined(__cplusplus)")?;
+
+        for header in ["cstdbool", "cstddef", "cstdint"] {
+            writeln!(file, "    #include <{header}>")?;
         }
+
+        writeln!(file, "")?;
+
+        writeln!(file, "    using std::size_t;")?;
+
+        writeln!(file, "    extern \"C\" {{")?;
+
+        writeln!(file, "#elif")?;
+
+        for header in ["stdbool.h", "stddef.h", "stdint.h"] {
+            writeln!(file, "    #include <{header}>")?;
+        }
+
+        writeln!(file, "#endif")?;
 
         writeln!(file, "")?;
 
@@ -31,11 +49,9 @@ impl Type {
             writeln!(file, "#include \"{dependency}.h\"")?;
         }
 
-        write!(file, "\n")?;
+        writeln!(file, "")?;
 
-        write_commented(file, &self.description)?;
-
-        write!(file, "\n")?;
+        write_commented(file, &self.description, 0)?;
 
         if self.generate_struct {
             writeln!(file, "struct {type_name_pascal};")?;
@@ -44,6 +60,12 @@ impl Type {
         for func in &self.functions {
             func.generate(file, &type_name, &type_name_pascal)?;
         }
+
+        writeln!(file, "\n#if defined(__cplusplus)")?;
+
+        writeln!(file, "    }}")?;
+
+        writeln!(file, "#endif")?;
 
         Ok(())
     }
