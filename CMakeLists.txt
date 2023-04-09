@@ -11,16 +11,23 @@ add_subdirectory(include)
 add_subdirectory(src)
 
 add_library(
-    ikarus SHARED
+    ikarus
     ${INCLUDE_FILES}
+    ${IMPL_HEADER_FILES}
+    ${GENERATED_SOURCE_FILES}
     ${SOURCE_FILES}
 )
 
 add_custom_target(
     libikarus_gen
     VERBATIM
+    DEPENDS ${GEN_FILES}
     WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/gen/script/
-    COMMAND cargo run -- --input ${CMAKE_CURRENT_LIST_DIR}/vendor/ikarusdef/templates --output ${CMAKE_CURRENT_LIST_DIR}/include/ikarus
+    COMMAND cargo run --
+        --input ${CMAKE_CURRENT_LIST_DIR}/vendor/ikarusdef/templates
+        --include-output ${CMAKE_CURRENT_LIST_DIR}/include/ikarus
+        --source-output ${CMAKE_CURRENT_LIST_DIR}/src/generated
+        --impl-header-output ${CMAKE_CURRENT_LIST_DIR}/src/generated
 )
 
 add_dependencies(ikarus libikarus_gen)
@@ -28,7 +35,12 @@ add_dependencies(ikarus libikarus_gen)
 target_include_directories(
     ikarus PUBLIC
     ${CMAKE_CURRENT_LIST_DIR}/include
-    ${CMAKE_CURRENT_LIST_DIR}/src
+)
+
+target_include_directories(
+    ikarus PRIVATE
+    ${CMAKE_CURRENT_LIST_DIR}/src/generated
+    ${CMAKE_CURRENT_LIST_DIR}/src/impl
 )
 
 find_package(ICU COMPONENTS uc i18n REQUIRED)

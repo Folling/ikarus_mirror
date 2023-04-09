@@ -92,7 +92,7 @@ impl FunctionVersion {
             0,
         )?;
 
-        writeln!(file, "{return_type_name} ikarus_{type_name}_{func_name}_v{version}({args}, {flag_enum_name} flags);")?;
+        writeln!(file, "IKA_API {return_type_name} ikarus_{type_name}_{func_name}_v{version}({args}, {flag_enum_name} flags);")?;
 
         Ok(())
     }

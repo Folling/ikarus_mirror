@@ -1,3 +1,4 @@
+use serde::{Deserialize, Deserializer};
 use std::io::Write;
 
 // pattern isn't stable yet
@@ -14,8 +15,8 @@ pub fn split_maybe_once(string: &str, delimiter: char) -> (&str, Option<&str>) {
     }
 }
 
-pub fn make_pascal_case(str: &String) -> String {
-    str.split("_").map(|str|
+pub fn make_pascal_case<S: AsRef<str>>(str: S) -> String {
+    str.as_ref().split("_").map(|str|
         // thanks rust for not allowing me to format iterators
         format!("{}{}", str.chars().next().map(|c| c.to_uppercase().to_string()).unwrap_or(String::new()), str.chars().skip(1).collect::<String>())
     ).collect::<String>()
@@ -58,4 +59,13 @@ pub fn write_commented<W: Write, S: AsRef<str>>(
     writeln!(writer, "")?;
 
     Ok(())
+}
+
+pub fn sanitised_string<'de, D: Deserializer<'de>>(deserializer: D) -> Result<String, D::Error> {
+    let str: String = Deserialize::deserialize(deserializer)?;
+    // only handle each case separately to avoid typing out all possible keywords when only a few will be needed
+    match &str[..] {
+        "template" => Ok(String::from("template_")),
+        _ => Ok(str),
+    }
 }

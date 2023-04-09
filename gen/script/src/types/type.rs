@@ -3,12 +3,13 @@ use std::io::Write;
 
 use serde_derive::Deserialize;
 
-use crate::util::{make_pascal_case, write_commented};
+use crate::util::{make_pascal_case, sanitised_string, write_commented};
 
 use super::function::Function;
 
 #[derive(Debug, Deserialize)]
 pub struct Type {
+    #[serde(deserialize_with = "sanitised_string")]
     pub name: String,
     pub description: String,
     pub generate_struct: bool,
@@ -17,7 +18,7 @@ pub struct Type {
 }
 
 impl Type {
-    pub fn generate(&self, file: &mut File) -> std::io::Result<()> {
+    pub fn generate_include_header(&self, file: &mut File, depth: usize) -> anyhow::Result<()> {
         let type_name = &self.name;
         let type_name_pascal = make_pascal_case(type_name);
 
@@ -45,6 +46,8 @@ impl Type {
 
         writeln!(file, "")?;
 
+        writeln!(file, "#include \"{}macros.h\"", "../".repeat(depth))?;
+
         for dependency in &self.depends_on {
             writeln!(file, "#include \"{dependency}.h\"")?;
         }
@@ -67,6 +70,14 @@ impl Type {
 
         writeln!(file, "#endif")?;
 
+        Ok(())
+    }
+
+    pub fn generate_include_source(&self, file: &mut File, depth: usize) -> anyhow::Result<()> {
+        Ok(())
+    }
+
+    pub fn generate_impl_header(&self, file: &mut File, depth: usize) -> anyhow::Result<()> {
         Ok(())
     }
 }

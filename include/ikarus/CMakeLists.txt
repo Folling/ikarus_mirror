@@ -4,5 +4,4 @@ file(
     "*.h"
 )
 
-set(INCLUDE_FILES ${FILES} PARENT_SCOPE)
-
+set(PUBLIC_FILES ${FILES} PARENT_SCOPE)

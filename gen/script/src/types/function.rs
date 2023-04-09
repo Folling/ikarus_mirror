@@ -5,12 +5,13 @@ use std::io::Write;
 
 use serde_derive::Deserialize;
 
-use crate::util::{make_pascal_case, write_commented};
+use crate::util::{make_pascal_case, sanitised_string, write_commented};
 
 use super::function_version::FunctionVersion;
 
 #[derive(Debug, Deserialize)]
 pub struct Function {
+    #[serde(deserialize_with = "sanitised_string")]
     pub name: String,
     pub description: String,
     pub errors: HashMap<String, Vec<String>>,

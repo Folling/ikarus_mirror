@@ -1,10 +1,6 @@
-file(
-    GLOB_RECURSE
-    FILES
-    "*.hpp"
-    "*.cpp"
-    "*.ipp"
-    "*.tpp"
-)
+add_subdirectory(generated)
+add_subdirectory(impl)
 
-set(SOURCE_FILES ${FILES} PARENT_SCOPE)
+set(IMPL_HEADER_FILES ${IMPL_HEADER_FILES} PARENT_SCOPE)
+set(GENERATED_SOURCE_FILES ${IMPL_HEADER_FILES} PARENT_SCOPE)
+set(SOURCE_FILES ${SOURCE_FILES} PARENT_SCOPE)
