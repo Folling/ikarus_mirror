@@ -1,5 +1,6 @@
 use std::fs::File;
 use std::io::Write;
+use std::path::PathBuf;
 
 use serde_derive::Deserialize;
 
@@ -73,11 +74,12 @@ impl Type {
         Ok(())
     }
 
-    pub fn generate_include_source(&self, file: &mut File, depth: usize) -> anyhow::Result<()> {
+    pub fn generate_include_source(&self, file: &mut File, sub_path: &PathBuf, depth: usize) -> anyhow::Result<()> {
+        writeln!(file, "#include \"\"")
         Ok(())
     }
 
-    pub fn generate_impl_header(&self, file: &mut File, depth: usize) -> anyhow::Result<()> {
+    pub fn generate_impl_header(&self, file: &mut File, sub_path: &PathBuf, depth: usize) -> anyhow::Result<()> {
         Ok(())
     }
 }

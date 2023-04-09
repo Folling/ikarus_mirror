@@ -36,3 +36,5 @@ build
 gen/script/target
 include/ikarus/entities
 include/ikarus/project.h
+src/generated/*.cpp
+src/generated/*.hpp
