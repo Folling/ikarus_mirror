@@ -3,4 +3,4 @@
 	url = ssh://git@git.ikarus.world:41843/Ikarus/ikarusdef.git
 [submodule "vendor/cppbase"]
 	path = vendor/cppbase
-	url = ssh://git@git.rewritesarebliss.com:16658/Folling/cppbase.git
+	url = https://git.rewritesarebliss.com/Folling/cppbase.git
