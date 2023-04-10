@@ -2,6 +2,7 @@ use std::fmt::Display;
 use std::fs::File;
 use std::io::Write;
 
+use crate::types::parameter_validation_type::ParameterValidationType;
 use serde_derive::Deserialize;
 
 use crate::util::write_commented;
@@ -93,6 +94,129 @@ impl FunctionVersion {
         )?;
 
         writeln!(file, "IKA_API {return_type_name} ikarus_{type_name}_{func_name}_v{version}({args}, {flag_enum_name} flags);")?;
+
+        Ok(())
+    }
+    pub fn generate_include_source<
+        S1: AsRef<str> + Display,
+        S2: AsRef<str> + Display,
+        S3: AsRef<str> + Display,
+        S4: AsRef<str> + Display,
+    >(
+        &self,
+        file: &mut File,
+        type_name: S1,
+        type_name_pascal: S2,
+        func_name: S3,
+        func_name_pascal: S4,
+        version: usize,
+    ) -> std::io::Result<()> {
+        let flag_enum_name = format!("Ikarus{type_name_pascal}{func_name_pascal}V{version}Flags");
+        let return_type_name =
+            format!("Ikarus{type_name_pascal}{func_name_pascal}V{version}Result");
+
+        let args = self
+            .parameters
+            .iter()
+            .map(|param| format!("{} {}", param.r#type, param.name))
+            .collect::<Vec<String>>()
+            .join(", ");
+
+        let mut indent = 0;
+
+        writeln!(file, "{:indent$}{return_type_name} ikarus_{type_name}_{func_name}_v{version}({args}, {flag_enum_name} flags) {{", "")?;
+
+        indent = 4;
+
+        writeln!(file, "{:indent$}{return_type_name} ret{{}};", "")?;
+
+        for param in &self.parameters {
+            for validation in &param.validation {
+                writeln!(file)?;
+
+                if let Some(condition) = &validation.flag_condition {
+                    writeln!(
+                        file,
+                        "{:indent$}if ((flags & {}_{}) {} 0) {{",
+                        "",
+                        flag_enum_name,
+                        condition.flag,
+                        // == 0 to check if the flag is *not* set
+                        if condition.inverted { "==" } else { "!=" }
+                    )?;
+
+                    indent += 4;
+                }
+
+                let call = match &validation.r#type {
+                    ParameterValidationType::NotNull => {
+                        format!("validate_not_null({})", param.name)
+                    }
+                    ParameterValidationType::IdNotNull => {
+                        format!("validate_id_not_null({})", param.name)
+                    }
+                    ParameterValidationType::IdNotNone => {
+                        format!("validate_id_not_none({})", param.name)
+                    }
+                    ParameterValidationType::IdSpecified => {
+                        format!("validate_id_specified({})", param.name)
+                    }
+                    ParameterValidationType::Exists => format!("validate_exists({})", param.name),
+                    ParameterValidationType::PositionWithinBounds {
+                        bounds_folder_object,
+                    } => format!(
+                        "validate_position_within_bounds({}, {})",
+                        param.name, bounds_folder_object
+                    ),
+                    ParameterValidationType::Is { expected_types } => format!(
+                        "validate_is({}, {})",
+                        param.name,
+                        expected_types
+                            .iter()
+                            .map(|c| format!("EntityTypes_{}", c))
+                            .collect::<Vec<String>>()
+                            .join(" | ")
+                    ),
+                    ParameterValidationType::ValidPath => format!("validate_path({})", param.name),
+                    ParameterValidationType::ValidUtf8 => format!("validate_utf8({})", param.name),
+                    ParameterValidationType::NotBlank => format!("validate_path({})", param.name),
+                    ParameterValidationType::PathParentMustExist => {
+                        format!("validate_path_parent_exists({})", param.name)
+                    }
+                    ParameterValidationType::ValidPropertyValue { type_source } => {
+                        format!("validate_property_value({}, {})", type_source, param.name)
+                    }
+                    ParameterValidationType::ValidPropertyValueDb { property_source } => format!(
+                        "validate_property_value_db({}, {})",
+                        property_source, param.name
+                    ),
+                };
+
+                writeln!(file, "{:indent$}if(!{call}) {{", "")?;
+
+                indent += 4;
+
+                writeln!(
+                    file,
+                    "{:indent$} ret.status_code = StatusCode_InvalidArgument;",
+                    ""
+                )?;
+
+                writeln!(file, "{:indent$} return ret;", "")?;
+
+                indent -= 4;
+
+                writeln!(file, "{:indent$}}}", "")?;
+
+                if validation.flag_condition.is_some() {
+                    indent -= 4;
+
+                    writeln!(file, "{:indent$}}}", "")?;
+                }
+            }
+        }
+
+        writeln!(file, "}}\n")?;
 
         Ok(())
     }

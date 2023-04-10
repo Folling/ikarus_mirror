@@ -7,7 +7,7 @@ pub fn split_maybe_once(string: &str, delimiter: char) -> (&str, Option<&str>) {
         unsafe {
             (
                 string.get_unchecked(..idx),
-                Some(string.get_unchecked(idx..)),
+                Some(string.get_unchecked(idx + 1..)),
             )
         }
     } else {

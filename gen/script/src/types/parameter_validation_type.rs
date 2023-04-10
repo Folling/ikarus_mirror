@@ -12,7 +12,7 @@ pub enum ParameterValidationType {
     ValidPath,
     ValidUtf8,
     NotBlank,
-    ParentMustExist { path_source: String },
+    PathParentMustExist,
     ValidPropertyValue { type_source: String },
     ValidPropertyValueDb { property_source: String },
 }
@@ -29,6 +29,7 @@ impl ParameterValidationType {
             "ValidPath" => return Ok(ParameterValidationType::ValidPath),
             "ValidUtf8" => return Ok(ParameterValidationType::ValidUtf8),
             "NotBlank" => return Ok(ParameterValidationType::NotBlank),
+            "PathParentMustExist" => return Ok(ParameterValidationType::PathParentMustExist),
             _ => {}
         }
 
@@ -68,15 +69,6 @@ impl ParameterValidationType {
                             .split(",")
                             .map(|c| c.to_string())
                             .collect::<Vec<String>>(),
-                    });
-                }
-                "ParentMustExist" => {
-                    if options.chars().any(|c| !c.is_alphabetic() && c != '_') {
-                        bail!("ParentMustExist validation options has invalid characters: {} (perhaps specified more than one)", options);
-                    }
-
-                    return Ok(ParameterValidationType::ParentMustExist {
-                        path_source: options.to_string(),
                     });
                 }
                 "ValidPropertyValue" => {

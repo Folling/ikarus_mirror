@@ -13,7 +13,7 @@ pub struct FlagCondition {
 
 #[derive(Debug)]
 pub struct ParameterValidation {
-    pub validation: ParameterValidationType,
+    pub r#type: ParameterValidationType,
     pub flag_condition: Option<FlagCondition>,
 }
 
@@ -27,27 +27,25 @@ impl<'a> Deserialize<'a> for ParameterValidation {
 
         return match split_maybe_once(str, '@') {
             (name, Some(flag)) => {
-                let mut flag_chars = flag.chars().peekable();
+                let mut flag_chars = flag.trim().chars().peekable();
 
-                let inverted = if flag_chars.peek() == Some(&'!') {
-                    flag_chars.next();
-                    true
-                } else {
-                    false
+                let (flag, inverted) = match flag_chars.peek() {
+                    Some('!') => (
+                        flag_chars.skip(1).collect::<String>().trim().to_string(),
+                        true,
+                    ),
+                    Some(_) => (flag_chars.collect::<String>().trim().to_string(), false),
+                    None => return Err(D::Error::custom("invalid parameter validation format")),
                 };
 
                 Ok(ParameterValidation {
-                    validation: ParameterValidationType::parse(name.trim())
+                    r#type: ParameterValidationType::parse(name.trim())
                         .map_err(D::Error::custom)?,
-                    flag_condition: Some(FlagCondition {
-                        inverted,
-                        flag: flag_chars.collect::<String>(),
-                    }),
+                    flag_condition: Some(FlagCondition { inverted, flag }),
                 })
             }
             (name, None) => Ok(ParameterValidation {
-                validation: ParameterValidationType::parse(name.trim())
-                    .map_err(D::Error::custom)?,
+                r#type: ParameterValidationType::parse(name.trim()).map_err(D::Error::custom)?,
                 flag_condition: None,
             }),
         };

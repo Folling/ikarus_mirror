@@ -70,7 +70,7 @@ fn main() -> anyhow::Result<()> {
         let generation_steps: [(
             &PathBuf,
             &PathBuf,
-            fn(&Type, &mut File, usize) -> anyhow::Result<()>,
+            fn(&Type, &mut File, &PathBuf) -> anyhow::Result<()>,
         ); 3] = [
             (
                 &include_output,
@@ -100,7 +100,7 @@ fn main() -> anyhow::Result<()> {
 
             let mut file = File::create(&output)?;
 
-            func(&r#type, &mut file, sub.components().count() - 1)?;
+            func(&r#type, &mut file, &sub)?;
         }
     }
 
