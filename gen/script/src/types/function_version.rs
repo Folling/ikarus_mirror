@@ -102,6 +102,7 @@ impl FunctionVersion {
         S2: AsRef<str> + Display,
         S3: AsRef<str> + Display,
         S4: AsRef<str> + Display,
+        S5: AsRef<str> + Display,
     >(
         &self,
         file: &mut File,
@@ -110,6 +111,7 @@ impl FunctionVersion {
         func_name: S3,
         func_name_pascal: S4,
         version: usize,
+        log_level: S5,
     ) -> std::io::Result<()> {
         let flag_enum_name = format!("Ikarus{type_name_pascal}{func_name_pascal}V{version}Flags");
         let return_type_name =
@@ -124,9 +126,29 @@ impl FunctionVersion {
 
         let mut indent = 0;
 
+        let full_func_name = format!("ikarus_{type_name}_{func_name}_v{version}");
+
         writeln!(file, "{:indent$}{return_type_name} ikarus_{type_name}_{func_name}_v{version}({args}, {flag_enum_name} flags) {{", "")?;
 
         indent = 4;
+
+        writeln!(
+            file,
+            "{:indent$}LOG_{}(\"Calling {}({}) with flags: {{}}\", {}, flags)\n",
+            "",
+            log_level.as_ref().to_uppercase(),
+            full_func_name,
+            self.parameters
+                .iter()
+                .map(|p| format!("{}: {{}}", p.name))
+                .intersperse(String::from(", "))
+                .collect::<String>(),
+            self.parameters
+                .iter()
+                .map(|p| p.name.as_ref())
+                .intersperse(", ")
+                .collect::<String>()
+        )?;
 
         writeln!(file, "{:indent$}{return_type_name} ret{{}};", "")?;
 
@@ -192,17 +214,25 @@ impl FunctionVersion {
                     ),
                 };
 
+                writeln!(
+                    file,
+                    "{:indent$}LOG_VERBOSE(\"validating {} with validation {}\")",
+                    "", param.name, validation.r#type
+                )?;
+
                 writeln!(file, "{:indent$}if(!{call}) {{", "")?;
 
                 indent += 4;
 
+                writeln!(file, "{:indent$}LOG_ERROR(\"validation failed\")", "")?;
+
                 writeln!(
                     file,
-                    "{:indent$} ret.status_code = StatusCode_InvalidArgument;",
+                    "{:indent$}ret.status_code = StatusCode_InvalidArgument;",
                     ""
                 )?;
 
-                writeln!(file, "{:indent$} return ret;", "")?;
+                writeln!(file, "{:indent$}return ret;", "")?;
 
                 indent -= 4;
 
@@ -216,7 +246,22 @@ impl FunctionVersion {
             }
         }
 
-        writeln!(file, "}}\n")?;
+        writeln!(
+            file,
+            "\n{:indent$}{full_func_name}_impl({}, &ret, flags);",
+            "",
+            self.parameters
+                .iter()
+                .map(|p| p.name.as_str())
+                .intersperse(", ")
+                .collect::<String>()
+        )?;
+
+        writeln!(file, "\n{:indent$}return ret;", "")?;
+
+        indent -= 4;
+
+        writeln!(file, "{:indent$}}}\n", "")?;
 
         Ok(())
     }

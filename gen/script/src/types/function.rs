@@ -13,6 +13,7 @@ use super::function_version::FunctionVersion;
 pub struct Function {
     #[serde(deserialize_with = "sanitised_string")]
     pub name: String,
+    pub log_level: String,
     pub description: String,
     pub errors: HashMap<String, Vec<String>>,
     pub versions: Vec<FunctionVersion>,
@@ -63,6 +64,7 @@ impl Function {
                 &func_name,
                 &func_name_pascal,
                 version + 1,
+                &self.log_level,
             )?;
         }
 
