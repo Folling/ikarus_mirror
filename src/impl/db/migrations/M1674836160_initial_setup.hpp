@@ -1,15 +1,14 @@
 #pragma once
 
-#include "db/database.hpp"
-#include "db/migrations.hpp"
-#include "ikarus/id.h"
+#include <impl/db/database.hpp>
+#include <impl/db/migrations.hpp>
 
 namespace db {
 
 class M1674836160_initial_setup final : public Migration {
 public:
     M1674836160_initial_setup() = default;
-    ~M1674836160_initial_setup() = default;
+    ~M1674836160_initial_setup() final = default;
 
 public:
     [[nodiscard]] Result<void, int> up(db::Database& db) override;

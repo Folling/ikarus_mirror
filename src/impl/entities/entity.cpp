@@ -1,11 +1,11 @@
 #include "ikarus/entities/entity.h"
 
-#include "db/database.hpp"
-#include "project.hpp"
-#include "status.hpp"
-#include "util.hpp"
-#include "util/logger.hpp"
-#include "validation/arg.hpp"
+#include <impl/db/database.hpp>
+#include <impl/entities/util.hpp>
+#include <impl/project.hpp>
+#include <impl/status.hpp>
+#include <impl/util/logger.hpp>
+#include <impl/validation/arg.hpp>
 
 IkarusEntityGetNameResult ikarus_entity_get_name_v1(Project * project, Id entity, IkarusEntityGetNameV1Flags flags) {
     LOG_FUNCTION_VERBOSE("fetching entity name");

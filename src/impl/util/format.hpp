@@ -1,11 +1,12 @@
 #pragma once
 
-#include "maths.hpp"
-#include "templates.hpp"
-
 #include <optional>
 
 #include <fmt/format.h>
+
+#include <impl/ikarus/path.h>
+#include <impl/maths.hpp>
+#include <impl/templates.hpp>
 
 namespace format {
 
@@ -32,5 +33,17 @@ struct fmt::formatter<std::optional<T>> {
         } else {
             return fmt::format_to(ctx.out(), "nullopt");
         }
+    }
+};
+
+template<>
+struct fmt::formatter<Path> {
+    template<typename FormatParseContext>
+    auto parse(FormatParseContext& pc) {
+        return pc.end();
+    }
+
+    auto format(Path const& path, fmt::format_context& ctx) const {
+        return fmt::format_to(ctx.out(), "{}", path.data);
     }
 };

@@ -4,3 +4,6 @@
 [submodule "vendor/cppbase"]
 	path = vendor/cppbase
 	url = https://git.rewritesarebliss.com/Folling/cppbase.git
+[submodule "vendor/sqlitecpp"]
+	path = vendor/sqlitecpp
+	url = ssh://git@git.rewritesarebliss.com:16658/Folling/sqlitecpp.git

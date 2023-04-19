@@ -1,6 +1,6 @@
-#include "M1674836160_initial_setup.hpp"
-
-#include "db/database.hpp"
+#include <impl/db/database.hpp>
+#include <impl/db/migrations/M1674836160_initial_setup.hpp>
+#include <impl/util/logger.hpp>
 
 namespace db {
 

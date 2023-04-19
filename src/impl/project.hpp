@@ -1,13 +1,14 @@
 #pragma once
 
-#include "db/database.hpp"
-#include "util/types.hpp"
-
 #include <sqlite3.h>
 
 #include <atomic>
 #include <filesystem>
 #include <mutex>
+#include <shared_mutex>
+
+#include <impl/db/database.hpp>
+#include <impl/util/types.hpp>
 
 class DbHandle {
 public:
@@ -28,6 +29,8 @@ private:
 class Project {
 public:
     Project(std::filesystem::path&& path, std::unique_ptr<db::Database>&& db):
+        _connection_id{},
+        _id_counter{},
         _path{std::move(path)},
         _db{std::move(db)} {}
 
@@ -36,8 +39,8 @@ public:
         return _path;
     }
 
-    [[nodiscard]] std::atomic<u64>& get_connection_id() {
-        return _id_counter;
+    [[nodiscard]] u16 get_connection_id() const {
+        return _connection_id;
     }
 
     [[nodiscard]] std::atomic<u64>& get_id_counter() {
@@ -54,6 +57,7 @@ private:
     u16 _connection_id;
     std::atomic<u64> _id_counter;
 
-    std::mutex mutable _db_mutex;
+    std::shared_mutex _db_mutex;
+    std::shared_lock _read_lock;
     std::unique_ptr<db::Database> _db;
 };

@@ -1,7 +1,6 @@
-#include "migrations.hpp"
-
-#include "db/migrations/M1674836144_genesis.hpp"
-#include "db/migrations/M1674836160_initial_setup.hpp"
+#include <impl/db/migrations.hpp>
+#include <impl/db/migrations/M1674836144_genesis.hpp>
+#include <impl/db/migrations/M1674836160_initial_setup.hpp>
 
 namespace db {
 

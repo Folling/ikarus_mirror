@@ -21,18 +21,13 @@ pub struct FunctionVersion {
 }
 
 impl FunctionVersion {
-    pub fn generate<
-        S1: AsRef<str> + Display,
-        S2: AsRef<str> + Display,
-        S3: AsRef<str> + Display,
-        S4: AsRef<str> + Display,
-    >(
+    pub fn generate(
         &self,
         file: &mut File,
-        type_name: S1,
-        type_name_pascal: S2,
-        func_name: S3,
-        func_name_pascal: S4,
+        type_name: impl AsRef<str> + Display,
+        type_name_pascal: impl AsRef<str> + Display,
+        func_name: impl AsRef<str> + Display,
+        func_name_pascal: impl AsRef<str> + Display,
         version: usize,
     ) -> std::io::Result<()> {
         let flag_enum_name = format!("Ikarus{type_name_pascal}{func_name_pascal}V{version}Flags");
@@ -97,57 +92,70 @@ impl FunctionVersion {
 
         Ok(())
     }
-    pub fn generate_include_source<
-        S1: AsRef<str> + Display,
-        S2: AsRef<str> + Display,
-        S3: AsRef<str> + Display,
-        S4: AsRef<str> + Display,
-        S5: AsRef<str> + Display,
-    >(
+    pub fn generate_include_source(
         &self,
         file: &mut File,
-        type_name: S1,
-        type_name_pascal: S2,
-        func_name: S3,
-        func_name_pascal: S4,
+        type_name: impl AsRef<str> + Display,
+        type_name_pascal: impl AsRef<str> + Display,
+        func_name: impl AsRef<str> + Display,
+        func_name_pascal: impl AsRef<str> + Display,
         version: usize,
-        log_level: S5,
+        log_level: impl AsRef<str> + Display,
     ) -> std::io::Result<()> {
         let flag_enum_name = format!("Ikarus{type_name_pascal}{func_name_pascal}V{version}Flags");
         let return_type_name =
             format!("Ikarus{type_name_pascal}{func_name_pascal}V{version}Result");
 
-        let args = self
+        let typed_parameters = self
             .parameters
             .iter()
             .map(|param| format!("{} {}", param.r#type, param.name))
-            .collect::<Vec<String>>()
-            .join(", ");
+            .intersperse(String::from(", "))
+            .collect::<String>();
 
         let mut indent = 0;
 
         let full_func_name = format!("ikarus_{type_name}_{func_name}_v{version}");
 
-        writeln!(file, "{:indent$}{return_type_name} ikarus_{type_name}_{func_name}_v{version}({args}, {flag_enum_name} flags) {{", "")?;
+        writeln!(file, "{:indent$}{return_type_name} ikarus_{type_name}_{func_name}_v{version}({typed_parameters}, {flag_enum_name} flags) {{", "")?;
 
         indent = 4;
 
+        let log_parameters_list = self
+            .parameters
+            .iter()
+            .map(|p| format!("{}: {{}}", p.name))
+            .intersperse(String::from(", "))
+            .collect::<String>();
+
+        let parameter_list = self
+            .parameters
+            .iter()
+            .map(|p| p.name.clone())
+            .intersperse(String::from(", "))
+            .collect::<String>();
+
+        let log_parameter_arg_list = self
+            .parameters
+            .iter()
+            .map(|p| {
+                if p.r#type.contains("*") {
+                    format!("fmt::ptr({})", p.name)
+                } else {
+                    p.name.clone()
+                }
+            })
+            .intersperse(String::from(", "))
+            .collect::<String>();
+
         writeln!(
             file,
-            "{:indent$}LOG_{}(\"Calling {}({}) with flags: {{}}\", {}, flags)\n",
+            "{:indent$}LOG_{}(\"Calling {}({}) with flags: {{}}\", {}, flags);\n",
             "",
             log_level.as_ref().to_uppercase(),
             full_func_name,
-            self.parameters
-                .iter()
-                .map(|p| format!("{}: {{}}", p.name))
-                .intersperse(String::from(", "))
-                .collect::<String>(),
-            self.parameters
-                .iter()
-                .map(|p| p.name.as_ref())
-                .intersperse(", ")
-                .collect::<String>()
+            log_parameters_list,
+            log_parameter_arg_list
         )?;
 
         writeln!(file, "{:indent$}{return_type_name} ret{{}};", "")?;
@@ -216,15 +224,15 @@ impl FunctionVersion {
 
                 writeln!(
                     file,
-                    "{:indent$}LOG_VERBOSE(\"validating {} with validation {}\")",
+                    "{:indent$}LOG_VERBOSE(\"validating {} with validation {}\");",
                     "", param.name, validation.r#type
                 )?;
 
-                writeln!(file, "{:indent$}if(!{call}) {{", "")?;
+                writeln!(file, "{:indent$}if (!{call}) {{", "")?;
 
                 indent += 4;
 
-                writeln!(file, "{:indent$}LOG_ERROR(\"validation failed\")", "")?;
+                writeln!(file, "{:indent$}LOG_ERROR(\"validation failed\");", "")?;
 
                 writeln!(
                     file,
@@ -248,20 +256,73 @@ impl FunctionVersion {
 
         writeln!(
             file,
-            "\n{:indent$}{full_func_name}_impl({}, &ret, flags);",
-            "",
-            self.parameters
-                .iter()
-                .map(|p| p.name.as_str())
-                .intersperse(", ")
-                .collect::<String>()
+            "\n{:indent$}ret = {full_func_name}_impl({}, flags);",
+            "", parameter_list
         )?;
+
+        writeln!(
+            file,
+            "\n{:indent$}if (ret.status_code != StatusCode_Ok) {{",
+            ""
+        )?;
+
+        indent += 4;
+
+        writeln!(
+            file,
+            "{:indent$}LOG_{}(\"Error in {}: {{}}\", ret.status_code);",
+            "",
+            log_level.as_ref().to_uppercase(),
+            full_func_name
+        )?;
+
+        indent -= 4;
+
+        writeln!(file, "{:indent$}}} else {{", "")?;
+
+        indent += 4;
+
+        writeln!(
+            file,
+            "{:indent$}LOG_ERROR(\"Finished {}\");",
+            "", full_func_name
+        )?;
+
+        indent -= 4;
+
+        writeln!(file, "{:indent$}}}", "")?;
 
         writeln!(file, "\n{:indent$}return ret;", "")?;
 
         indent -= 4;
 
         writeln!(file, "{:indent$}}}\n", "")?;
+
+        Ok(())
+    }
+
+    pub fn generate_impl_header(
+        &self,
+        file: &mut File,
+        type_name: impl AsRef<str> + Display,
+        type_name_pascal: impl AsRef<str> + Display,
+        func_name: impl AsRef<str> + Display,
+        func_name_pascal: impl AsRef<str> + Display,
+        version: usize,
+        log_level: impl AsRef<str> + Display,
+    ) -> std::io::Result<()> {
+        let flag_enum_name = format!("Ikarus{type_name_pascal}{func_name_pascal}V{version}Flags");
+        let return_type_name =
+            format!("Ikarus{type_name_pascal}{func_name_pascal}V{version}Result");
+
+        let typed_parameters = self
+            .parameters
+            .iter()
+            .map(|param| format!("{} {}", param.r#type, param.name))
+            .intersperse(String::from(", "))
+            .collect::<String>();
+
+        writeln!(file, "\n{return_type_name} ikarus_{type_name}_{func_name}_v{version}_impl({typed_parameters}, {flag_enum_name} flags);")?;
 
         Ok(())
     }

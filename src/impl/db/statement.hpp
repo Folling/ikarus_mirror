@@ -1,13 +1,13 @@
 #pragma once
 
-#include "sqlitehelper.hpp"
-#include "status.hpp"
-#include "util.hpp"
-#include "util/structs/result.hpp"
-
 #include <sqlite3.h>
 
 #include <string_view>
+
+#include <impl/db/sqlitehelper.hpp>
+#include <impl/db/util.hpp>
+#include <impl/status.hpp>
+#include <impl/util/structs/result.hpp>
 
 namespace db {
 

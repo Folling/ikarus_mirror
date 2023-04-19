@@ -1,10 +1,5 @@
 #pragma once
 
-#include "status.hpp"
-#include "util/logger.hpp"
-#include "util/structs/result.hpp"
-#include "util/templates.hpp"
-
 #include <sqlite3.h>
 
 #include <optional>
@@ -13,6 +8,12 @@
 #include <utility>
 
 #include <fmt/format.h>
+
+#include <impl/status.hpp>
+#include <impl/util/logger.hpp>
+#include <impl/util/structs/option.hpp>
+#include <impl/util/structs/result.hpp>
+#include <impl/util/templates.hpp>
 
 namespace db {
 
@@ -85,7 +86,7 @@ struct SQLiteHelper<RawString> {
 
     static int bind(sqlite3_stmt * stmt, std::size_t idx, RawString const& value) {
         // TODO, remove SQLITE_TRANSIENT for better performance
-        return sqlite3_bind_text(stmt, static_cast<int>(idx), value.data, value.size, SQLITE_TRANSIENT);
+        return sqlite3_bind_text(stmt, static_cast<int>(idx), value.data, static_cast<int>(value.size), SQLITE_TRANSIENT);
     }
 };
 

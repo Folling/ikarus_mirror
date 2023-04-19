@@ -1,13 +1,11 @@
-#include "ikarus/project.h"
-
-#include "db/database.hpp"
-#include "project.hpp"
-#include "util/logger.hpp"
-#include "validation/arg.hpp"
-
 #include <iterator>
 
 #include <ikarus/status.h>
+#include <impl/db/database.hpp>
+#include <impl/ikarus/project.h>
+#include <impl/project.hpp>
+#include <impl/util/logger.hpp>
+#include <impl/validation/arg.hpp>
 
 Project * project_open_impl(char const * path, int additional_flags, StatusCode * status_out) {
     std::filesystem::path fs_path{path};
@@ -25,7 +23,7 @@ Project * project_open_impl(char const * path, int additional_flags, StatusCode 
     return (new Project{std::move(fs_path), std::move(db)});
 }
 
-IkarusProjectCreateResult ikarus_project_create_v1(char const * path, IkarusProjectCreateV1Flags flags) {
+IkarusProjectCreateV1Result ikarus_project_create_v1(char const * path, IkarusProjectCreateV1Flags flags) {
     LOG_FUNCTION_INFO("creating project");
     IkarusProjectCreateResult ret{.project = nullptr, .status_code = StatusCode_Ok};
 

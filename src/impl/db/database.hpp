@@ -1,9 +1,5 @@
 #pragma once
 
-#include "statement.hpp"
-#include "status.hpp"
-#include "util/structs/result.hpp"
-
 #include <sqlite3.h>
 
 #include <filesystem>
@@ -11,6 +7,10 @@
 #include <vector>
 
 #include <fmt/format.h>
+
+#include <impl/db/statement.hpp>
+#include <impl/status.hpp>
+#include <impl/util/structs/result.hpp>
 
 namespace db {
 

@@ -1,8 +1,10 @@
 #include "database.hpp"
 
-#include "migrations.hpp"
-#include "os/fs/temp.hpp"
-#include "util.hpp"
+#include <impl/db/migrations.hpp>
+#include <impl/db/util.hpp>
+#include <impl/os/fs/temp.hpp>
+#include <impl/status.hpp>
+#include <impl/util/logger.hpp>
 
 namespace db {
 
@@ -32,6 +34,13 @@ Database& Database::operator=(Database&& other) noexcept {
 std::unique_ptr<Database> Database::open(std::filesystem::path const& path, int additional_flags, StatusCode * status_out) {
     LOG_VERBOSE("opening database at {} with the following additional flags {}", path.c_str(), additional_flags);
 
+    LOG_INFO("initialising SQLite interface");
+
+    if (auto rc = sqlite3_initialize(); rc != SQLITE_OK) {
+        LOG_SQLITE_ERROR("unable to initialise sqlite", db, rc);
+        RETURN_STATUS_OUT(nullptr, StatusCode_InternalError);
+    }
+
     if (additional_flags & SQLITE_OPEN_CREATE) {
         if (std::error_code ec{}; std::filesystem::exists(path, ec) && !ec) {
             LOG_WARN("project already exists, aborting creating project");
@@ -51,7 +60,7 @@ std::unique_ptr<Database> Database::open(std::filesystem::path const& path, int 
             nullptr
         );
         rc != SQLITE_OK || db == nullptr) {
-        LOG_SQLITE_ERROR("unable to initialise sqlite", db, rc);
+        LOG_SQLITE_ERROR("unable to initialise database", db, rc);
         RETURN_STATUS_OUT(nullptr, StatusCode_InternalError);
     }
 

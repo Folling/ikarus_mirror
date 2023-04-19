@@ -1,8 +1,6 @@
 #pragma once
 
-#include "ikarus/status.h"
-
-#include <sqlite3.h>
+#include <ikarus/status.h>
 
 #define RETURN_STATUS_OUT(ret, sc) \
     if (status_out != nullptr) {   \

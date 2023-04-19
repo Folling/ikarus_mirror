@@ -1,6 +1,6 @@
-#include "M1674836144_genesis.hpp"
-
-#include "db/database.hpp"
+#include <impl/db/database.hpp>
+#include <impl/db/migrations/M1674836144_genesis.hpp>
+#include <impl/util/logger.hpp>
 
 namespace db {
 

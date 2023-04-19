@@ -20,11 +20,11 @@ pub struct Function {
 }
 
 impl Function {
-    pub fn generate<S1: AsRef<str> + Display, S2: AsRef<str> + Display>(
+    pub fn generate(
         &self,
         file: &mut File,
-        type_name: S1,
-        type_name_pascal: S2,
+        type_name: impl AsRef<str> + Display,
+        type_name_pascal: impl AsRef<str> + Display,
     ) -> std::io::Result<()> {
         let func_name = &self.name;
         let func_name_pascal = make_pascal_case(func_name);
@@ -47,17 +47,41 @@ impl Function {
         Ok(())
     }
 
-    pub fn generate_include_source<S1: AsRef<str> + Display, S2: AsRef<str> + Display>(
+    pub fn generate_include_source(
         &self,
         file: &mut File,
-        type_name: S1,
-        type_name_pascal: S2,
+        type_name: impl AsRef<str> + Display,
+        type_name_pascal: impl AsRef<str> + Display,
     ) -> std::io::Result<()> {
         let func_name = &self.name;
         let func_name_pascal = make_pascal_case(func_name);
 
         for (version, func_version) in self.versions.iter().enumerate() {
             func_version.generate_include_source(
+                file,
+                &type_name,
+                &type_name_pascal,
+                &func_name,
+                &func_name_pascal,
+                version + 1,
+                &self.log_level,
+            )?;
+        }
+
+        Ok(())
+    }
+
+    pub fn generate_impl_header(
+        &self,
+        file: &mut File,
+        type_name: impl AsRef<str> + Display,
+        type_name_pascal: impl AsRef<str> + Display,
+    ) -> std::io::Result<()> {
+        let func_name = &self.name;
+        let func_name_pascal = make_pascal_case(func_name);
+
+        for (version, func_version) in self.versions.iter().enumerate() {
+            func_version.generate_impl_header(
                 file,
                 &type_name,
                 &type_name_pascal,

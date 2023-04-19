@@ -1,10 +1,10 @@
 #pragma once
 
-#include "types.hpp"
-
 #include <limits>
 #include <memory>
 #include <type_traits>
+
+#include <impl/types.hpp>
 
 namespace tmpl {
 

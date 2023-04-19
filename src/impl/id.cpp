@@ -1,13 +1,7 @@
-#include "ikarus/id.h"
+#include <impl/ikarus/id.h>
+#include <impl/project.hpp>
 
-#include "project.hpp"
-#include "util/base.hpp"
-
-#include <atomic>
-#include <chrono>
-#include <thread>
-
-Id id_generate(Project* project, EntityType entity_type) {
+Id id_generate(Project * project, EntityType entity_type) {
     Id ret{0};
 
     ret |= (static_cast<u64>(entity_type) << 56);

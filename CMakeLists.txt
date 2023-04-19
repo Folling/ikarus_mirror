@@ -24,10 +24,10 @@ add_custom_target(
     DEPENDS ${GEN_FILES}
     WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/gen/script/
     COMMAND cargo run --
-        --input ${CMAKE_CURRENT_LIST_DIR}/vendor/ikarusdef/templates
-        --include-output ${CMAKE_CURRENT_LIST_DIR}/include/ikarus
-        --source-output ${CMAKE_CURRENT_LIST_DIR}/src/generated
-        --impl-header-output ${CMAKE_CURRENT_LIST_DIR}/src/generated
+    --input ${CMAKE_CURRENT_LIST_DIR}/vendor/ikarusdef/templates
+    --include-output ${CMAKE_CURRENT_LIST_DIR}/include/ikarus
+    --source-output ${CMAKE_CURRENT_LIST_DIR}/src/generated
+    --impl-header-output ${CMAKE_CURRENT_LIST_DIR}/src/generated
 )
 
 add_dependencies(ikarus libikarus_gen)
@@ -39,18 +39,13 @@ target_include_directories(
 
 target_include_directories(
     ikarus PRIVATE
-    ${CMAKE_CURRENT_LIST_DIR}/src/generated
-    ${CMAKE_CURRENT_LIST_DIR}/src/impl
+    ${CMAKE_CURRENT_LIST_DIR}/src
 )
 
-find_package(ICU COMPONENTS uc i18n REQUIRED)
-
 target_link_libraries(
-    ikarus
-    PRIVATE
-    sqlite3
-    fmt
-    ${ICU_LIBRARIES}
+    ikarus PRIVATE
+    cppbase
+    sqlitecpp
 )
 
 set_target_properties(
@@ -68,11 +63,6 @@ set_target_properties(
 target_link_libraries(
     ikarus-tests PRIVATE
     ikarus
-    fmt
-)
-
-target_include_directories(
-    ikarus-tests PUBLIC
-    ${CMAKE_CURRENT_LIST_DIR}/include
-    ${CMAKE_CURRENT_LIST_DIR}/src
+    cppbase
+    sqlite
 )
