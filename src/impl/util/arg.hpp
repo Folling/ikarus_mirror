@@ -6,12 +6,12 @@
 #include <ikarus/id.h>
 #include <ikarus/project.h>
 #include <ikarus/status.h>
-#include <impl/db/database.hpp>
 #include <impl/project.hpp>
 #include <impl/status.hpp>
 #include <impl/util/string.hpp>
 #include <impl/util/structs/result.hpp>
 #include <impl/util/templates.hpp>
+#include <sqlitecpp/database.hpp>
 
 #define CHECK(ret, ...)   \
     if (!(__VA_ARGS__)) { \

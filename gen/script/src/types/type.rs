@@ -1,4 +1,3 @@
-use anyhow::anyhow;
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
@@ -101,9 +100,10 @@ impl Type {
             sub_path.with_extension("hpp").display()
         )?;
 
-        writeln!(file, "#include <impl/util/logger.hpp>")?;
+        writeln!(file, "#include <cppbase/logger.hpp>\n")?;
+
         writeln!(file, "#include <impl/util/format.hpp>")?;
-        writeln!(file, "#include <impl/validation/validation.hpp>")?;
+        writeln!(file, "#include <impl/util/validation.hpp>")?;
 
         writeln!(file)?;
 

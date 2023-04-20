@@ -1,7 +1,8 @@
 #pragma once
 
-#include <impl/db/database.hpp>
-#include <impl/db/migrations.hpp>
+#include <cppbase/types.hpp>
+#include <sqlitecpp/database.hpp>
+#include <sqlitecpp/migrations.hpp>
 
 namespace db {
 
@@ -12,7 +13,7 @@ public:
 
 public:
     [[nodiscard]] Result<void, int> up(db::Database& db) override;
-    [[nodiscard]] u64 get_version() const override;
+    [[nodiscard]] cppbase::u64 get_version() const override;
 };
 
 }

@@ -2,7 +2,6 @@
 
 use anyhow::{anyhow, bail};
 use std::env;
-use std::error::Error;
 use std::fs::{DirBuilder, File};
 use std::path::PathBuf;
 

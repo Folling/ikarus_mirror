@@ -1,5 +1,6 @@
 pub use r#type::Type;
 
+mod db_access;
 pub mod flag;
 pub mod function;
 pub mod function_version;

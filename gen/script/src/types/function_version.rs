@@ -2,6 +2,7 @@ use std::fmt::Display;
 use std::fs::File;
 use std::io::Write;
 
+use crate::types::db_access::DbAccess;
 use crate::types::parameter_validation_type::ParameterValidationType;
 use serde_derive::Deserialize;
 
@@ -16,6 +17,8 @@ pub struct FunctionVersion {
     pub return_type: Vec<ReturnTypeMember>,
     pub parameters: Vec<Parameter>,
     pub flags: Vec<Flag>,
+    pub log_level: String,
+    pub db_access: DbAccess,
     #[serde(default)]
     pub description: String,
 }
@@ -100,7 +103,6 @@ impl FunctionVersion {
         func_name: impl AsRef<str> + Display,
         func_name_pascal: impl AsRef<str> + Display,
         version: usize,
-        log_level: impl AsRef<str> + Display,
     ) -> std::io::Result<()> {
         let flag_enum_name = format!("Ikarus{type_name_pascal}{func_name_pascal}V{version}Flags");
         let return_type_name =
@@ -152,7 +154,7 @@ impl FunctionVersion {
             file,
             "{:indent$}LOG_{}(\"Calling {}({}) with flags: {{}}\", {}, flags);\n",
             "",
-            log_level.as_ref().to_uppercase(),
+            self.log_level.to_uppercase(),
             full_func_name,
             log_parameters_list,
             log_parameter_arg_list
@@ -209,7 +211,9 @@ impl FunctionVersion {
                     ),
                     ParameterValidationType::ValidPath => format!("validate_path({})", param.name),
                     ParameterValidationType::ValidUtf8 => format!("validate_utf8({})", param.name),
-                    ParameterValidationType::NotBlank => format!("validate_path({})", param.name),
+                    ParameterValidationType::NotBlank => {
+                        format!("validate_not_blank({})", param.name)
+                    }
                     ParameterValidationType::PathParentMustExist => {
                         format!("validate_path_parent_exists({})", param.name)
                     }
@@ -272,7 +276,7 @@ impl FunctionVersion {
             file,
             "{:indent$}LOG_{}(\"Error in {}: {{}}\", ret.status_code);",
             "",
-            log_level.as_ref().to_uppercase(),
+            self.log_level.to_uppercase(),
             full_func_name
         )?;
 
@@ -309,7 +313,6 @@ impl FunctionVersion {
         func_name: impl AsRef<str> + Display,
         func_name_pascal: impl AsRef<str> + Display,
         version: usize,
-        log_level: impl AsRef<str> + Display,
     ) -> std::io::Result<()> {
         let flag_enum_name = format!("Ikarus{type_name_pascal}{func_name_pascal}V{version}Flags");
         let return_type_name =

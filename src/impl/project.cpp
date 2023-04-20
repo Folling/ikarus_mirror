@@ -1,11 +1,11 @@
 #include <iterator>
 
+#include <cppbase/logger.hpp>
 #include <ikarus/status.h>
-#include <impl/db/database.hpp>
 #include <impl/ikarus/project.h>
 #include <impl/project.hpp>
-#include <impl/util/logger.hpp>
 #include <impl/validation/arg.hpp>
+#include <sqlitecpp/database.hpp>
 
 Project * project_open_impl(char const * path, int additional_flags, StatusCode * status_out) {
     std::filesystem::path fs_path{path};

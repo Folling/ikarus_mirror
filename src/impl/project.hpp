@@ -7,8 +7,8 @@
 #include <mutex>
 #include <shared_mutex>
 
-#include <impl/db/database.hpp>
 #include <impl/util/types.hpp>
+#include <sqlitecpp/database.hpp>
 
 class DbHandle {
 public:
