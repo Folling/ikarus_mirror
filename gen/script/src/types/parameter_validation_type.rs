@@ -13,6 +13,7 @@ pub enum ParameterValidationType {
     ValidPath,
     ValidUtf8,
     NotBlank,
+    PathExists,
     PathParentMustExist,
     ValidPropertyValue { type_source: String },
     ValidPropertyValueDb { property_source: String },
@@ -33,6 +34,7 @@ impl Display for ParameterValidationType {
             ParameterValidationType::ValidPath => f.write_str("ValidPath"),
             ParameterValidationType::ValidUtf8 => f.write_str("ValidUtf8"),
             ParameterValidationType::NotBlank => f.write_str("NotBlank"),
+            ParameterValidationType::PathExists => f.write_str("PathExists"),
             ParameterValidationType::PathParentMustExist => f.write_str("PathParentMustExist"),
             ParameterValidationType::ValidPropertyValue { .. } => f.write_str("ValidPropertyValue"),
             ParameterValidationType::ValidPropertyValueDb { .. } => {
@@ -54,6 +56,7 @@ impl ParameterValidationType {
             "ValidPath" => return Ok(ParameterValidationType::ValidPath),
             "ValidUtf8" => return Ok(ParameterValidationType::ValidUtf8),
             "NotBlank" => return Ok(ParameterValidationType::NotBlank),
+            "PathExists" => return Ok(ParameterValidationType::PathExists),
             "PathParentMustExist" => return Ok(ParameterValidationType::PathParentMustExist),
             _ => {}
         }

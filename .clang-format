@@ -137,8 +137,14 @@ IncludeCategories:
 
   # ranges
   # <range-v3/ranges.hpp>
-  - Regex: '^<impl/.*>$'
+  - Regex: '^<generated/.*>$'
     Priority: 12
+
+  # ranges
+  # ranges
+  # <range-v3/ranges.hpp>
+  - Regex: '^<impl/.*>$'
+    Priority: 13
 
 IndentAccessModifiers: false
 IndentCaseBlocks: false

@@ -226,6 +226,9 @@ impl FunctionVersion {
                     ParameterValidationType::NotBlank => {
                         format!("validate_not_blank({})", param.name)
                     }
+                    ParameterValidationType::PathExists => {
+                        format!("validate_path_exists({})", param.name)
+                    }
                     ParameterValidationType::PathParentMustExist => {
                         format!("validate_path_parent_exists({})", param.name)
                     }

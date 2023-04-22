@@ -45,18 +45,6 @@ bool validate_exists(Project const * project, Id id) {
     return project->get_db().get_one<bool>("SELECT EXISTS(SELECT 1 FROM `entities` WHERE `id` = ?", id).unwrap_value_or(false);
 }
 
-// it would be cleaner to not have project passed here, but it doesn't hurt and simplifies the generation script quite a bit
-// same for other functions
-
-bool validate_exists(Project const * _project, Path path) {
-    std::error_code ec;
-    if (!std::filesystem::exists(path.data, ec)) {
-        return false;
-    }
-
-    return !static_cast<bool>(ec);
-}
-
 bool validate_position_within_bounds(Project const * project, std::size_t idx, Id folder) {
     return project->get_db().get_one<bool>("SELECT ? < COUNT(*) FROM `entity_tree` WHERE `parent_id` = ?", folder).unwrap_value_or(false);
 }
@@ -106,6 +94,15 @@ bool validate_not_blank(char const * str) {
     return !cppbase::is_empty_or_blank(str);
 }
 
+bool validate_path_exists(Path path) {
+    std::error_code ec;
+    if (!std::filesystem::exists(path.data, ec)) {
+        return false;
+    }
+
+    return !static_cast<bool>(ec);
+}
+
 bool validate_path_parent_exists(Path path) {
     std::filesystem::path test{path.data};
 
@@ -117,7 +114,7 @@ bool validate_path_parent_exists(Path path) {
     return true;
 }
 
-bool validate_property_value(PropertyType type, nlohmann::json const& _settings, char const * value) {
+bool validate_property_value(PropertyType type, char const * value, nlohmann::json const& _settings) {
     auto json = nlohmann::json::parse(value, nullptr, false);
 
     if (json.is_discarded()) {
@@ -198,5 +195,5 @@ bool validate_property_value_db(Project const * project, Id property, char const
         return false;
     }
 
-    return validate_property_value(static_cast<PropertyType>(type), settings_json, value);
+    return validate_property_value(static_cast<PropertyType>(type), value, settings_json);
 }

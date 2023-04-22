@@ -1,85 +1,54 @@
 #include <iterator>
 
 #include <cppbase/logger.hpp>
-#include <ikarus/status.h>
-#include <impl/ikarus/project.h>
-#include <impl/project.hpp>
-#include <impl/validation/arg.hpp>
+
 #include <sqlitecpp/database.hpp>
 
-Project * project_open_impl(char const * path, int additional_flags, StatusCode * status_out) {
-    std::filesystem::path fs_path{path};
+#include <ikarus/project.h>
+#include <ikarus/status.h>
 
-    auto db = sqlitecpp::Database::open(fs_path, additional_flags, status_out);
+#include <generated/project.hpp>
+
+#include <impl/project.hpp>
+#include <impl/status.hpp>
+
+IKA_API IkarusProjectOpenV1Result ikarus_project_open_v1_impl(Path path, IkarusProjectOpenV1Flags flags) {
+    IkarusProjectOpenV1Result ret{.project = nullptr, .status_code = StatusCode_Ok};
+
+    std::filesystem::path fs_path{path.data};
+
+    auto db = sqlitecpp::Database::open(fs_path, 0);
 
     if (db == nullptr) {
-        return nullptr;
+        RETURN_STATUS(ret, StatusCode_InternalError);
     }
 
-    if (!db->migrate(status_out)) {
-        return nullptr;
+    if (!db->migrate()) {
+        RETURN_STATUS(ret, StatusCode_InternalError);
     }
 
-    return (new Project{std::move(fs_path), std::move(db)});
-}
-
-IkarusProjectCreateV1Result ikarus_project_create_v1(char const * path, IkarusProjectCreateV1Flags flags) {
-    LOG_FUNCTION_INFO("creating project");
-    IkarusProjectCreateResult ret{.project = nullptr, .status_code = StatusCode_Ok};
-
-    CHECK(ret, validation::validate_path<validation::NotNull | validation::DoesntExist>(path, "project path", &ret.status_code));
-
-    ret.project = project_open_impl(path, SQLITE_OPEN_CREATE, &ret.status_code);
-
-    LOG_FUNCTION_SUCCESS("successfully created project");
+    ret.project = new Project{std::move(fs_path), std::move(db)};
 
     return ret;
 }
 
-IkarusProjectOpenResult ikarus_project_open_v1(char const * path, IkarusProjectOpenV1Flags flags) {
-    LOG_FUNCTION_INFO("opening project");
-    IkarusProjectOpenResult ret{.project = nullptr, .status_code = StatusCode_Ok};
+IkarusProjectCloseV1Result ikarus_project_close_v1_impl(Project * project, IkarusProjectCloseV1Flags flags) {
+    IkarusProjectCloseV1Result ret{.status_code = StatusCode_Ok};
 
-    CHECK(ret, validation::validate_path<validation::NotNull | validation::Exists>(path, "project path", &ret.status_code));
-
-    ret.project = project_open_impl(path, 0, &ret.status_code);
-
-    LOG_FUNCTION_SUCCESS("successfully opened project");
-
-    return ret;
-}
-
-IkarusProjectCloseResult ikarus_project_close_v1(Project * project, IkarusProjectCloseV1Flags flags) {
-    LOG_FUNCTION_VERBOSE("closing project");
-    IkarusProjectCloseResult ret{.status_code = StatusCode_Ok};
-
-    CHECK(ret, validation::validate_project<validation::NotNull | validation::Exists>(project, "project", &ret.status_code));
-
-    auto db_handle = project->get_db_handle();
-
-    if (!db_handle.get_db()->close(&ret.status_code)) {
-        return ret;
+    if (!project->get_db().close()) {
+        RETURN_STATUS(ret, StatusCode_InternalError);
     }
 
-    LOG_VERBOSE("database successfully closed, deleting project object");
-
-    delete project;
-
-    LOG_FUNCTION_SUCCESS("successfully closed project");
-
     return ret;
 }
 
-IkarusProjectDeleteResult ikarus_project_delete_v1(Project * project, IkarusProjectDeleteV1Flags flags) {
-    LOG_FUNCTION_INFO("deleting project");
-    IkarusProjectDeleteResult ret{.status_code = StatusCode_Ok};
-
-    CHECK(ret, validation::validate_project<validation::NotNull | validation::Exists>(project, "project", &ret.status_code));
+IkarusProjectDeleteV1Result ikarus_project_delete_v1_impl(Project * project, IkarusProjectDeleteV1Flags flags) {
+    IkarusProjectDeleteV1Result ret{.status_code = StatusCode_Ok};
 
     // closing project deletes the pointer
     std::filesystem::path path = project->get_path();
 
-    if (IkarusProjectCloseResult close_ret = ikarus_project_close_v1(project, static_cast<IkarusProjectCloseV1Flags>(0));
+    if (IkarusProjectCloseV1Result close_ret = ikarus_project_close_v1(project, IkarusProjectCloseV1Flags_None);
         close_ret.status_code != StatusCode_Ok) {
         RETURN_STATUS(ret, close_ret.status_code);
     }
@@ -91,47 +60,41 @@ IkarusProjectDeleteResult ikarus_project_delete_v1(Project * project, IkarusProj
         RETURN_STATUS(ret, StatusCode_InternalError);
     }
 
-    LOG_FUNCTION_SUCCESS("successfully deleted project");
+    return ret;
+}
+
+IKA_API IkarusProjectGetEntitiesV1Result ikarus_project_get_entities_v1(
+    Project const * project, Id * entities_out, size_t entities_out_size, EntityTypes entity_types, IkarusProjectGetEntitiesV1Flags flags
+) {
+    IkarusProjectGetEntitiesV1Result ret{.status_code = StatusCode_Ok};
+
+    TRYRV(
+        ret,
+        project->get_db()
+            .get_many_buffered<Id>(
+                "SELECT `id` FROM `entities` WHERE (((`id` >> 56) & ?) != 0) LIMIT ?",
+                entities_out,
+                entities_out_size,
+                static_cast<int>(entity_types),
+                entities_out_size
+            )
+            .inspect_error([&ret](auto const& _) { ret.status_code = StatusCode_InternalError; })
+    );
 
     return ret;
 }
 
-IkarusProjectGetTemplatesResult ikarus_project_get_templates_v1(
-    Project const * project, Id * templates_out, size_t templates_out_size, IkarusProjectGetTemplatesV1Flags flags
-) {
-    LOG_FUNCTION_VERBOSE("fetching project templates");
-
-    IkarusProjectGetTemplatesResult ret{.count = 0, .status_code = StatusCode_Ok};
-
-    CHECK(ret, validation::validate_project<validation::NotNull | validation::Exists>(project, "project", &ret.status_code));
-
-    auto db_handle = project->get_db_handle();
+IKA_API IkarusProjectGetEntitiesCountV1Result
+ikarus_project_get_entities_count_v1(Project const * project, EntityTypes entity_types, IkarusProjectGetEntitiesCountV1Flags flags) {
+    IkarusProjectGetEntitiesCountV1Result ret{.count = 0, .status_code = StatusCode_Ok};
 
     VTRYRV(
         ret.count,
         ret,
-        db_handle.get_db()->get_many_buffered<Id>(&ret.status_code, "SELECT `id` FROM `templates`", templates_out, templates_out_size)
+        project->get_db()
+            .get_one<size_t>("SELECT COUNT(*) FROM `entities` WHERE (((`id` >> 56) & ?) != 0)", static_cast<int>(entity_types))
+            .inspect_error([&ret](auto const& _) { ret.status_code = StatusCode_InternalError; })
     );
-
-    LOG_FUNCTION_SUCCESS("successfully fetched templates");
-
-    return ret;
-}
-
-IkarusProjectGetTemplatesCountResult ikarus_project_get_templates_count_v1(
-    Project const * project, IkarusProjectGetTemplatesCountV1Flags flags
-) {
-    LOG_FUNCTION_VERBOSE("fetching project templates count");
-
-    IkarusProjectGetTemplatesCountResult ret{.count = 0, .status_code = StatusCode_Ok};
-
-    CHECK(ret, validation::validate_project<validation::NotNull | validation::Exists>(project, "project", &ret.status_code));
-
-    auto db_handle = project->get_db_handle();
-
-    VTRYRV(ret.count, ret, db_handle.get_db()->get_one<size_t>(&ret.status_code, "SELECT COUNT(*) FROM `templates`"));
-
-    LOG_FUNCTION_SUCCESS("successfully fetched templates count");
 
     return ret;
 }
