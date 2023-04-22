@@ -10,7 +10,7 @@
 Project * project_open_impl(char const * path, int additional_flags, StatusCode * status_out) {
     std::filesystem::path fs_path{path};
 
-    auto db = db::Database::open(fs_path, additional_flags, status_out);
+    auto db = sqlitecpp::Database::open(fs_path, additional_flags, status_out);
 
     if (db == nullptr) {
         return nullptr;

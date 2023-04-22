@@ -5,7 +5,7 @@
 
 namespace db {
 
-Result<void, int> M1674836144_genesis::up(db::Database& db) {
+cppbase::Result<void, int> M1674836144_genesis::up(sqlitecpp::Database& db) {
     LOG_VERBOSE("creating metadata table");
 
     TRY(
@@ -16,7 +16,7 @@ Result<void, int> M1674836144_genesis::up(db::Database& db) {
                 ") WITHOUT ROWID, STRICT;")
     );
 
-    return ok();
+    return cppbase::ok();
 }
 
 cppbase::u64 M1674836144_genesis::get_version() const {

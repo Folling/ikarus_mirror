@@ -35,7 +35,7 @@ inline char * fetch_single_string(
     VTRYRV(
         auto str,
         nullptr,
-        db_handle.get_db()->get_one<db::RawString>(
+        db_handle.get_db()->get_one<sqlitecpp::RawString>(
             status_out, fmt::format("SELECT `{}` FROM `{}` WHERE `{}` = ?", column, table, id_column), entity
         )
     );

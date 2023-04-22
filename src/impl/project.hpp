@@ -7,28 +7,12 @@
 #include <mutex>
 #include <shared_mutex>
 
-#include <impl/util/types.hpp>
+#include <cppbase/types.hpp>
 #include <sqlitecpp/database.hpp>
-
-class DbHandle {
-public:
-    DbHandle(db::Database * db, std::mutex& mutex):
-        _db{db},
-        _lock{mutex} {}
-
-public:
-    [[nodiscard]] db::Database * get_db() const {
-        return _db;
-    }
-
-private:
-    db::Database * _db;
-    std::unique_lock<std::mutex> _lock;
-};
 
 class Project {
 public:
-    Project(std::filesystem::path&& path, std::unique_ptr<db::Database>&& db):
+    Project(std::filesystem::path&& path, std::unique_ptr<sqlitecpp::Database>&& db):
         _connection_id{},
         _id_counter{},
         _path{std::move(path)},
@@ -39,25 +23,33 @@ public:
         return _path;
     }
 
-    [[nodiscard]] u16 get_connection_id() const {
+    [[nodiscard]] cppbase::u16 get_connection_id() const {
         return _connection_id;
     }
 
-    [[nodiscard]] std::atomic<u64>& get_id_counter() {
+    [[nodiscard]] std::atomic<cppbase::u64>& get_id_counter() {
         return _id_counter;
     }
 
-    [[nodiscard]] inline DbHandle get_db_handle() const {
-        return DbHandle{_db.get(), _db_mutex};
+    [[nodiscard]] inline sqlitecpp::Database& get_db() {
+        return *_db;
+    }
+
+    [[nodiscard]] inline sqlitecpp::Database const& get_db() const {
+        return *_db;
+    }
+
+    [[nodiscard]] inline std::shared_mutex& get_db_mutex() const {
+        return _db_mutex;
     }
 
 private:
     std::filesystem::path _path;
 
-    u16 _connection_id;
-    std::atomic<u64> _id_counter;
+    cppbase::u16 _connection_id;
+    std::atomic<cppbase::u64> _id_counter;
 
-    std::shared_mutex _db_mutex;
-    std::shared_lock _read_lock;
-    std::unique_ptr<db::Database> _db;
+    // mutable required for read locks with a const project pointer
+    std::shared_mutex mutable _db_mutex;
+    std::unique_ptr<sqlitecpp::Database> _db;
 };

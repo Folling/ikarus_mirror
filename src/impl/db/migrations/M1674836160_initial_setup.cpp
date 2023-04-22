@@ -5,7 +5,7 @@
 
 namespace db {
 
-Result<void, int> M1674836160_initial_setup::up(db::Database& db) {
+cppbase::Result<void, int> M1674836160_initial_setup::up(sqlitecpp::Database& db) {
     LOG_VERBOSE("creating entities table");
 
     TRY(
@@ -36,89 +36,46 @@ Result<void, int> M1674836160_initial_setup::up(db::Database& db) {
                 ") WITHOUT ROWID, STRICT;")
     );
 
-    LOG_VERBOSE("creating template_tree table");
+    LOG_VERBOSE("creating entity_tree table");
 
     TRY(
-        db.exec("CREATE TABLE `template_tree`(\n"
-                "    `template_id` INT PRIMARY KEY,\n"
+        db.exec("CREATE TABLE `entity_tree`(\n"
+                "    `entity_id` INT PRIMARY KEY,\n"
                 "    `parent_id` INT,\n"
                 "    `position` INT NOT NULL,\n"
-                "    FOREIGN KEY (`templates_id`) REFERENCES `templates`(`id`) ON DELETE CASCADE,\n"
-                "    FOREIGN KEY (`parent_id`) REFERENCES `entities`(`id`) ON DELETE CASCADE\n"
+                "    FOREIGN KEY (`entity_id`) REFERENCES `entities`(`id`) ON DELETE CASCADE,\n"
+                "    FOREIGN KEY (`parent_id`) REFERENCES `folders`(`id`) ON DELETE CASCADE\n"
                 ") WITHOUT ROWID, STRICT;")
     );
 
-    LOG_VERBOSE("creating indices");
+    LOG_VERBOSE("creating entity_tree_parent index");
 
-    LOG_VERBOSE("creating template_tree_parent index");
+    TRY(db.exec("CREATE INDEX `entity_tree_parent_idx` ON `entity_tree`(`parent_id`);"));
 
-    TRY(db.exec("CREATE INDEX `template_tree_parent_idx` ON `template_tree`(`parent_id`);"));
+    LOG_VERBOSE("creating entity_tree_position index");
 
-    LOG_VERBOSE("creating template_tree_position index");
+    TRY(db.exec("CREATE INDEX `entity_tree_position_idx` ON `entity_tree`(`position`);"));
 
-    TRY(db.exec("CREATE INDEX `template_tree_position_idx` ON `template_tree`(`position`);"));
+    LOG_VERBOSE("creating entity_tree_parent_position index");
 
-    LOG_VERBOSE("creating template_tree_parent_position index");
+    TRY(db.exec("CREATE UNIQUE INDEX `entity_tree_parent_position_idx` ON `entity_tree`(`parent_id`, `position`);"));
 
-    TRY(db.exec("CREATE UNIQUE INDEX `template_tree_parent_position_idx` ON `template_tree`(`parent_id`, `position`);"));
+    // IMPLEMENTATION_DETAIL_TREE_LAYOUT
+    // this table is required since some root folders are scoped to a certain entity
+    // for example, each template has its own property tree
+    // so if we wanted to fetch that specific subtree, we would need to know which root-folder is associated
+    // with that blueprint. This is what this table is for
 
-    LOG_VERBOSE("creating page_tree table");
-
-    TRY(
-        db.exec("CREATE TABLE `page_tree`(\n"
-                "    `page_id` INT PRIMARY KEY,\n"
-                "    `parent_id` INT,\n"
-                "    `position` INT NOT NULL,\n"
-                "    FOREIGN KEY (`pages_id`) REFERENCES `pages`(`id`) ON DELETE CASCADE,\n"
-                "    FOREIGN KEY (`parent_id`) REFERENCES `entities`(`id`) ON DELETE CASCADE\n"
-                ") WITHOUT ROWID, STRICT;")
-    );
-
-    LOG_VERBOSE("creating indices");
-
-    LOG_VERBOSE("creating page_tree_parent index");
-
-    TRY(db.exec("CREATE INDEX `page_tree_parent_idx` ON `page_tree`(`parent_id`);"));
-
-    LOG_VERBOSE("creating page_tree_position index");
-
-    TRY(db.exec("CREATE INDEX `page_tree_position_idx` ON `page_tree`(`position`);"));
-
-    LOG_VERBOSE("creating page_tree_parent_position index");
-
-    TRY(db.exec("CREATE UNIQUE INDEX `page_tree_parent_position_idx` ON `page_tree`(`parent_id`, `position`);"));
-
-    LOG_VERBOSE("creating property_tree table");
+    LOG_VERBOSE("creating root_folder_entity_mapping table");
 
     TRY(
-        db.exec("CREATE TABLE `property_tree`(\n"
-                "    `property_id` INT PRIMARY KEY,\n"
-                "    `template_id` INT NOT NULL,\n"
-                "    `parent_id` INT,\n"
-                "    `position` INT NOT NULL,\n"
-                "    FOREIGN KEY (`template_id`) REFERENCES `templates`(`id`) ON DELETE CASCADE,\n"
-                "    FOREIGN KEY (`properties_id`) REFERENCES `properties`(`id`) ON DELETE CASCADE,\n"
-                "    FOREIGN KEY (`parent_id`) REFERENCES `entities`(`id`) ON DELETE CASCADE\n"
+        db.exec("CREATE TABLE `root_folder_entity_mapping`(\n"
+                "    `entity_id` INT PRIMARY KEY,\n"
+                "    `folder_id` INT NOT NULL UNIQUE,\n"
+                "    FOREIGN KEY (`entity_id`) REFERENCES `entities`(`id`) ON DELETE CASCADE,\n"
+                "    FOREIGN KEY (`folder_id`) REFERENCES `folders`(`id`) ON DELETE CASCADE\n"
                 ") WITHOUT ROWID, STRICT;")
     );
-
-    LOG_VERBOSE("creating indices");
-
-    LOG_VERBOSE("creating property_tree_template index");
-
-    TRY(db.exec("CREATE INDEX `property_tree_template_idx` ON `property_tree`(`template_id`);"));
-
-    LOG_VERBOSE("creating property_tree_parent index");
-
-    TRY(db.exec("CREATE INDEX `property_tree_parent_idx` ON `property_tree`(`parent_id`);"));
-
-    LOG_VERBOSE("creating property_tree_position index");
-
-    TRY(db.exec("CREATE INDEX `property_tree_position_idx` ON `property_tree`(`position`);"));
-
-    LOG_VERBOSE("creating property_tree_parent_position index");
-
-    TRY(db.exec("CREATE UNIQUE INDEX `property_tree_parent_position_idx` ON `property_tree`(`parent_id`, `position`);"));
 
     LOG_VERBOSE("creating templates table");
 
@@ -150,10 +107,10 @@ Result<void, int> M1674836160_initial_setup::up(db::Database& db) {
 
     TRY(db.exec("CREATE INDEX `properties_type_idx` ON `properties`(`type`);"));
 
-    LOG_VERBOSE("creating property FTS index");
+    LOG_VERBOSE("creating property settings FTS index");
 
     TRY(db.exec(
-        "CREATE VIRTUAL TABLE `properties_fts` USING fts5(\n"
+        "CREATE VIRTUAL TABLE `property_settings_fts` USING fts5(\n"
         "    `settings`, content='properties', content_rowid='entity_id', tokenize=\"unicode61 remove_diacritics 2 tokenchars '-_'\"\n"
         ");"
     ));
@@ -194,7 +151,7 @@ Result<void, int> M1674836160_initial_setup::up(db::Database& db) {
                 ");")
     );
 
-    return ok();
+    return cppbase::ok();
 }
 
 cppbase::u64 M1674836160_initial_setup::get_version() const {

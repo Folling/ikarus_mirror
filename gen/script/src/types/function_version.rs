@@ -162,6 +162,16 @@ impl FunctionVersion {
 
         writeln!(file, "{:indent$}{return_type_name} ret{{}};", "")?;
 
+        match self.db_access {
+            DbAccess::None => {}
+            DbAccess::ReadOnly => {
+                writeln!(file, "{:indent$}auto handle = sqlitecpp::DbHandle::read_lock(project->get_db_mutex());", "")?;
+            }
+            DbAccess::ReadWrite => {
+                writeln!(file, "{:indent$}auto handle = sqlitecpp::DbHandle::write_lock(project->get_db_mutex());", "")?;
+            }
+        }
+
         for param in &self.parameters {
             for validation in &param.validation {
                 writeln!(file)?;
@@ -193,11 +203,13 @@ impl FunctionVersion {
                     ParameterValidationType::IdSpecified => {
                         format!("validate_id_specified({})", param.name)
                     }
-                    ParameterValidationType::Exists => format!("validate_exists({})", param.name),
+                    ParameterValidationType::Exists => {
+                        format!("validate_exists(project, {})", param.name)
+                    }
                     ParameterValidationType::PositionWithinBounds {
                         bounds_folder_object,
                     } => format!(
-                        "validate_position_within_bounds({}, {})",
+                        "validate_position_within_bounds(project, {}, {})",
                         param.name, bounds_folder_object
                     ),
                     ParameterValidationType::Is { expected_types } => format!(
@@ -205,7 +217,7 @@ impl FunctionVersion {
                         param.name,
                         expected_types
                             .iter()
-                            .map(|c| format!("EntityTypes_{}", c))
+                            .map(|c| format!("EntityTypes_{}", c.trim()))
                             .collect::<Vec<String>>()
                             .join(" | ")
                     ),

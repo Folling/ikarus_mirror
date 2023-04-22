@@ -1,0 +1,7 @@
+This list is intended to help keep the documentation up to date.
+If you make changes to, for example, templates, always check the documentation for templates.
+But sometimes information is shared. and referenced in multiple places. This helps keep track of that.
+
+Usage: Search for these keys prefixed with IMPLEMENTATION_DETAIL_* to change documentation in relevant places.
+
+TREE_LAYOUT: the current layout used for our entity trees

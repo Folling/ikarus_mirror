@@ -95,30 +95,50 @@ IncludeCategories:
   - Regex: '^<[a-z0-9_]+>$'
     Priority: 3
 
-  # ICU
-  # <unicode/ranges.hpp>
-  - Regex: '^<unicode/.*>$'
-    Priority: 4
-
   # expected
   # <expected/ranges.hpp>
   - Regex: '^<expected/.*>$'
-    Priority: 5
+    Priority: 4
 
   # libfmt
   # <fmt/core.hpp>
   - Regex: '^<fmt/.*>$'
-    Priority: 6
+    Priority: 5
 
   # nlohmann::json
   # <nlohmann/json.hpp>
   - Regex: '^<nlohmann/.*>$'
-    Priority: 7
+    Priority: 6
 
   # ranges
   # <range-v3/ranges.hpp>
   - Regex: '^<range-v3/.*>$'
+    Priority: 7
+
+  # ICU
+  # <unicode/ranges.hpp>
+  - Regex: '^<unicode/.*>$'
     Priority: 8
+
+  # ranges
+  # <range-v3/ranges.hpp>
+  - Regex: '^<cppbase/.*>$'
+    Priority: 9
+
+  # ranges
+  # <range-v3/ranges.hpp>
+  - Regex: '^<sqlitecpp/.*>$'
+    Priority: 10
+
+  # ranges
+  # <range-v3/ranges.hpp>
+  - Regex: '^<ikarus/.*>$'
+    Priority: 11
+
+  # ranges
+  # <range-v3/ranges.hpp>
+  - Regex: '^<impl/.*>$'
+    Priority: 12
 
 IndentAccessModifiers: false
 IndentCaseBlocks: false
