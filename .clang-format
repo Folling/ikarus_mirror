@@ -57,7 +57,7 @@ BraceWrapping:
 BreakBeforeBinaryOperators: None
 BreakBeforeBraces: Attach
 BreakBeforeConceptDeclarations: Always
-# BreakBeforeInlineASMColon: OnlyMultiline
+BreakBeforeInlineASMColon: OnlyMultiline
 BreakBeforeTernaryOperators: false
 BreakConstructorInitializers: AfterColon
 BreakInheritanceList: AfterColon
@@ -157,11 +157,11 @@ IndentWidth: 4
 IndentWrappedFunctionNames: false
 InsertBraces: true
 
-# InsertNewlineAtEOF: true
-# IntegerLiteralSeparator:
-#  Binary: 0
-#  Decimal: 3
-#  Hex: -1
+InsertNewlineAtEOF: true
+IntegerLiteralSeparator:
+  Binary: 0
+  Decimal: 3
+  Hex: -1
 
 KeepEmptyLinesAtTheStartOfBlocks: false
 
@@ -182,10 +182,10 @@ QualifierAlignment: Right
 ReferenceAlignment: Left
 
 ReflowComments: true
-# RemoveSemicolon: true
+RemoveSemicolon: true
 
 RequiresClausePosition: OwnLine
-# RequiresExpressionIndentation: OuterScope
+RequiresExpressionIndentation: OuterScope
 
 SeparateDefinitionBlocks: Always
 
