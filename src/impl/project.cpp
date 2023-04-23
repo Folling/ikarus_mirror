@@ -24,8 +24,10 @@ IKA_API IkarusProjectOpenV1Result ikarus_project_open_v1_impl(Path path, IkarusP
         RETURN_STATUS(ret, StatusCode_InternalError);
     }
 
-    if (!db->migrate()) {
-        RETURN_STATUS(ret, StatusCode_InternalError);
+    switch (db->migrate()) {
+    case sqlitecpp::Database::SQLiteCppMigrationResult_Ok: break;
+    case sqlitecpp::Database::SQLiteCppMigrationResult_InvalidVersion: RETURN_STATUS(ret, StatusCode_InvalidVersion);
+    case sqlitecpp::Database::SQLiteCppMigrationResult_InternalError: RETURN_STATUS(ret, StatusCode_InternalError);
     }
 
     cppbase::u32 pid = cppbase::os::ps::get_process_id();

@@ -92,10 +92,13 @@ cppbase::Result<void, int> M1674836160_initial_setup::up(sqlitecpp::Database * d
     TRY(
         db->exec("CREATE TABLE `properties`(\n"
                  "    `entity_id` INT PRIMARY KEY,\n"
-                 "    `template_id` INT NOT NULL,\n"
+                 "    `page_id INT,\n"
+                 "    `template_id` INT,\n"
                  "    `type` INT NOT NULL,\n"
+                 "    `default_value` TEXT NOT NULL,\n"
                  "    `settings` TEXT NOT NULL,\n"
                  "    FOREIGN KEY (`entity_id`) REFERENCES `entities`(`id`) ON DELETE CASCADE,\n"
+                 "    FOREIGN KEY (`page_id`) REFERENCES `pages`(`id`) ON DELETE CASCADE\n"
                  "    FOREIGN KEY (`template_id`) REFERENCES `templates`(`id`) ON DELETE CASCADE\n"
                  ") WITHOUT ROWID, STRICT;")
     );
