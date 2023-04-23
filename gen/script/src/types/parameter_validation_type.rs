@@ -17,6 +17,8 @@ pub enum ParameterValidationType {
     PathParentMustExist,
     ValidPropertyValue { type_source: String },
     ValidPropertyValueDb { property_source: String },
+    ValidSettings { type_source: String },
+    ValidSettingsDb { property_source: String },
 }
 
 impl Display for ParameterValidationType {
@@ -40,6 +42,8 @@ impl Display for ParameterValidationType {
             ParameterValidationType::ValidPropertyValueDb { .. } => {
                 f.write_str("ValidPropertyValueDb")
             }
+            ParameterValidationType::ValidSettings { .. } => f.write_str("ValidSettings"),
+            ParameterValidationType::ValidSettingsDb { .. } => f.write_str("ValidSettingsDb"),
         }
     }
 }
@@ -114,6 +118,24 @@ impl ParameterValidationType {
                     }
 
                     return Ok(ParameterValidationType::ValidPropertyValueDb {
+                        property_source: options.to_string(),
+                    });
+                }
+                "ValidSettings" => {
+                    if options.chars().any(|c| !c.is_alphabetic() && c != '_') {
+                        bail!("ValidSettings validation options has invalid characters: {} (perhaps specified more than one)", options);
+                    }
+
+                    return Ok(ParameterValidationType::ValidSettings {
+                        type_source: options.to_string(),
+                    });
+                }
+                "ValidSettingsDb" => {
+                    if options.chars().any(|c| !c.is_alphabetic() && c != '_') {
+                        bail!("ValidSettingsDb validation options has invalid characters: {} (perhaps specified more than one)", options);
+                    }
+
+                    return Ok(ParameterValidationType::ValidSettingsDb {
                         property_source: options.to_string(),
                     });
                 }

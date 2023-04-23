@@ -54,7 +54,7 @@ impl FunctionVersion {
 
         for (i, flag) in self.flags.iter().enumerate() {
             writeln!(file, ",")?;
-            write_commented(file, &flag.description, 4)?;
+            write_commented(file, &flag.description, 4, 0, 0)?;
             write!(file, "    {flag_enum_name}_{} = 1 << {i}", flag.name)?;
         }
 
@@ -62,9 +62,9 @@ impl FunctionVersion {
 
         writeln!(file, "\nstruct {return_type_name} {{")?;
 
-        for (i, member) in self.return_type.iter().enumerate() {
-            write_commented(file, &member.description, 4)?;
-            write!(file, "    {} {};", member.r#type, member.name)?;
+        for member in &self.return_type {
+            write_commented(file, &member.description, 4, 0, 0)?;
+            write!(file, "    {} {};\n", member.r#type, member.name)?;
         }
 
         writeln!(file, "    // The result of the operation.")?;
@@ -72,18 +72,40 @@ impl FunctionVersion {
 
         writeln!(file, "}};\n")?;
 
-        write_commented(file, &self.description, 0)?;
+        write_commented(file, &self.description, 0, 0, 0)?;
 
-        write_commented(file, "Parameters: ", 0)?;
+        write_commented(file, "Parameters: ", 0, 0, 0)?;
+
+        writeln!(
+            file,
+            "// -----------------------------------------------------------------------------------------------------------------------------------------"
+        )?;
 
         for param in &self.parameters {
-            write_commented(file, format!("- {}: {}", param.name, param.description), 0)?;
+            write_commented(
+                file,
+                format!("- {}: {}", param.name, param.description),
+                0,
+                0,
+                2,
+            )?;
+            writeln!(
+                file,
+                "// -----------------------------------------------------------------------------------------------------------------------------------------"
+            )?;
         }
 
         write_commented(
             file,
             format!("- flags: Optional behaviours that can be toggled on."),
             0,
+            0,
+            0,
+        )?;
+
+        writeln!(
+            file,
+            "// -----------------------------------------------------------------------------------------------------------------------------------------"
         )?;
 
         writeln!(file, "IKA_API {return_type_name} ikarus_{type_name}_{func_name}_v{version}({args}, {flag_enum_name} flags);")?;
@@ -230,10 +252,18 @@ impl FunctionVersion {
                     ParameterValidationType::ValidPropertyValue { type_source } => {
                         format!("validate_property_value({}, {})", type_source, param.name)
                     }
-                    ParameterValidationType::ValidPropertyValueDb { property_source } => format!(
-                        "validate_property_value_db({}, {})",
-                        property_source, param.name
-                    ),
+                    ParameterValidationType::ValidPropertyValueDb { property_source } => {
+                        format!(
+                            "validate_property_value_db({}, {})",
+                            property_source, param.name
+                        )
+                    }
+                    ParameterValidationType::ValidSettings { type_source } => {
+                        format!("validate_settings({}, {})", type_source, param.name)
+                    }
+                    ParameterValidationType::ValidSettingsDb { property_source } => {
+                        format!("validate_settings_db({}, {})", property_source, param.name)
+                    }
                 };
 
                 writeln!(

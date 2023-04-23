@@ -29,8 +29,8 @@ impl Function {
         let func_name_pascal = make_pascal_case(func_name);
 
         writeln!(file, "")?;
-        write_commented(file, format!("ikarus_{}_{}", type_name, func_name), 0)?;
-        write_commented(file, &self.description, 0)?;
+        write_commented(file, format!("ikarus_{}_{}", type_name, func_name), 0, 0, 0)?;
+        write_commented(file, &self.description, 0, 0, 0)?;
 
         for (version, func_version) in self.versions.iter().enumerate() {
             func_version.generate(

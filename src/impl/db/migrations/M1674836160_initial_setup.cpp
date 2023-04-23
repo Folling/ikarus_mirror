@@ -4,8 +4,6 @@
 
 #include <sqlitecpp/database.hpp>
 
-#include <sys/shm.h>
-
 namespace db {
 
 cppbase::Result<void, int> M1674836160_initial_setup::up(sqlitecpp::Database * db) {

@@ -26,6 +26,8 @@ pub fn write_commented<W: Write, S: AsRef<str>>(
     writer: &mut W,
     content: S,
     indent: usize,
+    first_line_post_indent: usize,
+    post_indent: usize,
 ) -> std::io::Result<()> {
     if content.as_ref().chars().all(|c| c.is_whitespace()) {
         return Ok(());
@@ -34,11 +36,15 @@ pub fn write_commented<W: Write, S: AsRef<str>>(
     const MAX_LENGTH: usize = 80;
     let mut curr_length = 0;
 
-    write!(writer, "{}//", " ".repeat(indent))?;
+    write!(writer, "{:indent$}//{:first_line_post_indent$}", "", "")?;
 
     for line in content.as_ref().lines() {
         if line.chars().all(|c| c.is_whitespace()) {
-            write!(writer, "\n{}//\n//", " ".repeat(indent))?;
+            write!(
+                writer,
+                "\n{:indent$}//\n{:indent$}//{:post_indent$}",
+                "", "", ""
+            )?;
             curr_length = 0;
             continue;
         }
@@ -46,7 +52,7 @@ pub fn write_commented<W: Write, S: AsRef<str>>(
         // not perfect, since unicode word boundaries aren't just whitespace, but good enough for us
         for word in line.trim().split_whitespace() {
             if curr_length + word.len() > MAX_LENGTH {
-                write!(writer, "\n{}//", " ".repeat(indent))?;
+                write!(writer, "\n{:indent$}//{:post_indent$}", "", "")?;
 
                 curr_length = 0;
             }

@@ -30,25 +30,25 @@ impl Type {
         let type_name = &self.name;
         let type_name_pascal = make_pascal_case(type_name);
 
-        writeln!(file, "#if defined(__cplusplus)")?;
+        writeln!(file, "#if defined(__cplusplus)\n")?;
 
         for header in ["cstdbool", "cstddef", "cstdint"] {
-            writeln!(file, "    #include <{header}>")?;
+            writeln!(file, "#include <{header}>")?;
         }
 
         writeln!(file, "")?;
 
-        writeln!(file, "    using std::size_t;")?;
+        writeln!(file, "using std::size_t;")?;
 
-        writeln!(file, "    extern \"C\" {{")?;
+        writeln!(file, "extern \"C\" {{")?;
 
-        writeln!(file, "#elif")?;
+        writeln!(file, "\n#elif\n")?;
 
         for header in ["stdbool.h", "stddef.h", "stdint.h"] {
-            writeln!(file, "    #include <{header}>")?;
+            writeln!(file, "#include <{header}>")?;
         }
 
-        writeln!(file, "#endif")?;
+        writeln!(file, "\n#endif")?;
 
         writeln!(file, "")?;
 
@@ -64,7 +64,7 @@ impl Type {
 
         writeln!(file, "")?;
 
-        write_commented(file, &self.description, 0)?;
+        write_commented(file, &self.description, 0, 0, 0)?;
 
         if self.generate_struct {
             writeln!(file, "struct {type_name_pascal};")?;
@@ -76,7 +76,7 @@ impl Type {
 
         writeln!(file, "\n#if defined(__cplusplus)")?;
 
-        writeln!(file, "    }}")?;
+        writeln!(file, "}}")?;
 
         writeln!(file, "#endif")?;
 

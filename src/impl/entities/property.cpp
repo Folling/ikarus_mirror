@@ -11,6 +11,7 @@ IkarusPropertyCreateV1Result ikarus_property_create_v1_impl(
     char const * name,
     PropertyType type,
     char const * default_value,
+    char const * settings,
     IkarusPropertyCreateV1Flags flags
 ) {
     IkarusPropertyCreateV1Result ret{.property = ID_NONE, .status_code = StatusCode_Ok};
@@ -24,29 +25,30 @@ IkarusPropertyCreateV1Result ikarus_property_create_v1_impl(
     VTRYRV(
         ret.property,
         ret,
-        project->get_db()->transact([&](sqlitecpp::Database* db) -> cppbase::Result<Id, int> {
-            if (id_is_none(actual_parent_folder)) {
-                LOG_VERBOSE("parent_folder was passed as none: selecting root folder from DB");
+        project->get_db()
+            ->transact([&](sqlitecpp::Database * db) -> cppbase::Result<Id, int> {
+                if (id_is_none(actual_parent_folder)) {
+                    LOG_VERBOSE("parent_folder was passed as none: selecting root folder from DB");
 
-                VTRY(
-                    actual_parent_folder,
-                    project->get_db()
-                        ->get_one<Id>("SELECT `folder_id` FROM `root_folder_entity_mapping` WHERE `entity_id` = ?", template_or_page)
-                        .on_error([&ret] { ret.status_code = StatusCode_InternalError; })
-                );
-            }
+                    VTRY(
+                        actual_parent_folder,
+                        project->get_db()
+                            ->get_one<Id>("SELECT `folder_id` FROM `root_folder_entity_mapping` WHERE `entity_id` = ?", template_or_page)
+                            .on_error([&ret] { ret.status_code = StatusCode_InternalError; })
+                    );
+                }
 
-            LOG_VERBOSE("creating property as entity");
+                LOG_VERBOSE("creating property as entity");
 
-            TRY(util::create_entity(project->get_db(), generated_id, actual_parent_folder, position, name, ""));
+                TRY(util::create_entity(project->get_db(), generated_id, actual_parent_folder, position, name, ""));
 
-            LOG_VERBOSE("creating property in db");
+                LOG_VERBOSE("creating property in db");
 
-            TRY(project->get_db()->exec("INSERT INTO `properties`("));
+                TRY(project->get_db()->exec("INSERT INTO `properties`("));
 
-            return cppbase::ok(generated_id);
-        })
-        .on_error([&ret] { ret.status_code = StatusCode_InternalError; })
+                return cppbase::ok(generated_id);
+            })
+            .on_error([&ret] { ret.status_code = StatusCode_InternalError; })
     );
 
     // clang-format on
