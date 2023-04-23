@@ -7,16 +7,18 @@
 #include <mutex>
 #include <shared_mutex>
 
+#include <cppbase/os/ps.hpp>
 #include <cppbase/types.hpp>
+
 #include <sqlitecpp/database.hpp>
 
 class Project {
 public:
-    Project(std::filesystem::path&& path, std::unique_ptr<sqlitecpp::Database>&& db):
-        _connection_id{},
-        _id_counter{},
+    Project(std::filesystem::path&& path, std::unique_ptr<sqlitecpp::Database>&& db, cppbase::u32 connection_id, cppbase::u32 id_counter):
         _path{std::move(path)},
-        _db{std::move(db)} {}
+        _db{std::move(db)},
+        _connection_id{connection_id},
+        _id_counter{} {}
 
 public:
     [[nodiscard]] std::filesystem::path const& get_path() const {
@@ -31,12 +33,12 @@ public:
         return _id_counter;
     }
 
-    [[nodiscard]] inline sqlitecpp::Database& get_db() {
-        return *_db;
+    [[nodiscard]] inline sqlitecpp::Database * get_db() {
+        return _db.get();
     }
 
-    [[nodiscard]] inline sqlitecpp::Database const& get_db() const {
-        return *_db;
+    [[nodiscard]] inline sqlitecpp::Database const * get_db() const {
+        return _db.get();
     }
 
     [[nodiscard]] inline std::shared_mutex& get_db_mutex() const {
@@ -45,11 +47,11 @@ public:
 
 private:
     std::filesystem::path _path;
-
-    cppbase::u16 _connection_id;
-    std::atomic<cppbase::u64> _id_counter;
+    std::unique_ptr<sqlitecpp::Database> _db;
 
     // mutable required for read locks with a const project pointer
     std::shared_mutex mutable _db_mutex;
-    std::unique_ptr<sqlitecpp::Database> _db;
+
+    cppbase::u32 _connection_id;
+    std::atomic<cppbase::u64> _id_counter;
 };

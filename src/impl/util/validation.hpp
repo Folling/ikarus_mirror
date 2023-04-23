@@ -42,11 +42,12 @@ bool validate_id_specified(Id id) {
 }
 
 bool validate_exists(Project const * project, Id id) {
-    return project->get_db().get_one<bool>("SELECT EXISTS(SELECT 1 FROM `entities` WHERE `id` = ?", id).unwrap_value_or(false);
+    return id == ID_NONE || id == ID_UNSPECIFIED ||
+           project->get_db()->get_one<bool>("SELECT EXISTS(SELECT 1 FROM `entities` WHERE `id` = ?", id).unwrap_value_or(false);
 }
 
 bool validate_position_within_bounds(Project const * project, std::size_t idx, Id folder) {
-    return project->get_db().get_one<bool>("SELECT ? < COUNT(*) FROM `entity_tree` WHERE `parent_id` = ?", folder).unwrap_value_or(false);
+    return project->get_db()->get_one<bool>("SELECT ? < COUNT(*) FROM `entity_tree` WHERE `parent_id` = ?", folder).unwrap_value_or(false);
 }
 
 bool validate_is(Id entity, int types) {
@@ -184,9 +185,9 @@ bool validate_property_value(PropertyType type, char const * value, nlohmann::js
 }
 
 bool validate_property_value_db(Project const * project, Id property, char const * value) {
-    VTRYRV(int type, false, project->get_db().get_one<int>("SELECT `type` FROM `properties` WHERE `id` = ?", property));
+    VTRYRV(int type, false, project->get_db()->get_one<int>("SELECT `type` FROM `properties` WHERE `id` = ?", property));
     VTRYRV(
-        std::string settings, false, project->get_db().get_one<std::string>("SELECT `settings` FROM `properties` WHERE `id` = ?", property)
+        std::string settings, false, project->get_db()->get_one<std::string>("SELECT `settings` FROM `properties` WHERE `id` = ?", property)
     );
 
     auto settings_json = nlohmann::json::parse(settings, nullptr, false);

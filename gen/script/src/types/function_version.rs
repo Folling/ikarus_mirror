@@ -65,11 +65,6 @@ impl FunctionVersion {
         for (i, member) in self.return_type.iter().enumerate() {
             write_commented(file, &member.description, 4)?;
             write!(file, "    {} {};", member.r#type, member.name)?;
-            if i != self.return_type.len() - 1 {
-                writeln!(file, ",")?;
-            } else {
-                writeln!(file, "")?;
-            }
         }
 
         writeln!(file, "    // The result of the operation.")?;
