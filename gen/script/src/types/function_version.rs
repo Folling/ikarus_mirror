@@ -350,6 +350,46 @@ impl FunctionVersion {
 
         writeln!(file, "{:indent$}}}\n", "")?;
 
+        // cpp wrapper using Result
+
+        let cpp_return_type_name = if let Some(member) = &self.r#return {
+            format!("cppbase::Result<{}, StatusCode>", member.r#type)
+        } else {
+            String::from("cppbase::Result<void, StatusCode>")
+        };
+
+        writeln!(file, "\n{:indent$}{cpp_return_type_name} ikarus_{type_name}_{func_name}_v{version}_wrapper({typed_parameters}, {flag_enum_name} flags) {{", "")?;
+
+        indent += 4;
+
+        writeln!(file, "{:indent$} if(auto ret = ikarus_{type_name}_{func_name}_v{version}({parameter_list}, flags); ret.status_code != StatusCode_Ok) {{", "")?;
+
+        indent += 4;
+
+        writeln!(file, "{:indent$}return cppbase::err(ret.status_code);", "")?;
+
+        indent -= 4;
+
+        writeln!(file, "{:indent$}}} else {{", "")?;
+
+        indent += 4;
+
+        let member = if let Some(member) = &self.r#return {
+            member.name.clone()
+        } else {
+            String::from("")
+        };
+
+        writeln!(file, "{:indent$}return cppbase::ok({});", "", member)?;
+
+        indent -= 4;
+
+        writeln!(file, "{:indent$}}}", "")?;
+
+        indent -= 4;
+
+        writeln!(file, "{:indent$}}}\n", "")?;
+
         Ok(())
     }
 
@@ -375,6 +415,8 @@ impl FunctionVersion {
             .map(|param| format!("{} {}", param.r#type, param.name))
             .intersperse(String::from(", "))
             .collect::<String>();
+
+        writeln!(file, "\n{return_type_name} ikarus_{type_name}_{func_name}_v{version}_wrapper({typed_parameters}, {flag_enum_name} flags);")?;
 
         writeln!(file, "\n{return_type_name} ikarus_{type_name}_{func_name}_v{version}_impl({typed_parameters}, {flag_enum_name} flags);")?;
 
