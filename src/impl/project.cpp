@@ -52,7 +52,7 @@ Result<Project *, StatusCode> ikarus_project_open_v1_impl(Path path, IkarusProje
     VTRY(
         auto current_counter,
         // looks more scuffed than it is
-        // essentially we're saying "give me the maximum ID for the given connection-id"
+        // essentially we're saying "give me the current largest counter for the given connection-id"
         db->get_one<cppbase::u32>(
               "SELECT IFNULL((SELECT MAX((`val` << 32) >> 32) + 1 FROM `foo` WHERE ((`val` << 8) >> 40) == ?), 0)", pid
         )
