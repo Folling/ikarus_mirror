@@ -49,15 +49,19 @@ Result<Project *, StatusCode> ikarus_project_open_v1_impl(Path path, IkarusProje
         return err(StatusCode_InternalError);
     }
 
+    // clang-format off
+
     VTRY(
         auto current_counter,
         // looks more scuffed than it is
         // essentially we're saying "give me the current largest counter for the given connection-id"
         db->get_one<cppbase::u32>(
-              "SELECT IFNULL((SELECT MAX((`val` << 32) >> 32) + 1 FROM `foo` WHERE ((`val` << 8) >> 40) == ?), 0)", pid
+            "SELECT IFNULL((SELECT MAX((`val` << 32) >> 32) + 1 FROM `foo` WHERE ((`val` << 8) >> 40) == ?), 0)", pid
         )
-            .map_err(StatusCode_InternalError)
+        .map_err(StatusCode_InternalError)
     );
+
+    // clang-format on
 
     LOG_VERBOSE("current counter (id-counter) is {}", current_counter);
 
@@ -95,7 +99,9 @@ IKA_API Result<void, StatusCode> ikarus_project_get_entities_v1_impl(
     EntityTypes entity_types,
     IkarusProjectGetEntitiesV1Flags flags
 ) {
-    TRY(project->get_db()
+    // clang-format off
+    TRY(
+        project->get_db()
             ->get_many_buffered<Id>(
                 "SELECT `id` FROM `entities` WHERE (((`id` >> 56) & ?) != 0) LIMIT ?",
                 entities_out,
@@ -103,7 +109,9 @@ IKA_API Result<void, StatusCode> ikarus_project_get_entities_v1_impl(
                 static_cast<int>(entity_types),
                 entities_out_size
             )
-            .map_err(StatusCode_InternalError));
+            .map_err(StatusCode_InternalError)
+    );
+    // clang-format on
 
     return ok();
 }
