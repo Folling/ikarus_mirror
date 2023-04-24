@@ -189,6 +189,41 @@ impl FunctionVersion {
             }
         }
 
+        for flag in &self.flags {
+            if let Some(mutex) = &flag.mutex {
+                writeln!(
+                    file,
+                    "{:indent$}LOG_VERBOSE(\"validating flag {{}}'s mutual exclusivity\", {}",
+                    "", flag.name
+                )?;
+
+                writeln!(
+                    file,
+                    "{:indent$}if((flags & {flag_enum_name}_{}) != 0 && (flags & ({})) != 0) {{",
+                    "",
+                    flag.name,
+                    mutex
+                        .iter()
+                        .map(|name| format!("{flag_enum_name}_{}", name))
+                        .intersperse(String::from("|"))
+                        .collect::<String>()
+                )?;
+
+                indent += 4;
+
+                writeln!(file, "{:indent$}LOG_ERROR(\"Flag {} is mutually exclusive with ({}) but two or more were set.\")", "", flag.name, mutex.join(", "))?;
+                writeln!(
+                    file,
+                    "{:indent$}return cppbase::err(StatusCode_InvalidParameter);",
+                    ""
+                )?;
+
+                indent -= 4;
+
+                writeln!(file, "{:indent$}}}\n", "")?;
+            }
+        }
+
         for param in &self.parameters {
             for validation in &param.validation {
                 writeln!(file)?;

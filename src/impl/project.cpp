@@ -19,7 +19,21 @@ using cppbase::Result;
 Result<Project *, StatusCode> ikarus_project_open_v1_impl(Path path, IkarusProjectOpenV1Flags flags) {
     std::filesystem::path fs_path{path.data};
 
-    auto db = sqlitecpp::Database::open(fs_path, 0);
+    int additional_flags = 0;
+
+    if ((flags & IkarusProjectOpenV1Flags_MustExist) == 0) {
+        additional_flags |= SQLITE_OPEN_CREATE;
+    }
+    // else because it doesn't make sense to create the parents AND verify existence
+    // in fact it could lead us to create the parent paths and then early aborting when the file doesn't exist
+    else if ((flags & IkarusProjectOpenV1Flags_CreateParents)) {
+        if (std::error_code ec; !std::filesystem::create_directories(fs_path.parent_path()) || ec) {
+            LOG_STD_ERROR("unable to create parent directories: %v", ec);
+            return err(StatusCode_InternalError);
+        }
+    }
+
+    auto db = sqlitecpp::Database::open(fs_path, additional_flags);
 
     if (db == nullptr) {
         return err(StatusCode_InternalError);
@@ -68,7 +82,9 @@ Result<Project *, StatusCode> ikarus_project_open_v1_impl(Path path, IkarusProje
     return ok(new Project{std::move(fs_path), std::move(db), pid, current_counter});
 }
 
-Result<void, StatusCode> ikarus_project_close_v1_impl(Project * project, IkarusProjectCloseV1Flags flags) {
+Result<void, StatusCode> ikarus_project_close_v1_impl(
+    Project * project, [[maybe_unused]] IkarusProjectCloseV1Flags flags
+) {
     if (!project->get_db()->close()) {
         return err(StatusCode_InternalError);
     }
@@ -76,7 +92,9 @@ Result<void, StatusCode> ikarus_project_close_v1_impl(Project * project, IkarusP
     return ok();
 }
 
-Result<void, StatusCode> ikarus_project_delete_v1_impl(Project * project, IkarusProjectDeleteV1Flags flags) {
+Result<void, StatusCode> ikarus_project_delete_v1_impl(
+    Project * project, [[maybe_unused]] IkarusProjectDeleteV1Flags flags
+) {
     // closing project deletes the pointer
     std::filesystem::path path = project->get_path();
 
@@ -97,7 +115,7 @@ IKA_API Result<void, StatusCode> ikarus_project_get_entities_v1_impl(
     Id * entities_out,
     size_t entities_out_size,
     EntityTypes entity_types,
-    IkarusProjectGetEntitiesV1Flags flags
+    [[maybe_unused]] IkarusProjectGetEntitiesV1Flags flags
 ) {
     // clang-format off
     TRY(
@@ -117,7 +135,7 @@ IKA_API Result<void, StatusCode> ikarus_project_get_entities_v1_impl(
 }
 
 IKA_API Result<std::size_t, StatusCode> ikarus_project_get_entities_count_v1_impl(
-    Project const * project, EntityTypes entity_types, IkarusProjectGetEntitiesCountV1Flags flags
+    Project const * project, EntityTypes entity_types, [[maybe_unused]] IkarusProjectGetEntitiesCountV1Flags flags
 ) {
     return project->get_db()
         ->get_one<size_t>(
