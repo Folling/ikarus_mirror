@@ -14,7 +14,7 @@ use super::return_type_member::ReturnTypeMember;
 
 #[derive(Debug, Deserialize)]
 pub struct FunctionVersion {
-    pub return_type: Vec<ReturnTypeMember>,
+    pub r#return: Option<ReturnTypeMember>,
     pub parameters: Vec<Parameter>,
     pub flags: Vec<Flag>,
     pub log_level: String,
@@ -62,7 +62,7 @@ impl FunctionVersion {
 
         writeln!(file, "\nstruct {return_type_name} {{")?;
 
-        for member in &self.return_type {
+        if let Some(member) = &self.r#return {
             write_commented(file, &member.description, 4, 0, 0)?;
             write!(file, "    {} {};\n", member.r#type, member.name)?;
         }
@@ -298,11 +298,19 @@ impl FunctionVersion {
             }
         }
 
-        writeln!(
-            file,
-            "\n{:indent$}ret = {full_func_name}_impl({}, flags);",
-            "", parameter_list
-        )?;
+        if let Some(member) = &self.r#return {
+            writeln!(
+                file,
+                "\n{:indent$}{full_func_name}_impl({}, flags).veput_into(ret.{}, ret.status_code);",
+                "", parameter_list, member.name,
+            )?;
+        } else {
+            writeln!(
+                file,
+                "\n{:indent$}{full_func_name}_impl({}, flags).eput_into(ret.status_code);",
+                "", parameter_list
+            )?;
+        }
 
         writeln!(
             file,
@@ -355,8 +363,11 @@ impl FunctionVersion {
         version: usize,
     ) -> std::io::Result<()> {
         let flag_enum_name = format!("Ikarus{type_name_pascal}{func_name_pascal}V{version}Flags");
-        let return_type_name =
-            format!("Ikarus{type_name_pascal}{func_name_pascal}V{version}Result");
+        let return_type_name = if let Some(member) = &self.r#return {
+            format!("cppbase::Result<{}, StatusCode>", member.r#type)
+        } else {
+            String::from("cppbase::Result<void, StatusCode>")
+        };
 
         let typed_parameters = self
             .parameters
