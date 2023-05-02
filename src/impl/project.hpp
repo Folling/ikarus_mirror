@@ -14,11 +14,16 @@
 
 class Project {
 public:
-    Project(std::filesystem::path&& path, std::unique_ptr<sqlitecpp::Database>&& db, cppbase::u32 connection_id, cppbase::u32 id_counter):
+    Project(
+        std::filesystem::path&& path,
+        std::unique_ptr<sqlitecpp::Database>&& db,
+        cppbase::u32 connection_id,
+        cppbase::u32 id_counter
+    ):
         _path{std::move(path)},
         _db{std::move(db)},
         _connection_id{connection_id},
-        _id_counter{} {}
+        _id_counter{id_counter} {}
 
 public:
     [[nodiscard]] std::filesystem::path const& get_path() const {

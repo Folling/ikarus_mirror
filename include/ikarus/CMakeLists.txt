@@ -1,7 +1,3 @@
-file(
-    GLOB_RECURSE
-    FILES
-    "*.h"
-)
+file(GLOB_RECURSE FILES "*.h")
 
-set(PUBLIC_FILES ${FILES} PARENT_SCOPE)
+    set(PUBLIC_FILES ${FILES} PARENT_SCOPE)

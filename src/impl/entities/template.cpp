@@ -14,12 +14,13 @@
 //
 //     auto db_handle = project->get_db_handle();
 //
-//     CHECK(ret, validation::validate_project<validation::NotNull | validation::Exists>(project, "project", &ret.status_code));
-//     CHECK(
-//         ret, validation::validate_entity<validation::Exists, EntityType_Folder>(db_handle, parent_folder, "parent folder",
-//         &ret.status_code)
+//     CHECK(ret, validation::validate_project<validation::NotNull | validation::Exists>(project, "project",
+//     &ret.status_code)); CHECK(
+//         ret, validation::validate_entity<validation::Exists, EntityType_Folder>(db_handle, parent_folder, "parent
+//         folder", &ret.status_code)
 //     );
-//     CHECK(ret, validation::validate_string<validation::NotNull | validation::NotEmpty>(name, "name", &ret.status_code));
+//     CHECK(ret, validation::validate_string<validation::NotNull | validation::NotEmpty>(name, "name",
+//     &ret.status_code));
 //
 //     LOG_INFO("creating template with name {}", name);
 //
@@ -41,14 +42,15 @@
 //     return ret;
 // }
 //
-// IkarusTemplateDeleteResult ikarus_template_delete_v1(Project * project, Id template, IkarusTemplateDeleteV1Flags flags) {
+// IkarusTemplateDeleteResult ikarus_template_delete_v1(Project * project, Id template, IkarusTemplateDeleteV1Flags
+// flags) {
 //     LOG_FUNCTION_INFO("deleting template");
 //     IkarusTemplateDeleteResult ret{.status_code = StatusCode_Ok};
 //
 //     auto db_handle = project->get_db_handle();
 //
-//     CHECK(ret, validation::validate_project<validation::NotNull | validation::Exists>(project, "project", &ret.status_code));
-//     CHECK(
+//     CHECK(ret, validation::validate_project<validation::NotNull | validation::Exists>(project, "project",
+//     &ret.status_code)); CHECK(
 //         ret,
 //         validation::validate_entity<validation::NotNull | validation::Exists, EntityType_Template>(
 //             db_handle, template, "template", &ret.status_code
@@ -68,7 +70,8 @@
 // }
 //
 // IkarusTemplateGetpropertiesResult ikarus_template_get_properties_v1(
-//     Project * project, Id template, Id * properties_out, size_t properties_out_size, IkarusTemplateGetpropertiesV1Flags flags
+//     Project * project, Id template, Id * properties_out, size_t properties_out_size,
+//     IkarusTemplateGetpropertiesV1Flags flags
 //) {
 //     LOG_FUNCTION_VERBOSE("fetching template properties");
 //
@@ -76,14 +79,15 @@
 //
 //     auto db_handle = project->get_db_handle();
 //
-//     CHECK(ret, validation::validate_project<validation::NotNull | validation::Exists>(project, "project", &ret.status_code));
-//     CHECK(
+//     CHECK(ret, validation::validate_project<validation::NotNull | validation::Exists>(project, "project",
+//     &ret.status_code)); CHECK(
 //         ret,
 //         validation::validate_entity<validation::NotNull | validation::Exists, EntityType_Template>(
 //             db_handle, template, "template", &ret.status_code
 //         )
 //     );
-//     CHECK(ret, validation::validate_pointer<validation::NotNull>(properties_out, "properties buffer", &ret.status_code));
+//     CHECK(ret, validation::validate_pointer<validation::NotNull>(properties_out, "properties buffer",
+//     &ret.status_code));
 //
 //     if (properties_out_size == 0) {
 //         LOG_WARN("passed buffer size was 0");
@@ -94,7 +98,8 @@
 //         ret.count,
 //         ret,
 //         db_handle.get_db()->get_many_buffered<Id>(
-//             &ret.status_code, "SELECT `id` FROM `properties` WHERE `template` = ?", properties_out, properties_out_size, template
+//             &ret.status_code, "SELECT `id` FROM `properties` WHERE `template` = ?", properties_out,
+//             properties_out_size, template
 //         )
 //     );
 //
@@ -112,8 +117,8 @@
 //
 //     auto db_handle = project->get_db_handle();
 //
-//     CHECK(ret, validation::validate_project<validation::NotNull | validation::Exists>(project, "project", &ret.status_code));
-//     CHECK(
+//     CHECK(ret, validation::validate_project<validation::NotNull | validation::Exists>(project, "project",
+//     &ret.status_code)); CHECK(
 //         ret,
 //         validation::validate_entity<validation::NotNull | validation::Exists, EntityType_Template>(
 //             db_handle, template, "template", &ret.status_code
@@ -123,7 +128,8 @@
 //     VTRYRV(
 //         ret.count,
 //         ret,
-//         db_handle.get_db()->get_one<size_t>(&ret.status_code, "SELECT COUNT(*) FROM `properties` WHERE `template_id` = ?", template)
+//         db_handle.get_db()->get_one<size_t>(&ret.status_code, "SELECT COUNT(*) FROM `properties` WHERE `template_id`
+//         = ?", template)
 //     );
 //
 //     LOG_FUNCTION_SUCCESS("successfully fetched properties count");
@@ -140,8 +146,8 @@
 //
 //     auto db_handle = project->get_db_handle();
 //
-//     CHECK(ret, validation::validate_project<validation::NotNull | validation::Exists>(project, "project", &ret.status_code));
-//     CHECK(
+//     CHECK(ret, validation::validate_project<validation::NotNull | validation::Exists>(project, "project",
+//     &ret.status_code)); CHECK(
 //         ret,
 //         validation::validate_entity<validation::NotNull | validation::Exists, EntityType_Template>(
 //             db_handle, template, "template", &ret.status_code
@@ -177,8 +183,8 @@
 //
 //     auto db_handle = project->get_db_handle();
 //
-//     CHECK(ret, validation::validate_project<validation::NotNull | validation::Exists>(project, "project", &ret.status_code));
-//     CHECK(
+//     CHECK(ret, validation::validate_project<validation::NotNull | validation::Exists>(project, "project",
+//     &ret.status_code)); CHECK(
 //         ret,
 //         validation::validate_entity<validation::NotNull | validation::Exists, EntityType_Template>(
 //             db_handle, template, "template", &ret.status_code
@@ -188,7 +194,8 @@
 //     VTRYRV(
 //         ret.count,
 //         ret,
-//         db_handle.get_db()->get_one<size_t>(&ret.status_code, "SELECT COUNT(*) FROM `pages` WHERE `template_id` = ?", template)
+//         db_handle.get_db()->get_one<size_t>(&ret.status_code, "SELECT COUNT(*) FROM `pages` WHERE `template_id` = ?",
+//         template)
 //     );
 //
 //     LOG_FUNCTION_SUCCESS("successfully fetched pages count");

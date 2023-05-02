@@ -1,8 +1,8 @@
 #pragma once
 
-#include "entity_type.h"
-
 #include <stdint.h>
+
+#include <ikarus/types/entity_type.h>
 
 struct Id {
     uint64_t value;
@@ -10,12 +10,11 @@ struct Id {
 
 // TODO rewrite to UUID with injection of entity-type
 
-// The difference between NONE and UNSPECIFIED is useful for situations where "null" has a meaning, but you still want optional parameters
-// Take the parent-folder field of an entity for example.
-// Using `set_location` you can specify ID_NONE as the parent to make the item a root entity
-// However using ID_UNSPECIFIED would mean that you don't want to specify the parent folder,
-// which in that context means that you want to only update the position
-// colloquially these are known as "null IDs"
+// The difference between NONE and UNSPECIFIED is useful for situations where "null" has a meaning, but you still want
+// optional parameters Take the parent-folder field of an entity for example. Using `set_location` you can specify
+// ID_NONE as the parent to make the item a root entity However using ID_UNSPECIFIED would mean that you don't want to
+// specify the parent folder, which in that context means that you want to only update the position colloquially these
+// are known as "null IDs"
 const Id ID_NONE{0};
 const Id ID_UNSPECIFIED{1};
 

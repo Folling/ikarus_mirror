@@ -23,8 +23,8 @@
 //     return ret;
 // }
 //
-// IkarusEntitySetNameResult ikarus_entity_set_name_v1(Project * project, Id entity, char const * new_name, IkarusEntitySetNameV1Flags
-// flags) {
+// IkarusEntitySetNameResult ikarus_entity_set_name_v1(Project * project, Id entity, char const * new_name,
+// IkarusEntitySetNameV1Flags flags) {
 //     LOG_FUNCTION_INFO("changing entity name");
 //
 //     IkarusEntitySetNameResult ret{.status_code = StatusCode_Ok};
@@ -40,7 +40,8 @@
 //     return ret;
 // }
 //
-// IkarusEntityGetInformationResult ikarus_entity_get_information_v1(Project * project, Id entity, IkarusEntityGetInformationV1Flags flags)
+// IkarusEntityGetInformationResult ikarus_entity_get_information_v1(Project * project, Id entity,
+// IkarusEntityGetInformationV1Flags flags)
 // {
 //     LOG_FUNCTION_VERBOSE("fetching entity information");
 //
@@ -73,12 +74,14 @@
 //     return ret;
 // }
 //
-// IkarusEntityGetLocationResult ikarus_entity_get_location_v1(Project * project, Id entity, IkarusEntityGetLocationV1Flags flags) {
+// IkarusEntityGetLocationResult ikarus_entity_get_location_v1(Project * project, Id entity,
+// IkarusEntityGetLocationV1Flags flags) {
 //     LOG_FUNCTION_VERBOSE("fetching entity location");
 //
 //     IkarusEntityGetLocationResult ret{.parent_folder = id_null(), .position = 0, .status_code = StatusCode_Ok};
 //
-//     CHECK(ret, validation::validate_project<validation::NotNull | validation::Exists>(project, "project", &ret.status_code));
+//     CHECK(ret, validation::validate_project<validation::NotNull | validation::Exists>(project, "project",
+//     &ret.status_code));
 //
 //     auto db_handle = project->get_db_handle();
 //
@@ -93,7 +96,8 @@
 //         auto tuple,
 //         ret,
 //         db_handle.get_db()->get_one<Id, size_t>(
-//             &ret.status_code, "SELECT IFNULL(`parent_id`, 0), `position` FROM `entity_tree` WHERE `entity_id` = ?", entity
+//             &ret.status_code, "SELECT IFNULL(`parent_id`, 0), `position` FROM `entity_tree` WHERE `entity_id` = ?",
+//             entity
 //         )
 //     );
 //
@@ -112,7 +116,8 @@
 //
 //     IkarusEntitySetLocationResult ret{.status_code = StatusCode_Ok};
 //
-//     CHECK(ret, validation::validate_project<validation::NotNull | validation::Exists>(project, "project", &ret.status_code));
+//     CHECK(ret, validation::validate_project<validation::NotNull | validation::Exists>(project, "project",
+//     &ret.status_code));
 //
 //     auto db_handle = project->get_db_handle();
 //
@@ -124,12 +129,14 @@
 //     );
 //
 //     CHECK(
-//         ret, validation::validate_entity<validation::Exists, EntityType_Folder>(db_handle, new_parent, "parent folder", &ret.status_code)
+//         ret, validation::validate_entity<validation::Exists, EntityType_Folder>(db_handle, new_parent, "parent
+//         folder", &ret.status_code)
 //     );
 //
 //     LOG_VERBOSE("fetching current location");
 //
-//     IkarusEntityGetLocationResult location_res = ikarus_entity_get_location_v1(project, entity, IkarusEntityGetLocationV1Flags_None);
+//     IkarusEntityGetLocationResult location_res = ikarus_entity_get_location_v1(project, entity,
+//     IkarusEntityGetLocationV1Flags_None);
 //
 //     if (location_res.status_code != StatusCode_Ok) {
 //         RETURN_STATUS(ret, location_res.status_code);
@@ -143,7 +150,8 @@
 //     VTRYRV(
 //         auto scope,
 //         ret,
-//         db_handle.get_db()->get_one<Option<Id>>(&ret.status_code, "SELECT `scope` FROM `entity_tree` WHERE `id` = ?", entity)
+//         db_handle.get_db()->get_one<Option<Id>>(&ret.status_code, "SELECT `scope` FROM `entity_tree` WHERE `id` = ?",
+//         entity)
 //     );
 //
 //     LOG_VERBOSE("fetching children count");

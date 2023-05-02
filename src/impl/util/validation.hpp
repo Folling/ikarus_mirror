@@ -1,5 +1,10 @@
 #pragma once
 
+#include "ikarus/types/id.h"
+#include "ikarus/types/path.h"
+#include "ikarus/types/property_type.h"
+#include "ikarus/types/toggle_value.h"
+
 #include <gmp.h>
 
 #include <concepts>
@@ -13,11 +18,6 @@
 
 #include <cppbase/strings.hpp>
 
-#include <ikarus/entities/property_type.h>
-#include <ikarus/entities/toggle_value.h>
-#include <ikarus/id.h>
-#include <ikarus/path.h>
-
 #include <impl/project.hpp>
 
 template<typename T>
@@ -30,24 +30,28 @@ bool validate_not_null(Path path) {
 }
 
 bool validate_id_not_null(Id id) {
-    return id != ID_NONE && id != ID_UNSPECIFIED;
+    return id.value != ID_NONE.value && id != ID_UNSPECIFIED.value;
 }
 
 bool validate_id_not_none(Id id) {
-    return id != ID_NONE;
+    return id.value != ID_NONE.value;
 }
 
 bool validate_id_specified(Id id) {
-    return id != ID_UNSPECIFIED;
+    return id.value != ID_UNSPECIFIED.value;
 }
 
 bool validate_exists(Project const * project, Id id) {
-    return id == ID_NONE || id == ID_UNSPECIFIED ||
-           project->get_db()->get_one<bool>("SELECT EXISTS(SELECT 1 FROM `entities` WHERE `id` = ?", id).unwrap_value_or(false);
+    return id.value == ID_NONE.value || id.value == ID_UNSPECIFIED.value ||
+           project->get_db()
+               ->get_one<bool>("SELECT EXISTS(SELECT 1 FROM `entities` WHERE `id` = ?", id)
+               .unwrap_value_or(false);
 }
 
 bool validate_position_within_bounds(Project const * project, std::size_t idx, Id folder) {
-    return project->get_db()->get_one<bool>("SELECT ? < COUNT(*) FROM `entity_tree` WHERE `parent_id` = ?", folder).unwrap_value_or(false);
+    return project->get_db()
+        ->get_one<bool>("SELECT ? < COUNT(*) FROM `entity_tree` WHERE `parent_id` = ?", folder)
+        .unwrap_value_or(false);
 }
 
 bool validate_is(Id entity, int types) {
@@ -115,18 +119,12 @@ bool validate_path_parent_exists(Path path) {
     return true;
 }
 
-bool validate_property_value(PropertyType type, char const * value, nlohmann::json const& _settings) {
-    auto json = nlohmann::json::parse(value, nullptr, false);
-
-    if (json.is_discarded()) {
+bool validate_property_value_impl(PropertyType type, nlohmann::json const& value, nlohmann::json const& settings) {
+    if (!value.contains("data")) {
         return false;
     }
 
-    if (!json.contains("data")) {
-        return false;
-    }
-
-    auto const& data = json.at("data");
+    auto const& data = value.at("data");
 
     if (!data.is_array()) {
         return false;
@@ -135,6 +133,9 @@ bool validate_property_value(PropertyType type, char const * value, nlohmann::js
     auto const& array = data.get<nlohmann::json::array_t>();
 
     switch (type) {
+    case PropertyType_None: {
+        return false;
+    }
     case PropertyType_Toggle: {
         for (auto const& array_value : array) {
             if (!array_value.is_string()) {
@@ -143,7 +144,8 @@ bool validate_property_value(PropertyType type, char const * value, nlohmann::js
 
             auto number_value = array_value.get<nlohmann::json::number_unsigned_t>();
 
-            if (number_value != ToggleValue_No && number_value != ToggleValue_Maybe && number_value != ToggleValue_Yes) {
+            if (number_value != ToggleValue_No && number_value != ToggleValue_Maybe &&
+                number_value != ToggleValue_Yes) {
                 return false;
             }
         }
@@ -184,11 +186,12 @@ bool validate_property_value(PropertyType type, char const * value, nlohmann::js
     return true;
 }
 
-bool validate_property_value_db(Project const * project, Id property, char const * value) {
-    VTRYRV(int type, false, project->get_db()->get_one<int>("SELECT `type` FROM `properties` WHERE `id` = ?", property));
-    VTRYRV(
-        std::string settings, false, project->get_db()->get_one<std::string>("SELECT `settings` FROM `properties` WHERE `id` = ?", property)
-    );
+bool validate_property_value(PropertyType type, char const * value, char const * settings) {
+    auto value_json = nlohmann::json::parse(value, nullptr, false);
+
+    if (value_json.is_discarded()) {
+        return false;
+    }
 
     auto settings_json = nlohmann::json::parse(settings, nullptr, false);
 
@@ -196,5 +199,32 @@ bool validate_property_value_db(Project const * project, Id property, char const
         return false;
     }
 
-    return validate_property_value(static_cast<PropertyType>(type), value, settings_json);
+    return validate_property_value_impl(type, value_json, settings_json);
+}
+
+bool validate_property_value_db(Project const * project, Id property, char const * value) {
+    VTRYRV(
+        PropertyType type,
+        false,
+        project->get_db()->get_one<PropertyType>("SELECT `type` FROM `properties` WHERE `id` = ?", property)
+    );
+    VTRYRV(
+        std::string settings,
+        false,
+        project->get_db()->get_one<std::string>("SELECT `settings` FROM `properties` WHERE `id` = ?", property)
+    );
+
+    auto value_json = nlohmann::json::parse(value, nullptr, false);
+
+    if (value_json.is_discarded()) {
+        return false;
+    }
+
+    auto settings_json = nlohmann::json::parse(settings, nullptr, false);
+
+    if (settings_json.is_discarded()) {
+        return false;
+    }
+
+    return validate_property_value_impl(type, value_json, settings_json);
 }

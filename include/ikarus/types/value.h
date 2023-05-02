@@ -1,5 +1,5 @@
 #pragma once
 
-struct Path {
+struct Value {
     char const * data;
 };

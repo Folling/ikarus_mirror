@@ -22,15 +22,29 @@ add_custom_target(
     libikarus_gen
     VERBATIM
     DEPENDS ${GEN_FILES}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/gen/script/
+    # TODO GEN_TARGET_FILES only lists the files in the include directory
+    BYPRODUCTS ${GEN_TARGET_FILES}
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/gen/script/
     COMMAND cargo run --
-    --input ${CMAKE_CURRENT_LIST_DIR}/vendor/ikarusdef/templates
-    --include-output ${CMAKE_CURRENT_LIST_DIR}/include/ikarus
-    --source-output ${CMAKE_CURRENT_LIST_DIR}/src/generated
-    --impl-header-output ${CMAKE_CURRENT_LIST_DIR}/src/generated
+    --input ${PROJECT_SOURCE_DIR}/vendor/ikarusdef/templates
+    --include-output ${PROJECT_SOURCE_DIR}/include/ikarus
+    --source-output ${PROJECT_SOURCE_DIR}/src/generated
+    --impl-header-output ${PROJECT_SOURCE_DIR}/src/generated
 )
 
-add_dependencies(ikarus libikarus_gen)
+add_custom_target(
+    libikarus_fmt
+    VERBATIM
+    USES_TERMINAL
+    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+    # @formatter:off
+    COMMAND find include/ src/ -type f (-iname *.hpp -o -iname *.cpp -o -iname *.h -o -iname *.c) -exec clang-format -i --verbose --style=file {} \;
+    # @formatter:on
+)
+
+add_dependencies(libikarus_fmt libikarus_gen)
+
+add_dependencies(ikarus libikarus_gen libikarus_fmt)
 
 target_include_directories(
     ikarus PUBLIC

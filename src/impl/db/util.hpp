@@ -1,11 +1,11 @@
 #pragma once
 
+#include "ikarus/types/id.h"
+
 #include <cppbase/option.hpp>
 #include <cppbase/types.hpp>
 
 #include <sqlitecpp/sqlite_helper.hpp>
-
-#include <ikarus/id.h>
 
 namespace sqlitecpp::detail {
 

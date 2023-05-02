@@ -1,9 +1,9 @@
 #pragma once
 
-#include <fmt/format.h>
+#include "ikarus/types/id.h"
+#include "ikarus/types/path.h"
 
-#include <ikarus/id.h>
-#include <ikarus/path.h>
+#include <fmt/format.h>
 
 template<>
 struct fmt::formatter<Path> {

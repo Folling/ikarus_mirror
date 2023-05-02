@@ -1,4 +1,4 @@
-use anyhow::bail;
+use anyhow::{anyhow, bail};
 use std::fmt::{Display, Formatter};
 
 #[derive(Debug, Eq, PartialEq)]
@@ -8,17 +8,30 @@ pub enum ParameterValidationType {
     IdNotNone,
     IdSpecified,
     Exists,
-    PositionWithinBounds { bounds_folder_object: String },
-    Is { expected_types: Vec<String> },
+    PositionWithinBounds {
+        bounds_folder_object: String,
+    },
+    Is {
+        expected_types: Vec<String>,
+    },
     ValidPath,
     ValidUtf8,
     NotBlank,
     PathExists,
     PathParentMustExist,
-    ValidPropertyValue { type_source: String },
-    ValidPropertyValueDb { property_source: String },
-    ValidSettings { type_source: String },
-    ValidSettingsDb { property_source: String },
+    ValidPropertyValue {
+        type_source: String,
+        settings_source: String,
+    },
+    ValidPropertyValueDb {
+        property_source: String,
+    },
+    ValidSettings {
+        type_source: String,
+    },
+    ValidSettingsDb {
+        property_source: String,
+    },
 }
 
 impl Display for ParameterValidationType {
@@ -104,12 +117,14 @@ impl ParameterValidationType {
                     });
                 }
                 "ValidPropertyValue" => {
-                    if options.chars().any(|c| !c.is_alphabetic() && c != '_') {
-                        bail!("ValidPropertyValue validation options has invalid characters: {} (perhaps specified more than one)", options);
-                    }
+                    let (type_source, settings_source) = options
+                            .split_once(", ")
+                            .map(|(l, r)| (l.to_string(), r.to_string()))
+                        .ok_or_else(|| anyhow!("ValidPropertyValue validation options has invalid characters: {} (perhaps specified more than one)", options))?;
 
                     return Ok(ParameterValidationType::ValidPropertyValue {
-                        type_source: options.to_string(),
+                        type_source,
+                        settings_source,
                     });
                 }
                 "ValidPropertyValueDb" => {

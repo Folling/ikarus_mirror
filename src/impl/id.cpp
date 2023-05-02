@@ -1,8 +1,6 @@
-#include "ikarus/id.h"
+#include "ikarus/types/id.h"
 
-#include <cppbase/types.hpp>
-
-#include <ikarus/entity_type.h>
+#include <ikarus/types/entity_type.h>
 
 #include <impl/project.hpp>
 

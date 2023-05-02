@@ -4,6 +4,7 @@
 
 #include <impl/entities/util.hpp>
 #include <impl/project.hpp>
+#include <impl/util/validation.hpp>
 
 IkarusPropertyCreateV1Result ikarus_property_create_v1_impl(
     Project * project,
@@ -68,140 +69,117 @@ IkarusPropertyCreateV1Result ikarus_property_create_v1_impl(
     return ret;
 }
 
-IkarusPropertyDeleteV1Result ikarus_property_delete_v1_impl(
+cppbase::Result<Id, StatusCode> ikarus_property_create_v1_impl(
     Project * project, Id property, IkarusPropertyDeleteV1Flags flags
 ) {
-    IkarusPropertyDeleteV1Result ret{.status_code = StatusCode_Ok};
-
-    TRYRV(ret, project->get_db()->exec("DELETE FROM `properties` WHERE `id` = ?", property).on_error([&ret] {
-        ret.status_code = StatusCode_InternalError;
-    }));
-
-    return ret;
+    return project->get_db()
+        ->exec("DELETE FROM `properties` WHERE `id` = ?", property)
+        .map_err(StatusCode_InternalError);
 }
 
-IkarusPropertyGetTemplateV1Result ikarus_property_get_template_v1_impl(
+cppbase::Result<Id, StatusCode> ikarus_property_get_template_v1_impl(
     Project * project, Id property, IkarusPropertyGetTemplateV1Flags flags
 ) {
-    IkarusPropertyGetTemplateV1Result ret{.template_ = ID_NONE, .status_code = StatusCode_Ok};
-
-    VTRYRV(
-        ret.template_,
-        ret,
-        project->get_db()->get_one<Id>("SELECT `template` FROM `properties` WHERE `id` = ?", property).on_error([&ret] {
-            ret.status_code = StatusCode_InternalError;
-        })
-    );
-
-    return ret;
+    return project->get_db()
+        ->get_one<Id>("SELECT `template` FROM `properties` WHERE `id` = ?", property)
+        .map_err(StatusCode_InternalError);
 }
 
-IkarusPropertyGetPageV1Result ikarus_property_get_page_v1_impl(
+cppbase::Result<Id, StatusCode> ikarus_property_get_page_v1_impl(
     Project * project, Id property, IkarusPropertyGetPageV1Flags flags
 ) {
-    IkarusPropertyGetPageV1Result ret{.page = ID_NONE, .status_code = StatusCode_Ok};
-
-    VTRYRV(
-        ret.page,
-        ret,
-        project->get_db()->get_one<Id>("SELECT `page` FROM `properties` WHERE `id` = ?", property).on_error([&ret] {
-            ret.status_code = StatusCode_InternalError;
-        })
-    );
-
-    return ret;
+    return project->get_db()
+        ->get_one<Id>("SELECT `page` FROM `properties` WHERE `id` = ?", property)
+        .map_err(StatusCode_InternalError);
 }
 
-IkarusPropertyGetTypeV1Result ikarus_property_get_type_v1_impl(
+cppbase::Result<PropertyType, StatusCode> ikarus_property_get_type_v1_impl(
     Project * project, Id property, IkarusPropertyGetTypeV1Flags flags
 ) {
-    IkarusPropertyGetTypeV1Result ret{.type = PropertyType_None, .status_code = StatusCode_Ok};
-
-    VTRYRV(
-        ret.type,
-        ret,
-        project->get_db()
-            ->get_one<int>("SELECT `type` FROM `properties` WHERE `id` = ?", property)
-            .map([](int v) { return static_cast<PropertyType>(v); })
-            .on_error([&ret] { ret.status_code = StatusCode_InternalError; })
-    );
-
-    return ret;
+    return project->get_db()
+        ->get_one<PropertyType>("SELECT `type` FROM `properties` WHERE `id` = ?", property)
+        .map_err(StatusCode_InternalError);
 }
 
-IkarusPropertyGetDefaultValueV1Result ikarus_property_get_default_value_v1_impl(
+cppbase::Result<char const *, StatusCode> ikarus_property_get_default_value_v1_impl(
     Project * project, Id property, IkarusPropertyGetDefaultValueV1Flags flags
 ) {
-    IkarusPropertyGetDefaultValueV1Result ret{.value = nullptr, .status_code = StatusCode_Ok};
-
-    VTRYRV(
-        ret.value,
-        ret,
-        project->get_db()
-            ->get_one<char const *>("SELECT `default_value` FROM `properties` WHERE `id` = ?", property)
-            .on_error([&ret] { ret.status_code = StatusCode_InternalError; })
-    );
-
-    return ret;
+    return project->get_db()
+        ->get_one<char const *>("SELECT `default_value` FROM `properties` WHERE `id` = ?", property)
+        .map_err(StatusCode_InternalError);
 }
 
-IkarusPropertySetDefaultValueV1Result ikarus_property_set_default_value_v1_impl(
+cppbase::Result<void, StatusCode> ikarus_property_set_default_value_v1_impl(
     Project * project, Id property, char const * new_default_value, IkarusPropertySetDefaultValueV1Flags flags
 ) {
-    IkarusPropertySetDefaultValueV1Result ret{.status_code = StatusCode_Ok};
-
-    TRYRV(
-        ret,
-        project->get_db()
-            ->exec("UPDATE `properties` SET `default_value` = ? WHERE `id` = ?", new_default_value, property)
-            .on_error([&ret] { ret.status_code = StatusCode_InternalError; })
-    );
-
-    return ret;
+    return project->get_db()
+        ->exec("UPDATE `properties` SET `default_value` = ? WHERE `id` = ?", new_default_value, property)
+        .map_err(StatusCode_InternalError);
 }
 
-IkarusPropertyGetSettingsV1Result ikarus_property_get_settings_v1_impl(
+cppbase::Result<char const *, StatusCode> ikarus_property_get_settings_v1_impl(
     Project * project, Id property, IkarusPropertyGetSettingsV1Flags flags
 ) {
-    IkarusPropertyGetSettingsV1Result ret{.settings = nullptr, .status_code = StatusCode_Ok};
-
-    VTRYRV(
-        ret.settings,
-        ret,
-        project->get_db()
-            ->get_one<char const *>("SELECT `settings` FROM `properties` WHERE `id` = ?", property)
-            .on_error([&ret] { ret.status_code = StatusCode_InternalError; })
-    );
-
-    return ret;
+    return project->get_db()
+        ->get_one<char const *>("SELECT `settings` FROM `properties` WHERE `id` = ?", property)
+        .map_err(StatusCode_InternalError);
 }
 
-IkarusPropertySetSettingsV1Result ikarus_property_set_settings_v1_impl(
+cppbase::Result<void, StatusCode> ikarus_property_set_settings_v1_impl(
     Project * project, Id property, char const * new_settings, IkarusPropertySetSettingsV1Flags flags
 ) {
-    IkarusPropertySetDefaultValueV1Result ret{.status_code = StatusCode_Ok};
+    LOG_VERBOSE("parsing settings to JSON");
 
-    TRYRV(
-        ret,
-        project->get_db()
-            ->transact([flags, property](sqlitecpp::Database * db) -> cppbase::Result<void, int> {
-                if ((flags & IkarusPropertySetSettingsV1Flags_ResetInvalidValues) != 0) {
-                    VTRY(
-                        auto ret,
-                        db->get_many("SELECT `value`, `page_id` FROM `values` WHERE `property_id` = ?", property)
-                    );
+    auto settings_json = nlohmann::json::parse(new_settings, nullptr, false);
+
+    // this should never happen
+    if (settings_json.is_discarded()) {
+        LOG_ERROR("couldn't parse settings as JSON");
+        return cppbase::err(StatusCode_InvalidArgument);
+    }
+
+    return project->get_db()
+        ->transact([project, property, new_settings, flags](sqlitecpp::Database * db) -> cppbase::Result<void, int> {
+            VTRY(
+                PropertyType type,
+                ikarus_property_get_type_v1_wrapper(project, property, IkarusPropertyGetTypeV1Flags_None)
+            );
+            VTRY(
+                char const * default_value,
+                ikarus_property_get_default_value_v1_wrapper(
+                    project, property, IkarusPropertyGetDefaultValueV1Flags_None
+                )
+            );
+
+            LOG_VERBOSE("updating settings");
+
+            TRY(db->exec("UPDATE `properties` SET `settings` = ? WHERE `id` = ?", new_settings, property));
+
+            LOG_VERBOSE("verifying default value");
+
+            if (!validate_property_value(type, default_value, new_settings)) {
+                LOG_VERBOSE("current default ({}) isn't valid with the new settings. resetting it.", default_value);
+                // not using a call here, since the call itself verifies existing values, which we do ourself
+                TRY(db->exec(
+                    "UPDATE `properties` SET `default_value` = ? WHERE `id` = ?", property_type_get_default_value(type)
+                ))
+            }
+
+            if ((flags & IkarusPropertySetSettingsV1Flags_ResetInvalidValues) != 0) {
+                VTRY(
+                    auto values,
+                    db->get_many<char const *, Id>(
+                        "SELECT `value`, `page_id` FROM `values` WHERE `property_id` = ?", property
+                    )
+                );
+
+                for (auto const& [value, page] : values) {
+                    if (!validate_property_value(type, value, new_settings)) {
+                        TRY(db->exec("UPDATE `values` SET `value` = ?"))
+                    }
                 }
-                return cppbase::ok();
-            })
-            .on_error([&ret] { ret.status_code = StatusCode_InternalError })
-    );
-
-    TRYRV(
-        ret,
-        project->get_db()
-            ->exec("UPDATE `properties` SET `default_value` = ? WHERE `id` = ?", new_default_value, property)
-            .on_error([&ret] { ret.status_code = StatusCode_InternalError; })
-    );
-
-    return ret;
+            }
+            return cppbase::ok();
+        })
+        .map_err(StatusCode_InternalError);
 }

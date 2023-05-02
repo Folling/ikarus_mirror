@@ -126,7 +126,7 @@ impl Type {
 
         writeln!(file, "#include <cppbase/result.hpp>",)?;
 
-        writeln!(file, "#include <ikarus/status.h>",)?;
+        writeln!(file, "#include <ikarus/types/status.h>",)?;
         writeln!(
             file,
             "#include <ikarus/{}>",

@@ -1,3 +1,5 @@
+#include "ikarus/types/status.h"
+
 #include <iterator>
 
 #include <cppbase/logger.hpp>
@@ -5,7 +7,6 @@
 #include <sqlitecpp/database.hpp>
 
 #include <ikarus/project.h>
-#include <ikarus/status.h>
 
 #include <generated/project.hpp>
 

@@ -284,8 +284,14 @@ impl FunctionVersion {
                     ParameterValidationType::PathParentMustExist => {
                         format!("validate_path_parent_exists({})", param.name)
                     }
-                    ParameterValidationType::ValidPropertyValue { type_source } => {
-                        format!("validate_property_value({}, {})", type_source, param.name)
+                    ParameterValidationType::ValidPropertyValue {
+                        type_source,
+                        settings_source,
+                    } => {
+                        format!(
+                            "validate_property_value({}, {}, {})",
+                            type_source, param.name, settings_source
+                        )
                     }
                     ParameterValidationType::ValidPropertyValueDb { property_source } => {
                         format!(
@@ -393,7 +399,7 @@ impl FunctionVersion {
             String::from("cppbase::Result<void, StatusCode>")
         };
 
-        writeln!(file, "\n{:indent$}{cpp_return_type_name} ikarus_{type_name}_{func_name}_v{version}_wrapper({typed_parameters}, {flag_enum_name} flags) {{", "")?;
+        writeln!(file, "{:indent$}{cpp_return_type_name} ikarus_{type_name}_{func_name}_v{version}_wrapper({typed_parameters}, {flag_enum_name} flags) {{", "")?;
 
         indent += 4;
 
