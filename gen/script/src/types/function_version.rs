@@ -140,42 +140,45 @@ impl FunctionVersion {
 
         indent = 4;
 
-        let log_parameters_list = self
-            .parameters
-            .iter()
-            .map(|p| format!("{}: {{}}", p.name))
-            .intersperse(String::from(", "))
-            .collect::<String>();
-
-        let parameter_list = self
-            .parameters
-            .iter()
-            .map(|p| p.name.clone())
-            .intersperse(String::from(", "))
-            .collect::<String>();
-
-        let log_parameter_arg_list = self
-            .parameters
-            .iter()
-            .map(|p| {
-                if p.r#type.contains("*") {
-                    format!("fmt::ptr({})", p.name)
-                } else {
-                    p.name.clone()
-                }
-            })
-            .intersperse(String::from(", "))
-            .collect::<String>();
-
         writeln!(
             file,
             "{:indent$}LOG_{}(\"Calling {}({}) with flags: {{}}\", {}, flags);\n",
             "",
             self.log_level.to_uppercase(),
             full_func_name,
-            log_parameters_list,
-            log_parameter_arg_list
+            self.parameters
+                .iter()
+                .map(|p| format!("{}: {{}}", p.name))
+                .intersperse(String::from(", "))
+                .collect::<String>(),
+            self.parameters
+                .iter()
+                .map(|p| {
+                    if p.r#type.contains("*") {
+                        format!("fmt::ptr({})", p.name)
+                    } else {
+                        p.name.clone()
+                    }
+                })
+                .intersperse(String::from(", "))
+                .collect::<String>()
         )?;
+
+        writeln!(
+            file,
+            "{:indent$}LOG_VERBOSE(\"Transforming all arguments\");\n",
+            ""
+        )?;
+
+        for param in &self.parameters {
+            writeln!(
+                file,
+                "{:indent$}auto transformed_{} = transform({});",
+                "", param.name, param.name
+            )?;
+        }
+
+        writeln!(file)?;
 
         writeln!(file, "{:indent$}{return_type_name} ret{{}};", "")?;
 
@@ -339,17 +342,24 @@ impl FunctionVersion {
             }
         }
 
+        let param_list = self
+            .parameters
+            .iter()
+            .map(|p| format!("transformed_{}", p.name))
+            .intersperse(String::from(", "))
+            .collect::<String>();
+
         if let Some(member) = &self.r#return {
             writeln!(
                 file,
                 "\n{:indent$}{full_func_name}_impl({}, flags).veput_into(ret.{}, ret.status_code);",
-                "", parameter_list, member.name,
+                "", param_list, member.name,
             )?;
         } else {
             writeln!(
                 file,
                 "\n{:indent$}{full_func_name}_impl({}, flags).eput_into(ret.status_code);",
-                "", parameter_list
+                "", param_list
             )?;
         }
 
@@ -402,6 +412,13 @@ impl FunctionVersion {
         writeln!(file, "{:indent$}{cpp_return_type_name} ikarus_{type_name}_{func_name}_v{version}_wrapper({typed_parameters}, {flag_enum_name} flags) {{", "")?;
 
         indent += 4;
+
+        let parameter_list = self
+            .parameters
+            .iter()
+            .map(|p| p.name.clone())
+            .intersperse(String::from(", "))
+            .collect::<String>();
 
         writeln!(file, "{:indent$} if(auto ret = ikarus_{type_name}_{func_name}_v{version}({parameter_list}, flags); ret.status_code != StatusCode_Ok) {{", "")?;
 

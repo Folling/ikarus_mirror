@@ -159,10 +159,11 @@ cppbase::Result<void, StatusCode> ikarus_property_set_settings_v1_impl(
 
             if (!validate_property_value(type, default_value, new_settings)) {
                 LOG_VERBOSE("current default ({}) isn't valid with the new settings. resetting it.", default_value);
-                // not using a call here, since the call itself verifies existing values, which we do ourself
+                // not using a call to property_set_type here
+                // since the call itself verifies existing values, which we do ourselves
                 TRY(db->exec(
                     "UPDATE `properties` SET `default_value` = ? WHERE `id` = ?", property_type_get_default_value(type)
-                ))
+                ));
             }
 
             if ((flags & IkarusPropertySetSettingsV1Flags_ResetInvalidValues) != 0) {

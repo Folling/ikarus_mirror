@@ -1,10 +1,5 @@
 #pragma once
 
-#include "ikarus/types/id.h"
-#include "ikarus/types/path.h"
-#include "ikarus/types/property_type.h"
-#include "ikarus/types/toggle_value.h"
-
 #include <gmp.h>
 
 #include <concepts>
@@ -18,6 +13,11 @@
 
 #include <cppbase/strings.hpp>
 
+#include <ikarus/types/id.h>
+#include <ikarus/types/path.h>
+#include <ikarus/types/property_type.h>
+#include <ikarus/types/toggle_value.h>
+
 #include <impl/project.hpp>
 
 template<typename T>
@@ -30,7 +30,7 @@ bool validate_not_null(Path path) {
 }
 
 bool validate_id_not_null(Id id) {
-    return id.value != ID_NONE.value && id != ID_UNSPECIFIED.value;
+    return id.value != ID_NONE.value && id.value != ID_UNSPECIFIED.value;
 }
 
 bool validate_id_not_none(Id id) {
@@ -133,9 +133,6 @@ bool validate_property_value_impl(PropertyType type, nlohmann::json const& value
     auto const& array = data.get<nlohmann::json::array_t>();
 
     switch (type) {
-    case PropertyType_None: {
-        return false;
-    }
     case PropertyType_Toggle: {
         for (auto const& array_value : array) {
             if (!array_value.is_string()) {

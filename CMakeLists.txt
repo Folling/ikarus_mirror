@@ -58,9 +58,9 @@ target_include_directories(
 
 target_link_libraries(
     ikarus PRIVATE
-    gmp
     cppbase
     sqlitecpp
+    gmp
 )
 
 set_target_properties(
