@@ -13,4 +13,5 @@ pub struct Parameter {
     pub validation: Vec<ParameterValidation>,
     #[serde(deserialize_with = "sanitised_string")]
     pub r#type: String,
+    pub log: bool,
 }

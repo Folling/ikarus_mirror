@@ -62,6 +62,26 @@ impl Display for ParameterValidationType {
 }
 
 impl ParameterValidationType {
+    pub fn error_type(&self) -> &'static str {
+        match *self {
+            ParameterValidationType::NotNull => "InvalidArgument",
+            ParameterValidationType::IdNotNull => "InvalidArgument",
+            ParameterValidationType::IdNotNone => "InvalidArgument",
+            ParameterValidationType::IdSpecified => "InvalidArgument",
+            ParameterValidationType::Exists => "NotFound",
+            ParameterValidationType::PositionWithinBounds { .. } => "InvalidArgument",
+            ParameterValidationType::Is { .. } => "InvalidArgument",
+            ParameterValidationType::ValidPath => "InvalidArgument",
+            ParameterValidationType::ValidUtf8 => "InvalidArgument",
+            ParameterValidationType::NotBlank => "InvalidArgument",
+            ParameterValidationType::PathExists => "NotFound",
+            ParameterValidationType::PathParentMustExist => "NotFound",
+            ParameterValidationType::ValidPropertyValue { .. } => "InvalidArgument",
+            ParameterValidationType::ValidPropertyValueDb { .. } => "InvalidArgument",
+            ParameterValidationType::ValidSettings { .. } => "InvalidArgument",
+            ParameterValidationType::ValidSettingsDb { .. } => "InvalidArgument",
+        }
+    }
     pub fn parse(content: &str) -> anyhow::Result<ParameterValidationType> {
         // yes this is all super
         match &content[..] {

@@ -20,6 +20,8 @@
 
 #include <impl/project.hpp>
 
+namespace util {
+
 template<typename T>
 bool validate_not_null(T const * ptr) {
     return ptr != nullptr;
@@ -27,6 +29,10 @@ bool validate_not_null(T const * ptr) {
 
 bool validate_not_null(Path path) {
     return path.data != nullptr;
+}
+
+bool validate_not_null(Project project) {
+    return project.handle != nullptr;
 }
 
 bool validate_id_not_null(Id id) {
@@ -41,15 +47,15 @@ bool validate_id_specified(Id id) {
     return id.value != ID_UNSPECIFIED.value;
 }
 
-bool validate_exists(Project const * project, Id id) {
+bool validate_exists(Project project, Id id) {
     return id.value == ID_NONE.value || id.value == ID_UNSPECIFIED.value ||
-           project->get_db()
+           project.handle->get_db()
                ->get_one<bool>("SELECT EXISTS(SELECT 1 FROM `entities` WHERE `id` = ?", id)
                .unwrap_value_or(false);
 }
 
-bool validate_position_within_bounds(Project const * project, std::size_t idx, Id folder) {
-    return project->get_db()
+bool validate_position_within_bounds(Project project, std::size_t idx, Id folder) {
+    return project.handle->get_db()
         ->get_one<bool>("SELECT ? < COUNT(*) FROM `entity_tree` WHERE `parent_id` = ?", folder)
         .unwrap_value_or(false);
 }
@@ -199,16 +205,16 @@ bool validate_property_value(PropertyType type, char const * value, char const *
     return validate_property_value_impl(type, value_json, settings_json);
 }
 
-bool validate_property_value_db(Project const * project, Id property, char const * value) {
+bool validate_property_value_db(Project project, Id property, char const * value) {
     VTRYRV(
         PropertyType type,
         false,
-        project->get_db()->get_one<PropertyType>("SELECT `type` FROM `properties` WHERE `id` = ?", property)
+        project.handle->get_db()->get_one<PropertyType>("SELECT `type` FROM `properties` WHERE `id` = ?", property)
     );
     VTRYRV(
         std::string settings,
         false,
-        project->get_db()->get_one<std::string>("SELECT `settings` FROM `properties` WHERE `id` = ?", property)
+        project.handle->get_db()->get_one<std::string>("SELECT `settings` FROM `properties` WHERE `id` = ?", property)
     );
 
     auto value_json = nlohmann::json::parse(value, nullptr, false);
@@ -224,4 +230,6 @@ bool validate_property_value_db(Project const * project, Id property, char const
     }
 
     return validate_property_value_impl(type, value_json, settings_json);
+}
+
 }

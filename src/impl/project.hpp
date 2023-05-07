@@ -12,9 +12,9 @@
 
 #include <sqlitecpp/database.hpp>
 
-class Project {
+class ProjectImpl {
 public:
-    Project(
+    ProjectImpl(
         std::filesystem::path&& path,
         std::unique_ptr<sqlitecpp::Database>&& db,
         cppbase::u32 connection_id,

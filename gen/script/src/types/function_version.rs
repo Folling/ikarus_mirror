@@ -140,19 +140,22 @@ impl FunctionVersion {
 
         indent = 4;
 
+        // in the future we could log the flags as strings
         writeln!(
             file,
-            "{:indent$}LOG_{}(\"Calling {}({}) with flags: {{}}\", {}, flags);\n",
+            "{:indent$}LOG_{}(\"Calling {}({}) with flags: {{}}\", {}, static_cast<int>(flags));\n",
             "",
             self.log_level.to_uppercase(),
             full_func_name,
             self.parameters
                 .iter()
+                .filter(|p| p.log)
                 .map(|p| format!("{}: {{}}", p.name))
                 .intersperse(String::from(", "))
                 .collect::<String>(),
             self.parameters
                 .iter()
+                .filter(|p| p.log)
                 .map(|p| {
                     if p.r#type.contains("*") {
                         format!("fmt::ptr({})", p.name)
@@ -164,6 +167,8 @@ impl FunctionVersion {
                 .collect::<String>()
         )?;
 
+        writeln!(file, "{:indent$}{return_type_name} ret{{}};\n", "")?;
+
         writeln!(
             file,
             "{:indent$}LOG_VERBOSE(\"Transforming all arguments\");\n",
@@ -173,30 +178,44 @@ impl FunctionVersion {
         for param in &self.parameters {
             writeln!(
                 file,
-                "{:indent$}auto transformed_{} = transform({});",
+                "{:indent$}auto transformed_{}_opt = util::transform({});",
+                "", param.name, param.name
+            )?;
+
+            writeln!(
+                file,
+                "{:indent$}if (transformed_{}_opt.is_none()) {{",
+                "", param.name
+            )?;
+
+            indent += 4;
+
+            writeln!(
+                file,
+                "{:indent$}ret.status_code = StatusCode_InvalidArgument;",
+                ""
+            )?;
+
+            writeln!(file, "{:indent$}return ret;", "")?;
+
+            indent -= 4;
+
+            writeln!(file, "{:indent$}}}", "")?;
+
+            writeln!(
+                file,
+                "{:indent$}auto transformed_{} = transformed_{}_opt.unwrap();\n",
                 "", param.name, param.name
             )?;
         }
 
         writeln!(file)?;
 
-        writeln!(file, "{:indent$}{return_type_name} ret{{}};", "")?;
-
-        match self.db_access {
-            DbAccess::None => {}
-            DbAccess::ReadOnly => {
-                writeln!(file, "{:indent$}auto handle = sqlitecpp::DbHandle::read_lock(project->get_db_mutex());", "")?;
-            }
-            DbAccess::ReadWrite => {
-                writeln!(file, "{:indent$}auto handle = sqlitecpp::DbHandle::write_lock(project->get_db_mutex());", "")?;
-            }
-        }
-
         for flag in &self.flags {
             if let Some(mutex) = &flag.mutex {
                 writeln!(
                     file,
-                    "{:indent$}LOG_VERBOSE(\"validating flag {{}}'s mutual exclusivity\", {}",
+                    "{:indent$}LOG_VERBOSE(\"validating the mutual exclusives of flag '{}'\");",
                     "", flag.name
                 )?;
 
@@ -214,13 +233,13 @@ impl FunctionVersion {
 
                 indent += 4;
 
-                writeln!(file, "{:indent$}LOG_ERROR(\"Flag {} is mutually exclusive with ({}) but two or more were set.\")", "", flag.name, mutex.join(", "))?;
+                writeln!(file, "{:indent$}LOG_ERROR(\"Flag '{}' is mutually exclusive with ({}) but two or more were set.\");", "", flag.name, mutex.join(", "))?;
                 writeln!(
                     file,
-                    "{:indent$}return cppbase::err(StatusCode_InvalidParameter);",
+                    "{:indent$}ret.status_code = StatusCode_InvalidArgument;",
                     ""
                 )?;
-
+                writeln!(file, "{:indent$}return ret;", "")?;
                 indent -= 4;
 
                 writeln!(file, "{:indent$}}}\n", "")?;
@@ -316,16 +335,21 @@ impl FunctionVersion {
                     "", param.name, validation.r#type
                 )?;
 
-                writeln!(file, "{:indent$}if (!{call}) {{", "")?;
+                writeln!(file, "{:indent$}if (!util::{call}) {{", "")?;
 
                 indent += 4;
 
-                writeln!(file, "{:indent$}LOG_ERROR(\"validation failed\");", "")?;
+                writeln!(
+                    file,
+                    "{:indent$}LOG_ERROR(\"validation of '{}' parameter failed\");",
+                    "", param.name
+                )?;
 
                 writeln!(
                     file,
-                    "{:indent$}ret.status_code = StatusCode_InvalidArgument;",
-                    ""
+                    "{:indent$}ret.status_code = StatusCode_{};",
+                    "",
+                    validation.r#type.error_type()
                 )?;
 
                 writeln!(file, "{:indent$}return ret;", "")?;
@@ -338,6 +362,19 @@ impl FunctionVersion {
                     indent -= 4;
 
                     writeln!(file, "{:indent$}}}", "")?;
+                }
+            }
+
+            // db handle must only be fetched after the project has been validated
+            if param.r#type == "Project" {
+                match self.db_access {
+                    DbAccess::None => {}
+                    DbAccess::ReadOnly => {
+                        writeln!(file, "\n{:indent$}auto db_handle = sqlitecpp::DbHandle::read_lock(project.handle->get_db_mutex());", "")?;
+                    }
+                    DbAccess::ReadWrite => {
+                        writeln!(file, "\n{:indent$}auto db_handle = sqlitecpp::DbHandle::write_lock(project.handle->get_db_mutex());", "")?;
+                    }
                 }
             }
         }
@@ -432,13 +469,15 @@ impl FunctionVersion {
 
         indent += 4;
 
-        let member = if let Some(member) = &self.r#return {
-            member.name.clone()
+        if let Some(member) = &self.r#return {
+            writeln!(
+                file,
+                "{:indent$}return cppbase::ok(ret.{});",
+                "", member.name
+            )?;
         } else {
-            String::from("")
+            writeln!(file, "{:indent$}return cppbase::ok();", "")?;
         };
-
-        writeln!(file, "{:indent$}return cppbase::ok({});", "", member)?;
 
         indent -= 4;
 
@@ -474,9 +513,21 @@ impl FunctionVersion {
             .intersperse(String::from(", "))
             .collect::<String>();
 
+        let typed_transformed_parameters = self
+            .parameters
+            .iter()
+            .map(|param| {
+                format!(
+                    "decltype(util::transform<{}>(std::declval<{}>())) {}",
+                    param.r#type, param.r#type, param.name
+                )
+            })
+            .intersperse(String::from(", "))
+            .collect::<String>();
+
         writeln!(file, "\n{return_type_name} ikarus_{type_name}_{func_name}_v{version}_wrapper({typed_parameters}, {flag_enum_name} flags);")?;
 
-        writeln!(file, "\n{return_type_name} ikarus_{type_name}_{func_name}_v{version}_impl({typed_parameters}, {flag_enum_name} flags);")?;
+        writeln!(file, "\n{return_type_name} ikarus_{type_name}_{func_name}_v{version}_impl({typed_transformed_parameters}, {flag_enum_name} flags);")?;
 
         Ok(())
     }

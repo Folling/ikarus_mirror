@@ -7,6 +7,7 @@
 #include <sqlitecpp/database.hpp>
 
 #include <ikarus/project.h>
+#include <ikarus/types/property_type.h>
 
 #include <generated/project.hpp>
 
