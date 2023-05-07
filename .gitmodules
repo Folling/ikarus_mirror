@@ -1,9 +1,6 @@
 [submodule "vendor/ikarusdef"]
 	path = vendor/ikarusdef
 	url = ssh://git@git.ikarus.world:41843/Ikarus/ikarusdef.git
-[submodule "vendor/cppbase"]
-	path = vendor/cppbase
-	url = https://git.rewritesarebliss.com/Folling/cppbase.git
 [submodule "vendor/sqlitecpp"]
 	path = vendor/sqlitecpp
 	url = ssh://git@git.rewritesarebliss.com:16658/Folling/sqlitecpp.git
