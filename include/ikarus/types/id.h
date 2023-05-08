@@ -1,6 +1,12 @@
 #pragma once
 
+#ifdef __cplusplus
+#include <cstdint>
+
+using std::size_t;
+#else
 #include <stdint.h>
+#endif
 
 #include <ikarus/types/entity_type.h>
 

@@ -15,8 +15,10 @@
 
 #include <ikarus/types/id.h>
 #include <ikarus/types/path.h>
+#include <ikarus/types/property_settings.h>
 #include <ikarus/types/property_type.h>
 #include <ikarus/types/toggle_value.h>
+#include <ikarus/types/value.h>
 
 #include <impl/project.hpp>
 
@@ -33,6 +35,14 @@ bool validate_not_null(Path path) {
 
 bool validate_not_null(Project project) {
     return project.handle != nullptr;
+}
+
+bool validate_not_null(Value value) {
+    return value.data != nullptr;
+}
+
+bool validate_not_null(PropertySettings settings) {
+    return settings.data != nullptr;
 }
 
 bool validate_id_not_null(Id id) {
@@ -101,8 +111,24 @@ bool validate_utf8(Path path) {
     return validate_utf8(path.data);
 }
 
+bool validate_utf8(Value value) {
+    return validate_utf8(value.data);
+}
+
+bool validate_utf8(PropertySettings settings) {
+    return validate_utf8(settings.data);
+}
+
 bool validate_not_blank(char const * str) {
     return !cppbase::is_empty_or_blank(str);
+}
+
+bool validate_not_blank(TransformedValue value) {
+    return validate_not_blank(value.data);
+}
+
+bool validate_not_blank(PropertySettings settings) {
+    return validate_not_blank(settings.data);
 }
 
 bool validate_path_exists(Path path) {
@@ -189,20 +215,8 @@ bool validate_property_value_impl(PropertyType type, nlohmann::json const& value
     return true;
 }
 
-bool validate_property_value(PropertyType type, char const * value, char const * settings) {
-    auto value_json = nlohmann::json::parse(value, nullptr, false);
-
-    if (value_json.is_discarded()) {
-        return false;
-    }
-
-    auto settings_json = nlohmann::json::parse(settings, nullptr, false);
-
-    if (settings_json.is_discarded()) {
-        return false;
-    }
-
-    return validate_property_value_impl(type, value_json, settings_json);
+bool validate_property_value(PropertyType type, TransformedValue const& value, nlohmann::json const& settings) {
+    return validate_property_value_impl(type, value.data, settings);
 }
 
 bool validate_property_value_db(Project project, Id property, char const * value) {
@@ -230,6 +244,16 @@ bool validate_property_value_db(Project project, Id property, char const * value
     }
 
     return validate_property_value_impl(type, value_json, settings_json);
+}
+
+// TODO
+bool validate_property_settings(PropertyType type, TransformedPropertySettings const& settings) {
+    return true;
+}
+
+// TODO
+bool validate_property_settings_db(Id property, TransformedPropertySettings const& settings) {
+    return true;
 }
 
 }

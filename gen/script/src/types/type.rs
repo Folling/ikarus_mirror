@@ -126,6 +126,7 @@ impl Type {
         writeln!(file, "#pragma once\n")?;
 
         writeln!(file, "#include <cppbase/result.hpp>",)?;
+        writeln!(file, "#include <cppbase/templates.hpp>",)?;
 
         writeln!(file, "#include <ikarus/types/status.h>",)?;
         writeln!(

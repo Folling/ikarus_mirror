@@ -175,41 +175,25 @@ impl FunctionVersion {
             ""
         )?;
 
+        writeln!(file, "{:indent$}bool transformation_success{{}};", "")?;
+
         for param in &self.parameters {
             writeln!(
                 file,
-                "{:indent$}auto transformed_{}_opt = util::transform({});",
-                "", param.name, param.name
+                "{:indent$}auto transformed_{} = util::Transformer<cppbase::remove_all<decltype({})>>::transform({}, &transformation_success);",
+                "", param.name, param.name, param.name
             )?;
 
-            writeln!(
-                file,
-                "{:indent$}if (transformed_{}_opt.is_none()) {{",
-                "", param.name
-            )?;
+            writeln!(file, "{:indent$}if (!transformation_success) {{", "")?;
 
             indent += 4;
-
-            writeln!(
-                file,
-                "{:indent$}ret.status_code = StatusCode_InvalidArgument;",
-                ""
-            )?;
 
             writeln!(file, "{:indent$}return ret;", "")?;
 
             indent -= 4;
 
             writeln!(file, "{:indent$}}}", "")?;
-
-            writeln!(
-                file,
-                "{:indent$}auto transformed_{} = transformed_{}_opt.unwrap();\n",
-                "", param.name, param.name
-            )?;
         }
-
-        writeln!(file)?;
 
         for flag in &self.flags {
             if let Some(mutex) = &flag.mutex {
@@ -266,28 +250,28 @@ impl FunctionVersion {
 
                 let call = match &validation.r#type {
                     ParameterValidationType::NotNull => {
-                        format!("validate_not_null({})", param.name)
+                        format!("validate_not_null(transformed_{})", param.name)
                     }
                     ParameterValidationType::IdNotNull => {
-                        format!("validate_id_not_null({})", param.name)
+                        format!("validate_id_not_null(transformed_{})", param.name)
                     }
                     ParameterValidationType::IdNotNone => {
-                        format!("validate_id_not_none({})", param.name)
+                        format!("validate_id_not_none(transformed_{})", param.name)
                     }
                     ParameterValidationType::IdSpecified => {
-                        format!("validate_id_specified({})", param.name)
+                        format!("validate_id_specified(transformed_{})", param.name)
                     }
                     ParameterValidationType::Exists => {
-                        format!("validate_exists(project, {})", param.name)
+                        format!("validate_exists(transformed_project, transformed_{})", param.name)
                     }
                     ParameterValidationType::PositionWithinBounds {
                         bounds_folder_object,
                     } => format!(
-                        "validate_position_within_bounds(project, {}, {})",
+                        "validate_position_within_bounds(transformed_project, transformed_{}, transformed_{})",
                         param.name, bounds_folder_object
                     ),
                     ParameterValidationType::Is { expected_types } => format!(
-                        "validate_is({}, {})",
+                        "validate_is(transformed_{}, {})",
                         param.name,
                         expected_types
                             .iter()
@@ -295,37 +279,37 @@ impl FunctionVersion {
                             .collect::<Vec<String>>()
                             .join(" | ")
                     ),
-                    ParameterValidationType::ValidPath => format!("validate_path({})", param.name),
-                    ParameterValidationType::ValidUtf8 => format!("validate_utf8({})", param.name),
+                    ParameterValidationType::ValidPath => format!("validate_path(transformed_{})", param.name),
+                    ParameterValidationType::ValidUtf8 => format!("validate_utf8(transformed_{})", param.name),
                     ParameterValidationType::NotBlank => {
-                        format!("validate_not_blank({})", param.name)
+                        format!("validate_not_blank(transformed_{})", param.name)
                     }
                     ParameterValidationType::PathExists => {
-                        format!("validate_path_exists({})", param.name)
+                        format!("validate_path_exists(transformed_{})", param.name)
                     }
                     ParameterValidationType::PathParentMustExist => {
-                        format!("validate_path_parent_exists({})", param.name)
+                        format!("validate_path_parent_exists(transformed_{})", param.name)
                     }
                     ParameterValidationType::ValidPropertyValue {
                         type_source,
                         settings_source,
                     } => {
                         format!(
-                            "validate_property_value({}, {}, {})",
+                            "validate_property_value(transformed_{}, transformed_{}, transformed_{})",
                             type_source, param.name, settings_source
                         )
                     }
                     ParameterValidationType::ValidPropertyValueDb { property_source } => {
                         format!(
-                            "validate_property_value_db({}, {})",
+                            "validate_property_value_db(transformed_{}, transformed_{})",
                             property_source, param.name
                         )
                     }
                     ParameterValidationType::ValidSettings { type_source } => {
-                        format!("validate_settings({}, {})", type_source, param.name)
+                        format!("validate_property_settings(transformed_{}, transformed_{})", type_source, param.name)
                     }
                     ParameterValidationType::ValidSettingsDb { property_source } => {
-                        format!("validate_settings_db({}, {})", property_source, param.name)
+                        format!("validate_property_settings_db(transformed_{}, transformed_{})", property_source, param.name)
                     }
                 };
 
@@ -513,13 +497,16 @@ impl FunctionVersion {
             .intersperse(String::from(", "))
             .collect::<String>();
 
+        // some validations need to happen BEFORE transformation, some AFTER
+        // this can be identified based on the validation type and should then be generated accordingly
+
         let typed_transformed_parameters = self
             .parameters
             .iter()
             .map(|param| {
                 format!(
-                    "decltype(util::transform<{}>(std::declval<{}>())) {}",
-                    param.r#type, param.r#type, param.name
+                    "util::Transformer<cppbase::remove_all<{}>>::type {}",
+                    param.r#type, param.name
                 )
             })
             .intersperse(String::from(", "))
