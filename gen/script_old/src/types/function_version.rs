@@ -3,7 +3,7 @@ use std::fs::File;
 use std::io::Write;
 
 use crate::types::db_access::DbAccess;
-use crate::types::parameter_validation_type::ParameterValidationType;
+use crate::types::parameter_validation_type::{ParameterValidationType, ValidationPrecedence};
 use serde_derive::Deserialize;
 
 use crate::util::write_commented;
@@ -32,7 +32,7 @@ impl FunctionVersion {
         func_name: impl AsRef<str> + Display,
         func_name_pascal: impl AsRef<str> + Display,
         version: usize,
-    ) -> std::io::Result<()> {
+    ) -> anyhow::Result<()> {
         let flag_enum_name = format!("Ikarus{type_name_pascal}{func_name_pascal}V{version}Flags");
         let return_type_name =
             format!("Ikarus{type_name_pascal}{func_name_pascal}V{version}Result");
@@ -41,8 +41,8 @@ impl FunctionVersion {
             .parameters
             .iter()
             .map(|param| format!("{} {}", param.r#type, param.name))
-            .collect::<Vec<String>>()
-            .join(", ");
+            .intersperse(String::from(", "))
+            .collect::<String>();
 
         writeln!(file, "\nenum {flag_enum_name} {{")?;
 
@@ -120,7 +120,7 @@ impl FunctionVersion {
         func_name: impl AsRef<str> + Display,
         func_name_pascal: impl AsRef<str> + Display,
         version: usize,
-    ) -> std::io::Result<()> {
+    ) -> anyhow::Result<()> {
         let flag_enum_name = format!("Ikarus{type_name_pascal}{func_name_pascal}V{version}Flags");
         let return_type_name =
             format!("Ikarus{type_name_pascal}{func_name_pascal}V{version}Result");
@@ -168,6 +168,37 @@ impl FunctionVersion {
         )?;
 
         writeln!(file, "{:indent$}{return_type_name} ret{{}};\n", "")?;
+
+        writeln!(
+            file,
+            "{:indent$}LOG_VERBOSE(\"validation pre-transformation validations\");\n",
+            ""
+        )?;
+
+        for param in &self.parameters {
+            for validation in &param.validations {
+                if validation.r#type.precedence() != ValidationPrecedence::BeforeTransformation {
+                    continue;
+                }
+
+                validation.generate(file, indent, &param.name, &flag_enum_name)?
+            }
+
+            // db handle must only be fetched after the project has been validated
+            if param.r#type == "Project" {
+                writeln!(file, "LOG_VERBOSE(\"fetching DB handle\");")?;
+
+                match self.db_access {
+                    DbAccess::None => {}
+                    DbAccess::ReadOnly => {
+                        writeln!(file, "\n{:indent$}auto db_handle = sqlitecpp::DbHandle::read_lock(project.handle->get_db_mutex());", "")?;
+                    }
+                    DbAccess::ReadWrite => {
+                        writeln!(file, "\n{:indent$}auto db_handle = sqlitecpp::DbHandle::write_lock(project.handle->get_db_mutex());", "")?;
+                    }
+                }
+            }
+        }
 
         writeln!(
             file,
@@ -230,136 +261,23 @@ impl FunctionVersion {
             }
         }
 
+        writeln!(
+            file,
+            "LOG_VERBOSE(\"performing all post-transformation validations\");"
+        )?;
+
         for param in &self.parameters {
-            for validation in &param.validation {
-                writeln!(file)?;
-
-                if let Some(condition) = &validation.flag_condition {
-                    writeln!(
-                        file,
-                        "{:indent$}if ((flags & {}_{}) {} 0) {{",
-                        "",
-                        flag_enum_name,
-                        condition.flag,
-                        // == 0 to check if the flag is *not* set
-                        if condition.inverted { "==" } else { "!=" }
-                    )?;
-
-                    indent += 4;
+            for validation in &param.validations {
+                if validation.r#type.precedence() != ValidationPrecedence::AfterTransformation {
+                    continue;
                 }
 
-                let call = match &validation.r#type {
-                    ParameterValidationType::NotNull => {
-                        format!("validate_not_null(transformed_{})", param.name)
-                    }
-                    ParameterValidationType::IdNotNull => {
-                        format!("validate_id_not_null(transformed_{})", param.name)
-                    }
-                    ParameterValidationType::IdNotNone => {
-                        format!("validate_id_not_none(transformed_{})", param.name)
-                    }
-                    ParameterValidationType::IdSpecified => {
-                        format!("validate_id_specified(transformed_{})", param.name)
-                    }
-                    ParameterValidationType::Exists => {
-                        format!("validate_exists(transformed_project, transformed_{})", param.name)
-                    }
-                    ParameterValidationType::PositionWithinBounds {
-                        bounds_folder_object,
-                    } => format!(
-                        "validate_position_within_bounds(transformed_project, transformed_{}, transformed_{})",
-                        param.name, bounds_folder_object
-                    ),
-                    ParameterValidationType::Is { expected_types } => format!(
-                        "validate_is(transformed_{}, {})",
-                        param.name,
-                        expected_types
-                            .iter()
-                            .map(|c| format!("EntityTypes_{}", c.trim()))
-                            .collect::<Vec<String>>()
-                            .join(" | ")
-                    ),
-                    ParameterValidationType::ValidPath => format!("validate_path(transformed_{})", param.name),
-                    ParameterValidationType::ValidUtf8 => format!("validate_utf8(transformed_{})", param.name),
-                    ParameterValidationType::NotBlank => {
-                        format!("validate_not_blank(transformed_{})", param.name)
-                    }
-                    ParameterValidationType::PathExists => {
-                        format!("validate_path_exists(transformed_{})", param.name)
-                    }
-                    ParameterValidationType::PathParentMustExist => {
-                        format!("validate_path_parent_exists(transformed_{})", param.name)
-                    }
-                    ParameterValidationType::ValidPropertyValue {
-                        type_source,
-                        settings_source,
-                    } => {
-                        format!(
-                            "validate_property_value(transformed_{}, transformed_{}, transformed_{})",
-                            type_source, param.name, settings_source
-                        )
-                    }
-                    ParameterValidationType::ValidPropertyValueDb { property_source } => {
-                        format!(
-                            "validate_property_value_db(transformed_{}, transformed_{})",
-                            property_source, param.name
-                        )
-                    }
-                    ParameterValidationType::ValidSettings { type_source } => {
-                        format!("validate_property_settings(transformed_{}, transformed_{})", type_source, param.name)
-                    }
-                    ParameterValidationType::ValidSettingsDb { property_source } => {
-                        format!("validate_property_settings_db(transformed_{}, transformed_{})", property_source, param.name)
-                    }
-                };
-
-                writeln!(
+                validation.generate(
                     file,
-                    "{:indent$}LOG_VERBOSE(\"validating {} with validation {}\");",
-                    "", param.name, validation.r#type
-                )?;
-
-                writeln!(file, "{:indent$}if (!util::{call}) {{", "")?;
-
-                indent += 4;
-
-                writeln!(
-                    file,
-                    "{:indent$}LOG_ERROR(\"validation of '{}' parameter failed\");",
-                    "", param.name
-                )?;
-
-                writeln!(
-                    file,
-                    "{:indent$}ret.status_code = StatusCode_{};",
-                    "",
-                    validation.r#type.error_type()
-                )?;
-
-                writeln!(file, "{:indent$}return ret;", "")?;
-
-                indent -= 4;
-
-                writeln!(file, "{:indent$}}}", "")?;
-
-                if validation.flag_condition.is_some() {
-                    indent -= 4;
-
-                    writeln!(file, "{:indent$}}}", "")?;
-                }
-            }
-
-            // db handle must only be fetched after the project has been validated
-            if param.r#type == "Project" {
-                match self.db_access {
-                    DbAccess::None => {}
-                    DbAccess::ReadOnly => {
-                        writeln!(file, "\n{:indent$}auto db_handle = sqlitecpp::DbHandle::read_lock(project.handle->get_db_mutex());", "")?;
-                    }
-                    DbAccess::ReadWrite => {
-                        writeln!(file, "\n{:indent$}auto db_handle = sqlitecpp::DbHandle::write_lock(project.handle->get_db_mutex());", "")?;
-                    }
-                }
+                    indent,
+                    format!("transformed_{}", param.name),
+                    &flag_enum_name,
+                )?
             }
         }
 
@@ -482,7 +400,7 @@ impl FunctionVersion {
         func_name: impl AsRef<str> + Display,
         func_name_pascal: impl AsRef<str> + Display,
         version: usize,
-    ) -> std::io::Result<()> {
+    ) -> anyhow::Result<()> {
         let flag_enum_name = format!("Ikarus{type_name_pascal}{func_name_pascal}V{version}Flags");
         let return_type_name = if let Some(member) = &self.r#return {
             format!("cppbase::Result<{}, StatusCode>", member.r#type)

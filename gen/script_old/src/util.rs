@@ -28,7 +28,7 @@ pub fn write_commented<W: Write, S: AsRef<str>>(
     indent: usize,
     first_line_post_indent: usize,
     post_indent: usize,
-) -> std::io::Result<()> {
+) -> anyhow::Result<()> {
     if content.as_ref().chars().all(|c| c.is_whitespace()) {
         return Ok(());
     }

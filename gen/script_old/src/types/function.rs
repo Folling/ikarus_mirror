@@ -24,7 +24,7 @@ impl Function {
         file: &mut File,
         type_name: impl AsRef<str> + Display,
         type_name_pascal: impl AsRef<str> + Display,
-    ) -> std::io::Result<()> {
+    ) -> anyhow::Result<()> {
         let func_name = &self.name;
         let func_name_pascal = make_pascal_case(func_name);
 
@@ -51,7 +51,7 @@ impl Function {
         file: &mut File,
         type_name: impl AsRef<str> + Display,
         type_name_pascal: impl AsRef<str> + Display,
-    ) -> std::io::Result<()> {
+    ) -> anyhow::Result<()> {
         let func_name = &self.name;
         let func_name_pascal = make_pascal_case(func_name);
 
@@ -74,7 +74,7 @@ impl Function {
         file: &mut File,
         type_name: impl AsRef<str> + Display,
         type_name_pascal: impl AsRef<str> + Display,
-    ) -> std::io::Result<()> {
+    ) -> anyhow::Result<()> {
         let func_name = &self.name;
         let func_name_pascal = make_pascal_case(func_name);
 

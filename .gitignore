@@ -50,7 +50,7 @@ _deps
 *-prefix/
 
 build
-gen/script/target
+gen/script_old/target
 include/ikarus/entities
 include/ikarus/project.h
 src/generated/**/*.cpp

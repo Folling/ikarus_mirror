@@ -24,7 +24,7 @@ add_custom_target(
     DEPENDS ${GEN_FILES}
     # TODO GEN_TARGET_FILES only lists the files in the include directory
     BYPRODUCTS ${GEN_TARGET_FILES}
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/gen/script/
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/gen/script_old/
     COMMAND cargo run --
     --input ${PROJECT_SOURCE_DIR}/vendor/ikarusdef/templates
     --include-output ${PROJECT_SOURCE_DIR}/include/ikarus

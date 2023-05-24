@@ -10,7 +10,7 @@ pub struct Parameter {
     pub name: String,
     pub description: String,
     #[serde(default = "Vec::new")]
-    pub validation: Vec<ParameterValidation>,
+    pub validations: Vec<ParameterValidation>,
     #[serde(deserialize_with = "sanitised_string")]
     pub r#type: String,
     pub log: bool,

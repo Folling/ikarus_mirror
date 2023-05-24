@@ -34,6 +34,12 @@ pub enum ParameterValidationType {
     },
 }
 
+#[derive(Debug, Eq, PartialEq)]
+pub enum ValidationPrecedence {
+    BeforeTransformation,
+    AfterTransformation,
+}
+
 impl Display for ParameterValidationType {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -62,6 +68,39 @@ impl Display for ParameterValidationType {
 }
 
 impl ParameterValidationType {
+    pub fn precedence(&self) -> ValidationPrecedence {
+        match *self {
+            ParameterValidationType::NotNull => ValidationPrecedence::BeforeTransformation,
+            ParameterValidationType::IdNotNull => ValidationPrecedence::BeforeTransformation,
+            ParameterValidationType::IdNotNone => ValidationPrecedence::BeforeTransformation,
+            ParameterValidationType::IdSpecified => ValidationPrecedence::BeforeTransformation,
+            ParameterValidationType::Exists => ValidationPrecedence::AfterTransformation,
+            ParameterValidationType::PositionWithinBounds { .. } => {
+                ValidationPrecedence::AfterTransformation
+            }
+            ParameterValidationType::Is { .. } => ValidationPrecedence::AfterTransformation,
+            ParameterValidationType::ValidPath => ValidationPrecedence::AfterTransformation,
+            ParameterValidationType::ValidUtf8 => ValidationPrecedence::AfterTransformation,
+            ParameterValidationType::NotBlank => ValidationPrecedence::BeforeTransformation,
+            ParameterValidationType::PathExists => ValidationPrecedence::AfterTransformation,
+            ParameterValidationType::PathParentMustExist => {
+                ValidationPrecedence::BeforeTransformation
+            }
+            ParameterValidationType::ValidPropertyValue { .. } => {
+                ValidationPrecedence::AfterTransformation
+            }
+            ParameterValidationType::ValidPropertyValueDb { .. } => {
+                ValidationPrecedence::AfterTransformation
+            }
+            ParameterValidationType::ValidSettings { .. } => {
+                ValidationPrecedence::AfterTransformation
+            }
+            ParameterValidationType::ValidSettingsDb { .. } => {
+                ValidationPrecedence::AfterTransformation
+            }
+        }
+    }
+
     pub fn error_type(&self) -> &'static str {
         match *self {
             ParameterValidationType::NotNull => "InvalidArgument",
