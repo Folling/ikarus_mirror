@@ -17,3 +17,11 @@
 #ifndef IKA_API
 #define IKA_API
 #endif
+
+#ifdef __cplusplus
+#define IKARUS_BEGIN_HEADER extern "C" {
+#define IKARUS_END_HEADER   }
+#else
+#define IKARUS_BEGIN_HEADER
+#define IKARUS_END_HEADER
+#endif

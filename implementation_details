@@ -4,4 +4,9 @@ But sometimes information is shared. and referenced in multiple places. This hel
 
 Usage: Search for these keys prefixed with IMPLEMENTATION_DETAIL_* to change documentation in relevant places.
 
-TREE_LAYOUT: the current layout used for our entity trees
+DATABASE: References to the usage of a database
+TREE_LAYOUT: References to our usage of a tree layout
+OBJECT_TYPES: References to the types of objects
+OBJECT_SCOPES: References to the usage of object scopes
+PROPERTY_TYPES: The property types that currently exist
+LAZY_VALUE_CREATION: The fact that values are created lazily

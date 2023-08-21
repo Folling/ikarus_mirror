@@ -1,0 +1,16 @@
+DISABLE_INDEX          = NO
+EXCLUDE                = ../vendor ../build
+EXCLUDE_PATTERNS       = cmake-*
+FILE_PATTERNS          = *.h *.hpp *.tpp *.ipp *.cpp
+FULL_SIDEBAR           = NO
+GENERATE_LATEX         = NO
+GENERATE_TREEVIEW      = YES
+HTML_COLORSTYLE        = LIGHT # required with Doxygen >= 1.9.5
+HTML_EXTRA_FILES       = ../vendor/doxygen-awesome-css/doxygen-awesome-darkmode-toggle.js ../vendor/doxygen-awesome-css/doxygen-awesome-fragment-copy-button.js ./enum_format_fix.js
+HTML_EXTRA_STYLESHEET  = ../vendor/doxygen-awesome-css/doxygen-awesome.css
+HTML_HEADER            = header.html
+INPUT                  = ..
+OUTPUT_DIRECTORY       = generated
+PROJECT_BRIEF          = A C-API implementation for Ikarus, a tool for worldbuilding.
+PROJECT_NAME           = LIBIKARUS
+RECURSIVE              = YES
